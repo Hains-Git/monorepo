@@ -4,10 +4,10 @@ const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error']
 });
 
-prisma.$on('query', (e: any) => {
-  console.log('Params: ' + e.params);
-  console.log('Duration: ' + e.duration + 'ms');
-});
+// prisma.$on('query', (e: any) => {
+//   console.log('Params: ' + e.params);
+//   console.log('Duration: ' + e.duration + 'ms');
+// });
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
