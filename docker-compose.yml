@@ -1,0 +1,10 @@
+services:
+  monorepo:
+    build: ./my_workspace
+    tty: true
+    container_name: hains_monorepo
+    ports:
+      - 127.0.0.1:3010:3010
+    stdin_open: true
+    env_file:
+      - ./my_workspace/.env

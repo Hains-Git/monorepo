@@ -11,15 +11,25 @@
       "executor": "@nx/next:server",
       "options": {
         "buildTarget": "hains:build",
-        "dev": true,
-        "port": 3010
+        "port": 3010,
+        "dev": true
       }
     },
     "build": {
       "executor": "@nx/next:build",
       "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/hains"
+      },
+      "configurations": {
+        "development": {
+          "dev": true,
+          "buildTarget": "hains:build"
+        },
+        "production": {
+          "generateLockfile": true
+        }
       }
     },
     "export": {
