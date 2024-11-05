@@ -6,5 +6,10 @@ services:
     ports:
       - 127.0.0.1:3010:3010
     stdin_open: true
+    volumes:
+      - "./my_workspace:/app:cached"
     env_file:
       - ./my_workspace/.env
+    entrypoint:
+      - /app/entry.sh
+    

@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient({
+const config = {
   log: ['query', 'info', 'warn', 'error']
-});
+};
+
+const prisma = new PrismaClient({});
 
 // prisma.$on('query', (e: any) => {
 //   console.log('Params: ' + e.params);
