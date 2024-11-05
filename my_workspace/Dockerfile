@@ -28,7 +28,7 @@ COPY package*.json ./
 RUN npm install --only=production
 
 # Exponieren Sie den Port
-EXPOSE 3000
+EXPOSE 3010
 
 # Startbefehl
 CMD ["node", "dist/main.js"]

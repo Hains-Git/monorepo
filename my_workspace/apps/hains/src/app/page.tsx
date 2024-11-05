@@ -1,3 +1,4 @@
+import Button from './client/Button';
 import styles from './page.module.css';
 
 export default function Index() {
@@ -6,11 +7,13 @@ export default function Index() {
    *
    * Note: The corresponding styles are in the ./index.css file.
    */
+
   return (
     <div className={styles.page}>
       <div className="wrapper">
         <div className="container">
           <div id="welcome">
+            <Button />
             <h1>
               <span> Hello there, </span>
               Welcome hains 👋
