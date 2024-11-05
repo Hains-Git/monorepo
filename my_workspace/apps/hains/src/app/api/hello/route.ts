@@ -20,15 +20,28 @@ export async function GET(request: Request) {
     },
     where: {
       tag: {
-        lte: new Date('2024-05-01').toISOString().split('T')[0],
-        gte: new Date('2024-07-01').toISOString().split('T')[0]
+        gte: new Date('2024-05-01'),
+        lte: new Date('2024-07-01')
       }
     }
   });
-  console.log(bedarfsEintraege.length, bedarfsEintraege[0]);
-  return new Response(JSON.stringify(bedarfsEintraege), {
-    headers: {
-      'Content-Type': 'application/json'
+  const einteilungen = await prisma.diensteinteilungs.findMany({
+    where: {
+      tag: {
+        gte: new Date('2024-05-01'),
+        lte: new Date('2024-07-01')
+      }
     }
   });
+  return new Response(
+    JSON.stringify({
+      bedarfsEintraege,
+      einteilungen
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  );
 }

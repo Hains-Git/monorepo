@@ -1,8 +1,6 @@
 'use client';
-import { PrismaClient } from '@prisma/client';
 
 function Button() {
-  const prisma = new PrismaClient();
   const loadDataFromApi = async () => {
     fetch('/api/hello')
       .then((response) => {
