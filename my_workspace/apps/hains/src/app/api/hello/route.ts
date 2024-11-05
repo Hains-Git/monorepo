@@ -1,21 +1,9 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { prismaHains } from '@my-workspace/prisma_hains';
 
-const prisma: PrismaClient<Prisma.PrismaClientOptions, 'query'> =
-  new PrismaClient({
-    log: ['query', 'info', 'warn', 'error']
-  });
-
-prisma.$on('query', (e: any) => {
-  console.log('Params: ' + e.params);
-  console.log('Duration: ' + e.duration + 'ms');
-});
-
-(BigInt.prototype as any).toJSON = function () {
-  return this.toString();
-};
+const db = prismaHains();
 
 export async function GET(request: Request) {
-  const bedarfsEintraege = await prisma.bedarfs_eintrags.findMany({
+  const bedarfsEintraege = await db.bedarfs_eintrags.findMany({
     include: {
       schichts: true
     },
@@ -26,7 +14,7 @@ export async function GET(request: Request) {
       }
     }
   });
-  const einteilungen = await prisma.diensteinteilungs.findMany({
+  const einteilungen = await db.diensteinteilungs.findMany({
     where: {
       tag: {
         gte: new Date('2024-05-01'),
