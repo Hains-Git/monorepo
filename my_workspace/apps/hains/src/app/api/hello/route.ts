@@ -1,15 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
-const config = {
-  log: ['query', 'info', 'warn', 'error']
-};
+const prisma: PrismaClient<Prisma.PrismaClientOptions, 'query'> =
+  new PrismaClient({
+    log: ['query', 'info', 'warn', 'error']
+  });
 
-const prisma = new PrismaClient({});
-
-// prisma.$on('query', (e: any) => {
-//   console.log('Params: ' + e.params);
-//   console.log('Duration: ' + e.duration + 'ms');
-// });
+prisma.$on('query', (e: any) => {
+  console.log('Params: ' + e.params);
+  console.log('Duration: ' + e.duration + 'ms');
+});
 
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
