@@ -1,0 +1,9 @@
+{
+  "name": "hains-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/hains-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["hains"],
+  "// targets": "to see all targets run: nx show project hains-e2e --web",
+  "targets": {}
+}
