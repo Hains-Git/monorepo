@@ -31,9 +31,9 @@ export async function GET(request: Request) {
   //     }
   //   }
   // );
-  return new Response(JSON.stringify(getMonatsplanung(10)), {
+  return new Response(JSON.stringify(await getMonatsplanung(10)), {
     headers: {
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   });
 }

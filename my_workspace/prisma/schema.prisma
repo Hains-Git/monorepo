@@ -1219,7 +1219,6 @@ model kontingents {
   team_id               BigInt?                 @default(8)
   default               Boolean?                @default(false)
   sonderrotation        Boolean?                @default(false)
-  magic_einteilung      Boolean?                @default(false)
   einteilung_rotations  einteilung_rotations[]
   kontingent_po_diensts kontingent_po_diensts[]
   teams                 teams?                  @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_99108947ac")
@@ -1577,7 +1576,6 @@ model po_diensts {
   weak_parallel_conflict                                             Boolean                             @default(false)
   pep_name                                                           String                              @default("") @db.VarChar
   pep_color                                                          String                              @default("") @db.VarChar
-  magic_einteilung                                                   Boolean?                            @default(false)
   abwesentheitenueberblick_counters                                  abwesentheitenueberblick_counters[]
   antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
   antragstyps_antragstyps_we_holiday_po_dienst_idTopo_diensts        antragstyps[]                       @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts")
