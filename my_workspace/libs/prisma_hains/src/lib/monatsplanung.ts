@@ -980,7 +980,7 @@ end
 **/
 
 function getDataByHash(data: any, key = 'id') {
-  return data.reduce((hash, value) => {
+  return data.reduce((hash: any, value: any) => {
     hash[value[key]] = value;
     return hash;
   }, {});
@@ -1015,7 +1015,7 @@ function get_dpl_anfang_ende(dienstplan: any) {
     anfang,
     ende,
     anfang_frame,
-    ende_frame,
+    ende_frame
   };
 }
 
@@ -1024,16 +1024,16 @@ async function getZeitraumkategorien(anfang: Date, ende: Date) {
     where: {
       AND: [
         {
-          OR: [{ anfang: null }, { anfang: { gte: anfang } }],
+          OR: [{ anfang: null }, { anfang: { gte: anfang } }]
         },
         {
-          OR: [{ ende: null }, { ende: { lt: ende } }],
-        },
-      ],
+          OR: [{ ende: null }, { ende: { lt: ende } }]
+        }
+      ]
     },
     orderBy: {
-      prio: 'desc',
-    },
+      prio: 'desc'
+    }
   });
 
   return zeitraumkategorien;
@@ -1066,37 +1066,41 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   // @dates[planer_date.id] = planer_date
 }
 
-async function getEinteilungen(id, windowAnfang: Date, windowEnde: Date) {
+async function getEinteilungen(
+  id: number,
+  windowAnfang: Date,
+  windowEnde: Date
+) {
   const einteilungen = await prismaDb.diensteinteilungs.findMany({
     where: {
       tag: {
         gte: windowAnfang,
-        lte: windowEnde,
+        lte: windowEnde
       },
       OR: [
         {
           dienstplan_id: id,
           einteilungsstatuses: {
-            vorschlag: true,
-          },
+            vorschlag: true
+          }
         },
         {
           einteilungsstatuses: {
-            counts: true,
-          },
-        },
+            counts: true
+          }
+        }
       ],
       mitarbeiters: {
-        platzhalter: false,
-      },
+        platzhalter: false
+      }
     },
     orderBy: [
       { tag: 'asc' },
       { po_dienst_id: 'asc' },
       { einteilungsstatuses: { public: 'desc' } },
       { bereich_id: 'asc' },
-      { updated_at: 'asc' },
-    ],
+      { updated_at: 'asc' }
+    ]
   });
   return getDataByHash(einteilungen);
 }
@@ -1134,29 +1138,29 @@ async function getMitarbeiters(compute = true, as_ids = false) {
   const mitarbeiter = as_ids
     ? await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false,
+          platzhalter: false
         },
         select: {
-          id: true,
+          id: true
         },
         orderBy: {
-          planname: 'asc',
-        },
+          planname: 'asc'
+        }
       })
     : await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false,
+          platzhalter: false
         },
         include: {
           account_infos: true,
           dienstratings: true,
           // qualifizierte_freigaben: true,
           // vertrags_phases: true,
-          vertrags: true,
+          vertrags: true
         },
         orderBy: {
-          planname: 'asc',
-        },
+          planname: 'asc'
+        }
       });
   console.log(mitarbeiter);
   return getDataByHash(mitarbeiter);
@@ -1189,8 +1193,8 @@ async function getMitarbeiters(compute = true, as_ids = false) {
 async function getDienstkategories(compute = true) {
   const dienstkategories = await prismaDb.dienstkategories.findMany({
     include: {
-      dienstkategoriethemas: true,
-    },
+      dienstkategoriethemas: true
+    }
   });
   return getDataByHash(dienstkategories);
 
@@ -1208,8 +1212,8 @@ async function getDienstkategories(compute = true) {
 async function getKontingente(compute = true) {
   const kontingente = await prismaDb.kontingents.findMany({
     include: {
-      kontingent_po_diensts: true,
-    },
+      kontingent_po_diensts: true
+    }
   });
   return getDataByHash(kontingente);
   // def load_kontingente(compute = true)
@@ -1228,18 +1232,18 @@ async function getWuensche(windowAnfang: Date, windowEnde: Date) {
     where: {
       tag: {
         gte: windowAnfang,
-        lte: windowEnde,
+        lte: windowEnde
       },
       mitarbeiters: {
-        platzhalter: false,
-      },
+        platzhalter: false
+      }
     },
     include: {
-      mitarbeiters: true,
+      mitarbeiters: true
     },
     orderBy: {
-      dienstkategorie_id: 'asc',
-    },
+      dienstkategorie_id: 'asc'
+    }
   });
 
   return getDataByHash(wuensche);
@@ -1260,36 +1264,36 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
     where: {
       OR: [
         {
-          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }],
+          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }]
         },
         {
-          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }],
+          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }]
         },
         {
-          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }],
-        },
+          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }]
+        }
       ],
       mitarbeiters: {
-        platzhalter: false,
-      },
+        platzhalter: false
+      }
     },
     include: {
       kontingents: {
         include: {
-          teams: true,
-        },
+          teams: true
+        }
       },
       mitarbeiters: {
         include: {
           vertrags: {
             include: {
               vertragsgruppes: true,
-              vertrags_phases: true,
-            },
-          },
-        },
-      },
-    },
+              vertrags_phases: true
+            }
+          }
+        }
+      }
+    }
   });
 
   return getDataByHash(rotationen);
@@ -1310,8 +1314,8 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
 async function getBedarfe(dienstplanbedarf_id: number) {
   const bedarfs_eintraege = await prismaDb.bedarfs_eintrags.findMany({
     where: {
-      dienstplanbedarf_id,
-    },
+      dienstplanbedarf_id
+    }
   });
   return getDataByHash(bedarfs_eintraege);
 
@@ -1347,8 +1351,8 @@ async function getBedarfe(dienstplanbedarf_id: number) {
 async function getSchichten(dienstplanbedarf_id: number) {
   const schichten = await prismaDb.schichts.findMany({
     where: {
-      bedarfs_eintrags: { dienstplanbedarf_id },
-    },
+      bedarfs_eintrags: { dienstplanbedarf_id }
+    }
   });
   return schichten.reduce((hash: any, value) => {
     const key = String(value?.bedarfs_eintrag_id) || 0;
@@ -1379,7 +1383,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     wuensche,
     rotationen,
     bedarfs_eintraege,
-    schichten,
+    schichten
   };
 }
 
@@ -1389,15 +1393,15 @@ export async function getMonatsplanung(dpl_id: number) {
 
   const dienstplan = await prismaDb.dienstplans.findFirst({
     where: {
-      id: 64,
+      id: 64
     },
     include: {
       parametersets: {
         include: {
-          planparameters: true,
-        },
-      },
-    },
+          planparameters: true
+        }
+      }
+    }
   });
 
   const { anfang, ende, anfang_frame, ende_frame } =
@@ -1419,6 +1423,6 @@ export async function getMonatsplanung(dpl_id: number) {
     dienstplan,
     anfang,
     ende,
-    ...data,
+    ...data
   };
 }
