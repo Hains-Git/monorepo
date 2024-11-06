@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
+export * from './monatsplanung';
 
 const db: PrismaClient<Prisma.PrismaClientOptions, 'query'> = new PrismaClient({
   log: ['query', 'info', 'warn', 'error']

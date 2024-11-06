@@ -2,7 +2,7 @@
 
 function Button() {
   const loadDataFromApi = async () => {
-    fetch('/api/hello')
+    fetch('/api/monatsplanung')
       .then((response) => {
         return response.json();
       })

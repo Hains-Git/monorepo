@@ -1,6 +1,4 @@
-import { prismaHains, getMonatsplanung } from '@my-workspace/prisma_hains';
-
-const db = prismaHains();
+import { getMonatsplanung } from '@my-workspace/prisma_hains';
 
 export async function GET(request: Request) {
   // const bedarfsEintraege = await db.bedarfs_eintrags.findMany({
