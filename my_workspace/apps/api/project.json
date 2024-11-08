@@ -12,11 +12,13 @@
       "options": {
         "buildTarget": "api:build",
         "runBuildTargetDependencies": false,
-        "watch": true
+        "watch": true,
+        "port": 3001
       },
       "configurations": {
         "development": {
-          "buildTarget": "api:build:development"
+          "buildTarget": "api:build:development",
+          "watch": true
         },
         "production": {
           "buildTarget": "api:build:production"
