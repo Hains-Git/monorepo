@@ -5,6 +5,30 @@
   "projectType": "application",
   "tags": [],
   "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/api",
+        "main": "apps/api/src/main.ts",
+        "tsConfig": "apps/api/tsconfig.app.json",
+        "assets": [
+          "apps/api/src/assets"
+        ]
+      },
+      "configurations": {
+        "development": {
+          "webpackConfig": "apps/api/webpack.hmr.config.js"
+        },
+        "production": {
+          "webpackConfig": "apps/api/webpack.config.js",
+          "generatePackageJson": true
+        }
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
