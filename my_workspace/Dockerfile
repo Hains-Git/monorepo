@@ -14,4 +14,6 @@ COPY . .
 
 # Exponieren Sie den Port
 EXPOSE 3010
+EXPOSE 3020
+
 ENTRYPOINT ["/app/entry.sh"]

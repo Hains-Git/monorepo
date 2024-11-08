@@ -41,7 +41,8 @@
       "plugin": "@nx/jest/plugin",
       "options": {
         "targetName": "test"
-      }
+      },
+      "exclude": ["api-e2e/**/*", "apps/api-e2e/**/*"]
     },
     {
       "plugin": "@nx/vite/plugin",
@@ -52,6 +53,14 @@
         "previewTargetName": "preview",
         "serveStaticTargetName": "serve-static",
         "typecheckTargetName": "typecheck"
+      }
+    },
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview"
       }
     }
   ],

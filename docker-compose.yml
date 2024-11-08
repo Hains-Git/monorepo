@@ -5,6 +5,7 @@ services:
     container_name: hains_monorepo
     ports:
       - 127.0.0.1:3010:3010
+      - 127.0.0.1:3020:3020
     stdin_open: true
     volumes:
       - "./my_workspace:/app:cached"
@@ -12,4 +13,3 @@ services:
       - ./my_workspace/.env
     entrypoint:
       - /app/entry.sh
-    

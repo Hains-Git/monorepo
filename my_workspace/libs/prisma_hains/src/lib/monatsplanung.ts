@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 
 import { prismaHains } from './prisma-hains';
 import { addDays, subDays } from 'date-fns';
+import { getAllApiData } from './apidata';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
@@ -1415,10 +1416,18 @@ export async function getMonatsplanung(dpl_id: number) {
   );
   console.log('sum', sum);
 
+  const apiData = await getAllApiData();
+  console.log(
+    Object.entries(apiData).map(
+      ([key, value]) => `${key}: ${Object.values(value).length}`
+    )
+  );
+
   return {
     dienstplan,
     anfang,
     ende,
     ...data,
+    apiData,
   };
 }
