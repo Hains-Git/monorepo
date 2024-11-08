@@ -7,9 +7,6 @@ echo "Starting entry.sh in Path: $(pwd)"
 npm install --force
 npx prisma generate
 
-echo "Show all running node processes"
-# netstat -anvp tcp | awk 'NR<3 || /LISTEN/'
-
 # Development
 npx nx serve hains --verbose
 

@@ -2,6 +2,7 @@ services:
   monorepo:
     build: ./my_workspace
     tty: true
+    init: true
     container_name: hains_monorepo
     ports:
       - 127.0.0.1:3010:3010
