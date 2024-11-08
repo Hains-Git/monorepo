@@ -1,10 +1,13 @@
 #!/bin/bash
 
 echo "Starting entry.sh in Path: $(pwd)"
+# apt-get updage
+# apt-get install net-tools -y
 
 npm install --force
 npx prisma generate
 
+<<<<<<< HEAD
 echo "Show all running node processes.."
 ps aux | awk '/node/{print $2}'
 

@@ -981,7 +981,7 @@ end
 **/
 
 function getDataByHash(data: any, key = 'id') {
-  return data.reduce((hash, value) => {
+  return data.reduce((hash: any, value: any) => {
     hash[value[key]] = value;
     return hash;
   }, {});
@@ -1067,7 +1067,11 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   // @dates[planer_date.id] = planer_date
 }
 
-async function getEinteilungen(id, windowAnfang: Date, windowEnde: Date) {
+async function getEinteilungen(
+  id: number,
+  windowAnfang: Date,
+  windowEnde: Date
+) {
   const einteilungen = await prismaDb.diensteinteilungs.findMany({
     where: {
       tag: {
