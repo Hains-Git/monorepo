@@ -1163,32 +1163,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
           planname: 'asc',
         },
       });
-  console.log(mitarbeiter);
   return getDataByHash(mitarbeiter);
-  //   log("Loading Mitarbeiter")
-  //   @mitarbeiter_ids = []
-  //   @mitarbeiter_dienst = {}
-  //   @mitarbeiter_freigabetypen = {}
-  //   mitarbeiter = []
-  //   if as_ids
-  //     mitarbeiter = Mitarbeiter.select("id")
-  //       .where( platzhalter: false)
-  //       .order(:planname)
-  //   else
-  //     mitarbeiter = Mitarbeiter
-  //     .includes(:accountInfo, :dienstratings, :qualifizierte_freigaben, :vertrags_phases, :vertrags)
-  //     .where( platzhalter: false)
-  //     .order(:planname)
-  //   end
-  //   @mitarbeiter = hash_by_key(mitarbeiter) { |mitarbeiter|
-  //     id = mitarbeiter.id
-  //     @mitarbeiter_dienst[id] = {}
-  //     @mitarbeiter_freigabetypen[id] = []
-  //     @mitarbeiter_ids << id
-  //   }
-  //   if compute
-  //     compute_mitarbeiter()
-  //   end
 }
 
 async function getDienstkategories(compute = true) {

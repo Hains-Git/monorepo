@@ -2,17 +2,17 @@ import { Prisma, PrismaClient } from '@prisma/client';
 export * from './monatsplanung';
 
 const db: PrismaClient<Prisma.PrismaClientOptions, 'query'> = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
+  // log: ['query', 'info', 'warn', 'error'],
 });
 
-db.$on('query', (e: any) => {
-  console.log('Params: ' + e.params);
-  console.log('Duration: ' + e.duration + 'ms');
-});
+// db.$on('query', (e: any) => {
+//   console.log('Params: ' + e.params);
+//   console.log('Duration: ' + e.duration + 'ms');
+// });
 
 export function addBigIntToJSON() {
   (BigInt.prototype as any).toJSON = function () {
-    return this.toString();
+    return Number(this.toString());
   };
 }
 

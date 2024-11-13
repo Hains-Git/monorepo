@@ -1,4 +1,5 @@
 import { prismaHains } from '../prisma-hains';
+import { checkDate } from './zeitraumkategorie';
 
 class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -280,7 +281,7 @@ class PlanerDate {
 
   private addZeitraumkategorien(zeitraumkategorien: any[] = []) {
     zeitraumkategorien.forEach((zeitraumkategorie) => {
-      if (zeitraumkategorie.checkDate(this)) {
+      if (checkDate(this, zeitraumkategorie)) {
         this.zeitraumkategorien.push(zeitraumkategorie.id);
       }
     });
