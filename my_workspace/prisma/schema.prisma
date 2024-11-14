@@ -8,19 +8,19 @@ datasource db {
 }
 
 model abwesentheiten_spaltens {
-  id           BigInt   @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
   planname     String?  @db.VarChar
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
   created_at   DateTime @db.Timestamp(6)
   updated_at   DateTime @db.Timestamp(6)
-  po_dienst_id BigInt?
+  po_dienst_id Int?
 }
 
 model abwesentheitenueberblick_counters {
-  id             BigInt        @id @default(autoincrement())
-  mitarbeiter_id BigInt?
-  po_dienst_id   BigInt?
+  id             Int        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  po_dienst_id   Int?
   planname       String?       @db.VarChar
   description    String?       @db.VarChar
   von            DateTime?     @db.Date
@@ -35,8 +35,8 @@ model abwesentheitenueberblick_counters {
 }
 
 model abwesentheitenueberblick_settings {
-  id               BigInt        @id @default(autoincrement())
-  mitarbeiter_id   BigInt?
+  id               Int        @id @default(autoincrement())
+  mitarbeiter_id   Int?
   visible_columns  String[]      @default([]) @db.VarChar
   visible_team_ids Int[]         @default([])
   created_at       DateTime      @db.Timestamp(6)
@@ -47,8 +47,8 @@ model abwesentheitenueberblick_settings {
 }
 
 model abwesentheitenueberblicks {
-  id             BigInt        @id @default(autoincrement())
-  mitarbeiter_id BigInt?
+  id             Int        @id @default(autoincrement())
+  mitarbeiter_id Int?
   jahr           Int?
   ug             Int?          @default(30)
   u              Int?          @default(30)
@@ -70,8 +70,8 @@ model abwesentheitenueberblicks {
 }
 
 model account_infos {
-  id                  BigInt        @id @default(autoincrement())
-  old_user_id         BigInt?
+  id                  Int        @id @default(autoincrement())
+  old_user_id         Int?
   comments            String?
   nameKurz            String?       @default("") @db.VarChar(255)
   telephone           String?       @db.VarChar(255)
@@ -94,8 +94,8 @@ model account_infos {
   adresseLand         String?       @db.VarChar(30)
   aktivAb             DateTime?     @db.Timestamp(6)
   aktivBis            DateTime?     @db.Timestamp(6)
-  mitarbeiter_id      BigInt?
-  user_id             BigInt?
+  mitarbeiter_id      Int?
+  user_id             Int?
   geburtsdatum        DateTime?     @db.Date
   teilzeit            String?       @db.VarChar
   funktion            String?       @db.VarChar
@@ -109,7 +109,7 @@ model account_infos {
 }
 
 model active_admin_comments {
-  id            BigInt   @id @default(autoincrement())
+  id            Int   @id @default(autoincrement())
   namespace     String?  @db.VarChar
   body          String?
   resource_type String?  @db.VarChar
@@ -125,7 +125,7 @@ model active_admin_comments {
 }
 
 model active_storage_attachments {
-  id          BigInt   @id @default(autoincrement())
+  id          Int   @id @default(autoincrement())
   name        String   @db.VarChar
   record_type String   @db.VarChar
   record_id   Int
@@ -137,18 +137,18 @@ model active_storage_attachments {
 }
 
 model active_storage_blobs {
-  id           BigInt   @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
   key          String   @unique(map: "index_active_storage_blobs_on_key") @db.VarChar
   filename     String   @db.VarChar
   content_type String?  @db.VarChar
   metadata     String?
-  byte_size    BigInt
+  byte_size    Int
   checksum     String   @db.VarChar
   created_at   DateTime @db.Timestamp(6)
 }
 
 model admin_users {
-  id                     BigInt    @id @default(autoincrement())
+  id                     Int    @id @default(autoincrement())
   email                  String    @unique(map: "index_admin_users_on_email") @default("") @db.VarChar(50)
   encrypted_password     String    @default("") @db.VarChar
   reset_password_token   String?   @unique(map: "index_admin_users_on_reset_password_token") @db.VarChar(160)
@@ -159,15 +159,15 @@ model admin_users {
 }
 
 model allgemeine_vorlages {
-  id                 BigInt            @id @default(autoincrement())
-  vorlage_id         BigInt?
-  dienstplan_path_id BigInt?
+  id                 Int            @id @default(autoincrement())
+  vorlage_id         Int?
+  dienstplan_path_id Int?
   publishable        Boolean?          @default(false)
   filepattern        String?           @default("") @db.VarChar
   order              Int?              @default(0)
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
-  pdf_zusatz_dienste BigInt[]          @default([])
+  pdf_zusatz_dienste Int[]          @default([])
   freitext           String            @default("")
   dienstplan_paths   dienstplan_paths? @relation(fields: [dienstplan_path_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_01e0e49755")
   vorlages           vorlages?         @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c44f45c22")
@@ -177,10 +177,10 @@ model allgemeine_vorlages {
 }
 
 model antraege_histories {
-  id               BigInt           @id @default(autoincrement())
-  mitarbeiter_id   BigInt?
-  antraege_id      BigInt?
-  antragsstatus_id BigInt?
+  id               Int           @id @default(autoincrement())
+  mitarbeiter_id   Int?
+  antraege_id      Int?
+  antragsstatus_id Int?
   weiteres         String?          @db.VarChar
   kommentar        String?          @db.VarChar
   created_at       DateTime         @db.Timestamp(6)
@@ -195,10 +195,10 @@ model antraege_histories {
 }
 
 model antraeges {
-  id                 BigInt               @id @default(autoincrement())
-  mitarbeiter_id     BigInt?
-  antragstyp_id      BigInt?
-  antragsstatus_id   BigInt?
+  id                 Int               @id @default(autoincrement())
+  mitarbeiter_id     Int?
+  antragstyp_id      Int?
+  antragsstatus_id   Int?
   start              DateTime?            @db.Date
   ende               DateTime?            @db.Date
   abgesprochen       String?              @db.VarChar
@@ -216,7 +216,7 @@ model antraeges {
 }
 
 model antragsstatuses {
-  id                 BigInt               @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   name               String?              @db.VarChar
   color              String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
@@ -226,14 +226,14 @@ model antragsstatuses {
 }
 
 model antragstyps {
-  id                                                                BigInt      @id @default(autoincrement())
+  id                                                                Int      @id @default(autoincrement())
   name                                                              String?     @db.VarChar
   created_at                                                        DateTime    @db.Timestamp(6)
   updated_at                                                        DateTime    @db.Timestamp(6)
-  po_dienst_id                                                      BigInt?
-  we_holiday_po_dienst_id                                           BigInt?
-  check_alternative_po_dienst_id                                    BigInt?
-  alternative_po_dienst_id                                          BigInt?
+  po_dienst_id                                                      Int?
+  we_holiday_po_dienst_id                                           Int?
+  check_alternative_po_dienst_id                                    Int?
+  alternative_po_dienst_id                                          Int?
   antraeges                                                         antraeges[]
   po_diensts_antragstyps_check_alternative_po_dienst_idTopo_diensts po_diensts? @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts", fields: [check_alternative_po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3734c17d7f")
   po_diensts_antragstyps_we_holiday_po_dienst_idTopo_diensts        po_diensts? @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts", fields: [we_holiday_po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5dd7757f25")
@@ -254,12 +254,12 @@ model ar_internal_metadata {
 }
 
 model arbeitsplatzs {
-  id          BigInt     @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String?    @default("") @db.VarChar
-  bereich_id  BigInt?
+  bereich_id  Int?
   created_at  DateTime   @db.Timestamp(6)
   updated_at  DateTime   @db.Timestamp(6)
-  standort_id BigInt?
+  standort_id Int?
   bereiches   bereiches? @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1029690348")
   standorts   standorts? @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4ce8e3dfb0")
 
@@ -268,15 +268,15 @@ model arbeitsplatzs {
 }
 
 model arbeitszeit_absprachens {
-  id                   BigInt             @id @default(autoincrement())
-  mitarbeiter_id       BigInt?
-  zeitraumkategorie_id BigInt
+  id                   Int             @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  zeitraumkategorie_id Int
   von                  DateTime?          @db.Date
   bis                  DateTime?          @db.Date
   arbeitszeit_von      DateTime           @db.Time(6)
   arbeitszeit_bis      DateTime           @db.Time(6)
   pause                Int                @default(0)
-  vertrags_phase_id    BigInt?
+  vertrags_phase_id    Int?
   bemerkung            String             @default("")
   vertrags_phases      vertrags_phases?   @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0e2b934340")
   mitarbeiters         mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d5cc996a1")
@@ -288,7 +288,7 @@ model arbeitszeit_absprachens {
 }
 
 model arbeitszeittyps {
-  id              BigInt     @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   name            String?    @db.VarChar
   beschreibung    String?    @db.VarChar
   sys             Boolean?   @default(false)
@@ -303,7 +303,7 @@ model arbeitszeittyps {
 }
 
 model arbeitszeitverteilungs {
-  id                                                                      BigInt           @id @default(autoincrement())
+  id                                                                      Int           @id @default(autoincrement())
   name                                                                    String?          @db.VarChar
   dauer                                                                   Int?
   verteilung                                                              DateTime[]       @db.Time
@@ -311,9 +311,9 @@ model arbeitszeitverteilungs {
   created_at                                                              DateTime         @db.Timestamp(6)
   updated_at                                                              DateTime         @db.Timestamp(6)
   std                                                                     Decimal?         @default(0) @db.Decimal(6, 2)
-  dienstgruppe_id                                                         BigInt?
+  dienstgruppe_id                                                         Int?
   pre_std                                                                 Decimal?         @default(0) @db.Decimal(6, 2)
-  pre_dienstgruppe_id                                                     BigInt?
+  pre_dienstgruppe_id                                                     Int?
   pre_ueberschneidung_minuten                                             Int              @default(30)
   dienstgruppes_arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes     dienstgruppes?   @relation("arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
   dienstgruppes_arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes dienstgruppes?   @relation("arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
@@ -324,13 +324,13 @@ model arbeitszeitverteilungs {
 }
 
 model automatische_einteilungens {
-  id                   BigInt              @id @default(autoincrement())
-  mitarbeiter_id       BigInt?
-  po_dienst_id         BigInt?
-  vertrags_phase_id    BigInt?
+  id                   Int              @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  po_dienst_id         Int?
+  vertrags_phase_id    Int?
   von                  DateTime?           @db.Date
   bis                  DateTime?           @db.Date
-  zeitraumkategorie_id BigInt?
+  zeitraumkategorie_id Int?
   days                 Int?                @default(0)
   po_diensts           po_diensts?         @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
   vertrags_phases      vertrags_phases?    @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_17f873556d")
@@ -344,22 +344,22 @@ model automatische_einteilungens {
 }
 
 model bedarfs_eintrags {
-  id                      BigInt                 @id @default(autoincrement())
+  id                      Int                 @id @default(autoincrement())
   tag                     DateTime?              @db.Date
-  dienstplanbedarf_id     BigInt?
-  po_dienst_id            BigInt?
-  dienstbedarf_id         BigInt?
-  dienstverteilungstyp_id BigInt?
-  bereich_id              BigInt?
+  dienstplanbedarf_id     Int?
+  po_dienst_id            Int?
+  dienstbedarf_id         Int?
+  dienstverteilungstyp_id Int?
+  bereich_id              Int?
   verteilungscode         String?                @db.VarChar
   is_block                Boolean?               @default(false)
-  first_entry             BigInt?
+  first_entry             Int?
   min                     Int?                   @default(1)
   opt                     Int?                   @default(0)
   created_at              DateTime               @db.Timestamp(6)
   updated_at              DateTime               @db.Timestamp(6)
   ausgleich_tage          Int?                   @default(0)
-  kostenstelle_id         BigInt?                @default(2)
+  kostenstelle_id         Int?                @default(2)
   dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_00545eb639")
   po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c867c460")
   dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0f89581c7b")
@@ -377,13 +377,13 @@ model bedarfs_eintrags {
 }
 
 model benachrichtigungs {
-  id                          BigInt                      @id @default(autoincrement())
-  mitarbeiter_id              BigInt?
+  id                          Int                      @id @default(autoincrement())
+  mitarbeiter_id              Int?
   mitarbeiter_kommentar       String?                     @db.VarChar
   hains_task_id               Int?
   created_at                  DateTime                    @db.Timestamp(6)
   updated_at                  DateTime                    @db.Timestamp(6)
-  benachrichtigungs_status_id BigInt?                        @default(1)
+  benachrichtigungs_status_id Int?                        @default(1)
   mitarbeiter_rating          Int?
   benachrichtigungs_statuses  benachrichtigungs_statuses? @relation(fields: [benachrichtigungs_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2d4826acc2")
   mitarbeiters                mitarbeiters?               @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d72e570086")
@@ -393,7 +393,7 @@ model benachrichtigungs {
 }
 
 model benachrichtigungs_statuses {
-  id                BigInt              @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   name              String?             @db.VarChar
   color             String?             @db.VarChar
   created_at        DateTime            @db.Timestamp(6)
@@ -402,7 +402,7 @@ model benachrichtigungs_statuses {
 }
 
 model benachrichtigungs_typs {
-  id              BigInt   @id @default(autoincrement())
+  id              Int   @id @default(autoincrement())
   name            String?  @db.VarChar
   respond         Boolean? @default(false)
   status_optionen Int[]
@@ -415,10 +415,10 @@ model benachrichtigungs_typs {
 }
 
 model bereich_tagesverteilers {
-  id                BigInt           @id @default(autoincrement())
-  tagesverteiler_id BigInt?
-  bereich_id        BigInt?
-  po_dienst_id      BigInt?
+  id                Int           @id @default(autoincrement())
+  tagesverteiler_id Int?
+  bereich_id        Int?
+  po_dienst_id      Int?
   color             String?          @db.VarChar
   created_at        DateTime         @db.Timestamp(6)
   updated_at        DateTime         @db.Timestamp(6)
@@ -433,9 +433,9 @@ model bereich_tagesverteilers {
 }
 
 model bereich_wochenverteilers {
-  id             BigInt      @id @default(autoincrement())
-  bereich_id     BigInt?
-  po_dienst_id   BigInt?
+  id             Int      @id @default(autoincrement())
+  bereich_id     Int?
+  po_dienst_id   Int?
   color_bg       String?     @default("#ffffff") @db.VarChar
   color_hl       String?     @default("#ffffff") @db.VarChar
   order          Int?
@@ -450,7 +450,7 @@ model bereich_wochenverteilers {
 }
 
 model bereiches {
-  id                       BigInt                     @id @default(autoincrement())
+  id                       Int                     @id @default(autoincrement())
   name                     String?                    @db.VarChar(255)
   name_url                 String?                    @db.VarChar(255)
   info                     String?
@@ -458,7 +458,7 @@ model bereiches {
   created_at               DateTime?                  @db.Timestamp(6)
   updated_at               DateTime?                  @db.Timestamp(6)
   planname                 String?
-  bereiches_id             BigInt?
+  bereiches_id             Int?
   verteiler_frei           Boolean?                   @default(false)
   arbeitsplatzs            arbeitsplatzs[]
   bedarfs_eintrags         bedarfs_eintrags[]
@@ -471,9 +471,9 @@ model bereiches {
 }
 
 model channel_room_users {
-  id              BigInt         @id @default(autoincrement())
-  channel_room_id BigInt?
-  user_id         BigInt?
+  id              Int         @id @default(autoincrement())
+  channel_room_id Int?
+  user_id         Int?
   created_at      DateTime       @db.Timestamp(6)
   updated_at      DateTime       @db.Timestamp(6)
   subscription    Int            @default(0)
@@ -486,7 +486,7 @@ model channel_room_users {
 }
 
 model channel_rooms {
-  id                 BigInt               @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   name               String               @default("") @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
@@ -494,14 +494,14 @@ model channel_rooms {
 }
 
 model datei_typs {
-  id         BigInt   @id @default(autoincrement())
+  id         Int   @id @default(autoincrement())
   name       String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
 }
 
 model dateis {
-  id           BigInt   @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
   ersteller_id Int?
@@ -516,19 +516,19 @@ model dateis {
 }
 
 model dienstbedarves {
-  id                       BigInt                  @id @default(autoincrement())
+  id                       Int                  @id @default(autoincrement())
   min                      Int?
-  po_dienst_id             BigInt?
-  bereich_id               BigInt?
+  po_dienst_id             Int?
+  bereich_id               Int?
   created_at               DateTime                @db.Timestamp(6)
   updated_at               DateTime                @db.Timestamp(6)
   end_date                 DateTime?               @db.Date
-  dienstverteilungstyp_id  BigInt?
+  dienstverteilungstyp_id  Int?
   verteilungscode          String?                 @db.VarChar
   opt                      Int?
-  arbeitszeitverteilung_id BigInt?
-  zeitraumkategories_id    BigInt?
-  kostenstelle_id          BigInt?                 @default(2)
+  arbeitszeitverteilung_id Int?
+  zeitraumkategories_id    Int?
+  kostenstelle_id          Int?                 @default(2)
   ignore_in_urlaubssaldo   Boolean?                @default(false)
   bedarfs_eintrags         bedarfs_eintrags[]
   dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_05b1cdbc7e")
@@ -544,32 +544,32 @@ model dienstbedarves {
 }
 
 model dienstbedarveshistory {
-  id                        BigInt  @id @default(autoincrement())
-  dienstbedarf_id           BigInt?
+  id                        Int  @id @default(autoincrement())
+  dienstbedarf_id           Int?
   min                       Int?
   opt                       Int?
-  arbeitszeitverteilungs_id BigInt?
+  arbeitszeitverteilungs_id Int?
 
   @@index([arbeitszeitverteilungs_id], map: "index_dienstbedarveshistory_on_arbeitszeitverteilungs_id")
   @@index([dienstbedarf_id], map: "index_dienstbedarveshistory_on_dienstbedarf_id")
 }
 
 model diensteinteilungs {
-  id                    BigInt               @id @default(autoincrement())
-  mitarbeiter_id        BigInt?
+  id                    Int               @id @default(autoincrement())
+  mitarbeiter_id        Int?
   created_at            DateTime             @db.Timestamp(6)
   updated_at            DateTime             @db.Timestamp(6)
-  einteilungsstatus_id  BigInt?
-  po_dienst_id          BigInt?
-  dienstplan_id         BigInt?
+  einteilungsstatus_id  Int?
+  po_dienst_id          Int?
+  dienstplan_id         Int?
   reason                String?              @db.VarChar
   number                Int?
   tag                   DateTime?            @db.Date
-  einteilungskontext_id BigInt?
+  einteilungskontext_id Int?
   doppeldienst_id       Int?                 @default(0)
   schicht_nummern       Int[]                @default([0])
   arbeitsplatz_id       Int?                 @default(1)
-  bereich_id            BigInt?
+  bereich_id            Int?
   context_comment       String?              @default("") @db.VarChar
   info_comment          String?              @default("") @db.VarChar
   is_optional           Boolean?             @default(false)
@@ -587,7 +587,7 @@ model diensteinteilungs {
 }
 
 model diensteinteilungs_versions {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -599,7 +599,7 @@ model diensteinteilungs_versions {
 }
 
 model dienstfreigabe_versions {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -612,14 +612,14 @@ model dienstfreigabe_versions {
 }
 
 model dienstfreigabes {
-  id                BigInt            @id @default(autoincrement())
-  freigabetyp_id    BigInt?
-  mitarbeiter_id    BigInt?
-  freigabestatus_id BigInt?
+  id                Int            @id @default(autoincrement())
+  freigabetyp_id    Int?
+  mitarbeiter_id    Int?
+  freigabestatus_id Int?
   created_at        DateTime          @db.Timestamp(6)
   updated_at        DateTime          @db.Timestamp(6)
-  user_id           BigInt?
-  standort_id       BigInt?
+  user_id           Int?
+  standort_id       Int?
   mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3a9471d624")
   freigabetyps      freigabetyps?     @relation(fields: [freigabetyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7c27a8ab72")
   standorts         standorts?        @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8328bf76e2")
@@ -630,9 +630,9 @@ model dienstfreigabes {
 }
 
 model dienstgruppes {
-  id                                                                               BigInt                   @id @default(autoincrement())
+  id                                                                               Int                   @id @default(autoincrement())
   name                                                                             String?                  @db.VarChar
-  dienste                                                                          BigInt[]                 @default([])
+  dienste                                                                          Int[]                 @default([])
   created_at                                                                       DateTime                 @db.Timestamp(6)
   updated_at                                                                       DateTime                 @db.Timestamp(6)
   use_in_publish                                                                   Boolean                  @default(false)
@@ -645,9 +645,9 @@ model dienstgruppes {
 }
 
 model dienstkategorie_teams {
-  id                 BigInt            @id @default(autoincrement())
-  dienstkategorie_id BigInt?
-  team_id            BigInt?
+  id                 Int            @id @default(autoincrement())
+  dienstkategorie_id Int?
+  team_id            Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
   dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_10d49ef0f8")
@@ -658,7 +658,7 @@ model dienstkategorie_teams {
 }
 
 model dienstkategories {
-  id                    BigInt                  @id @default(autoincrement())
+  id                    Int                  @id @default(autoincrement())
   name                  String?                 @db.VarChar
   beschreibung          String?                 @db.VarChar
   color                 String?                 @db.VarChar
@@ -674,9 +674,9 @@ model dienstkategories {
 }
 
 model dienstkategoriethemas {
-  id                 BigInt            @id @default(autoincrement())
-  dienstkategorie_id BigInt?
-  thema_id           BigInt?
+  id                 Int            @id @default(autoincrement())
+  dienstkategorie_id Int?
+  thema_id           Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
   dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_27dd54d2f6")
@@ -687,11 +687,11 @@ model dienstkategoriethemas {
 }
 
 model dienstplan_custom_counters {
-  id                        BigInt                   @id @default(autoincrement())
+  id                        Int                   @id @default(autoincrement())
   name                      String?                  @default("Zähler") @db.VarChar
   dienste_ids               Int[]                    @default([])
-  mitarbeiter_ids           BigInt[]                 @default([])
-  dienstplan_custom_feld_id BigInt?
+  mitarbeiter_ids           Int[]                 @default([])
+  dienstplan_custom_feld_id Int?
   beschreibung              String?                  @default("")
   cell_id                   String?                  @default("") @db.VarChar
   created_at                DateTime                 @db.Timestamp(6)
@@ -710,10 +710,10 @@ model dienstplan_custom_counters {
   count                     String?                  @default("Einteilungen") @db.VarChar
   funktion                  String?                  @default("") @db.VarChar
   feiertage                 String?                  @default("auch") @db.VarChar
-  mitarbeiterteam_ids       BigInt[]                 @default([])
-  mitarbeiterfunktionen_ids BigInt[]                 @default([])
-  diensteteam_ids           BigInt[]                 @default([])
-  wochentage                BigInt[]                 @default([])
+  mitarbeiterteam_ids       Int[]                 @default([])
+  mitarbeiterfunktionen_ids Int[]                 @default([])
+  diensteteam_ids           Int[]                 @default([])
+  wochentage                Int[]                 @default([])
   empty_as_regeldienst      Boolean?                 @default(false)
   dienstplan_custom_felds   dienstplan_custom_felds? @relation(fields: [dienstplan_custom_feld_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cc48ac5d4f")
 
@@ -721,16 +721,16 @@ model dienstplan_custom_counters {
 }
 
 model dienstplan_custom_felds {
-  id                         BigInt                       @id @default(autoincrement())
+  id                         Int                       @id @default(autoincrement())
   ansicht_id                 Int?                         @default(0)
-  vorlage_id                 BigInt?
+  vorlage_id                 Int?
   row                        Boolean?                     @default(true)
-  index                      BigInt?                      @default(0)
+  index                      Int?                      @default(0)
   name                       String?                      @default("Neue Zeile") @db.VarChar
-  count_all_typ              BigInt?                      @default(0)
+  count_all_typ              Int?                      @default(0)
   created_at                 DateTime                     @db.Timestamp(6)
   updated_at                 DateTime                     @db.Timestamp(6)
-  custom_counter_ids         BigInt[]                     @default([])
+  custom_counter_ids         Int[]                     @default([])
   dienstplan_custom_counters dienstplan_custom_counters[]
   vorlages                   vorlages?                    @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3b768fab84")
 
@@ -738,7 +738,7 @@ model dienstplan_custom_felds {
 }
 
 model dienstplan_paths {
-  id                  BigInt                @id @default(autoincrement())
+  id                  Int                @id @default(autoincrement())
   path                String?               @db.VarChar
   created_at          DateTime              @db.Timestamp(6)
   updated_at          DateTime              @db.Timestamp(6)
@@ -746,8 +746,8 @@ model dienstplan_paths {
   offset_to_now       Int?                  @default(0)
   nr_versions         Int?                  @default(0)
   plan_pattern        String?               @default("") @db.VarChar
-  planinterval_id     BigInt?
-  plan_tab_id         BigInt?
+  planinterval_id     Int?
+  plan_tab_id         Int?
   name                String                @default("") @db.VarChar
   position            Int                   @default(0)
   begin_on_monday     Boolean?              @default(false)
@@ -761,23 +761,23 @@ model dienstplan_paths {
 }
 
 model dienstplanbedarves {
-  id               BigInt             @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
   created_at       DateTime           @db.Timestamp(6)
   updated_at       DateTime           @db.Timestamp(6)
   anfang           DateTime?          @db.Date
   ende             DateTime?          @db.Date
-  dienste          BigInt[]           @default([])
+  dienste          Int[]           @default([])
   bedarfs_eintrags bedarfs_eintrags[]
   dienstplans      dienstplans[]
 }
 
 model dienstplaner_user_farbgruppens {
-  id                   BigInt   @id @default(autoincrement())
-  user_id              BigInt?
+  id                   Int   @id @default(autoincrement())
+  user_id              Int?
   color                String?  @default("#000000") @db.VarChar
-  pos                  BigInt?  @default(1)
-  dienste_ids          BigInt[] @default([])
-  dienstkategorien_ids BigInt[] @default([])
+  pos                  Int?  @default(1)
+  dienste_ids          Int[] @default([])
+  dienstkategorien_ids Int[] @default([])
   created_at           DateTime @db.Timestamp(6)
   updated_at           DateTime @db.Timestamp(6)
   show                 Boolean? @default(true)
@@ -787,8 +787,8 @@ model dienstplaner_user_farbgruppens {
 }
 
 model dienstplaner_user_settings {
-  id                     BigInt   @id @default(autoincrement())
-  user_id                BigInt?
+  id                     Int   @id @default(autoincrement())
+  user_id                Int?
   abwesend               Boolean? @default(true)
   mehrfacheinteilung     Boolean? @default(true)
   ueberschneidung        Boolean? @default(true)
@@ -817,9 +817,9 @@ model dienstplaner_user_settings {
 }
 
 model dienstplaners_teams {
-  id         BigInt   @id @default(autoincrement())
-  user_id    BigInt?
-  team_id    BigInt?
+  id         Int   @id @default(autoincrement())
+  user_id    Int?
+  team_id    Int?
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
   teams      teams?   @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75274a3398")
@@ -830,9 +830,9 @@ model dienstplaners_teams {
 }
 
 model dienstplaners_verteiler_vorlagens {
-  id                  BigInt               @id @default(autoincrement())
-  user_id             BigInt?
-  vorlage_id          BigInt?
+  id                  Int               @id @default(autoincrement())
+  user_id             Int?
+  vorlage_id          Int?
   created_at          DateTime             @db.Timestamp(6)
   updated_at          DateTime             @db.Timestamp(6)
   verteiler_vorlagens verteiler_vorlagens? @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4924e39a88")
@@ -843,17 +843,17 @@ model dienstplaners_verteiler_vorlagens {
 }
 
 model dienstplans {
-  id                  BigInt              @id @default(autoincrement())
+  id                  Int              @id @default(autoincrement())
   name                String?             @db.VarChar
-  parameterset_id     BigInt?
+  parameterset_id     Int?
   anfang              DateTime?           @db.Date
   ende                DateTime?           @db.Date
   created_at          DateTime            @db.Timestamp(6)
   updated_at          DateTime            @db.Timestamp(6)
   beschreibung        String?             @db.VarChar
-  dienstplanstatus_id BigInt?
+  dienstplanstatus_id Int?
   sys                 Boolean?            @default(false)
-  dienstplanbedarf_id BigInt?
+  dienstplanbedarf_id Int?
   diensteinteilungs   diensteinteilungs[]
   dienstplanbedarves  dienstplanbedarves? @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_36027a91b3")
   dienstplanstatuses  dienstplanstatuses? @relation(fields: [dienstplanstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_55a766d44f")
@@ -864,7 +864,7 @@ model dienstplans {
 }
 
 model dienstplanstatuses {
-  id           BigInt        @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   name         String?       @db.VarChar
   beschreibung String?       @db.VarChar
   color        String?       @db.VarChar
@@ -875,9 +875,9 @@ model dienstplanstatuses {
 }
 
 model dienstratings {
-  id             BigInt        @id @default(autoincrement())
-  po_dienst_id   BigInt?
-  mitarbeiter_id BigInt?
+  id             Int        @id @default(autoincrement())
+  po_dienst_id   Int?
+  mitarbeiter_id Int?
   rating         Int?
   created_at     DateTime      @db.Timestamp(6)
   updated_at     DateTime      @db.Timestamp(6)
@@ -890,18 +890,18 @@ model dienstratings {
 }
 
 model diensts {
-  id          BigInt    @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   datum       DateTime? @db.Timestamp(6)
   dienstname  String?   @db.VarChar(255)
   kommentar   String?
   mitarbeiter String?   @db.VarChar(255)
-  user_id     BigInt?
+  user_id     Int?
   created_at  DateTime? @db.Timestamp(6)
   updated_at  DateTime? @db.Timestamp(6)
 }
 
 model dienstverteilungstyps {
-  id                   BigInt                 @id @default(autoincrement())
+  id                   Int                 @id @default(autoincrement())
   name                 String?                @db.VarChar
   beschreibung         String?                @db.VarChar
   created_at           DateTime               @db.Timestamp(6)
@@ -913,10 +913,10 @@ model dienstverteilungstyps {
 }
 
 model dienstwunsches {
-  id                 BigInt            @id @default(autoincrement())
-  mitarbeiter_id     BigInt?
+  id                 Int            @id @default(autoincrement())
+  mitarbeiter_id     Int?
   tag                DateTime?         @db.Date
-  dienstkategorie_id BigInt?
+  dienstkategorie_id Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
   mitarbeiters       mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0839dc09ce")
@@ -928,9 +928,9 @@ model dienstwunsches {
 }
 
 model einteilung_rotations {
-  id                   BigInt        @id @default(autoincrement())
-  kontingent_id        BigInt?
-  mitarbeiter_id       BigInt?
+  id                   Int        @id @default(autoincrement())
+  kontingent_id        Int?
+  mitarbeiter_id       Int?
   mitarbeiter_planname String?       @db.VarChar
   prioritaet           Int?
   von                  DateTime?     @db.Date
@@ -947,7 +947,7 @@ model einteilung_rotations {
 }
 
 model einteilung_versions {
-  id             BigInt    @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -965,7 +965,7 @@ model einteilung_versions {
 }
 
 model einteilungskontexts {
-  id             BigInt   @id @default(autoincrement())
+  id             Int   @id @default(autoincrement())
   name           String?  @db.VarChar
   beschreibung   String?  @db.VarChar
   color          String?  @db.VarChar
@@ -976,7 +976,7 @@ model einteilungskontexts {
 }
 
 model einteilungsstatuses {
-  id                BigInt              @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   name              String?             @db.VarChar
   color             String?             @db.VarChar
   public            Boolean?            @default(false)
@@ -991,7 +991,7 @@ model einteilungsstatuses {
 }
 
 model feiertages {
-  id                BigInt    @id @default(autoincrement())
+  id                Int    @id @default(autoincrement())
   name              String?   @db.VarChar
   key               String?   @db.VarChar
   datum             DateTime? @db.Date
@@ -1004,7 +1004,7 @@ model feiertages {
 }
 
 model freigabestatuses {
-  id              BigInt            @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   name            String?           @db.VarChar
   created_at      DateTime          @db.Timestamp(6)
   updated_at      DateTime          @db.Timestamp(6)
@@ -1017,7 +1017,7 @@ model freigabestatuses {
 }
 
 model freigabetyps {
-  id              BigInt            @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   name            String?           @db.VarChar
   planname        String?           @db.VarChar
   beschreibung    String?
@@ -1028,8 +1028,8 @@ model freigabetyps {
 }
 
 model freistellungs {
-  id                   BigInt        @id @default(autoincrement())
-  mitarbeiter_id       BigInt?
+  id                   Int        @id @default(autoincrement())
+  mitarbeiter_id       Int?
   mitarbeiter_planname String?       @db.VarChar(255)
   plandatum            DateTime?     @db.Timestamp(6)
   einteilung           String?       @db.VarChar(255)
@@ -1041,7 +1041,7 @@ model freistellungs {
 }
 
 model funktions {
-  id             BigInt           @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   planname       String?          @db.VarChar
   name           String?          @db.VarChar
   beschreibung   String?          @db.VarChar
@@ -1049,7 +1049,7 @@ model funktions {
   prio           Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
-  team_id        BigInt?
+  team_id        Int?
   teams          teams?           @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1a9f2cf982")
   mitarbeiters   mitarbeiters[]
   team_funktions team_funktions[]
@@ -1058,7 +1058,7 @@ model funktions {
 }
 
 model geraetebereiches {
-  id         BigInt   @id @default(autoincrement())
+  id         Int   @id @default(autoincrement())
   name       String?  @db.VarChar
   color      String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
@@ -1066,7 +1066,7 @@ model geraetebereiches {
 }
 
 model geraeteklasses {
-  id           BigInt    @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String?   @db.VarChar
   color        String?   @db.VarChar
   beschreibung String?   @db.VarChar
@@ -1076,11 +1076,11 @@ model geraeteklasses {
 }
 
 model geraetepasses {
-  id                   BigInt        @id @default(autoincrement())
-  mitarbeiter_id       BigInt?
+  id                   Int        @id @default(autoincrement())
+  mitarbeiter_id       Int?
   einweiser            String?       @db.VarChar
   einweisungsdatum     DateTime?     @db.Date
-  geraet_id            BigInt?
+  geraet_id            Int?
   created_at           DateTime      @db.Timestamp(6)
   updated_at           DateTime      @db.Timestamp(6)
   herstellereinweisung Boolean?      @default(false)
@@ -1093,11 +1093,11 @@ model geraetepasses {
 }
 
 model geraets {
-  id                 BigInt          @id @default(autoincrement())
+  id                 Int          @id @default(autoincrement())
   name               String?         @db.VarChar
   hersteller         String?         @db.VarChar
   typ                String?         @db.VarChar
-  geraeteklasse_id   BigInt?
+  geraeteklasse_id   Int?
   created_at         DateTime        @db.Timestamp(6)
   updated_at         DateTime        @db.Timestamp(6)
   in_use             Boolean?        @default(true)
@@ -1109,7 +1109,7 @@ model geraets {
 }
 
 model gruppes {
-  id            BigInt          @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   name          String?         @db.VarChar(255)
   resource_id   Int?
   resource_type String?         @db.VarChar(255)
@@ -1122,15 +1122,15 @@ model gruppes {
 }
 
 model hains_tasks {
-  id                       BigInt    @id @default(autoincrement())
+  id                       Int    @id @default(autoincrement())
   name                     String?   @db.VarChar
   beschreibung             String?
   created_at               DateTime  @db.Timestamp(6)
   updated_at               DateTime  @db.Timestamp(6)
   als_popup                Boolean?
-  gruppe_id                BigInt?
+  gruppe_id                Int?
   mitarbeiter_ids          Int[]
-  benachrichtigungs_typ_id BigInt?
+  benachrichtigungs_typ_id Int?
   send_notification        Boolean?  @default(false)
   benachrichtigungs_text   String?
   benachrichtigungs_titel  String?   @db.VarChar
@@ -1139,7 +1139,7 @@ model hains_tasks {
   alle_mitarbeiter         Boolean?  @default(false)
   dienst_ids               Int[]     @default([])
   link                     String?   @db.VarChar
-  zeitraumkategorie_id     BigInt?
+  zeitraumkategorie_id     Int?
   wiederholen              Boolean?  @default(false)
   funktions_ids            Int[]     @default([])
   last_day                 DateTime? @db.Date
@@ -1151,8 +1151,8 @@ model hains_tasks {
 }
 
 model jahresbilanzs {
-  id             BigInt        @id @default(autoincrement())
-  mitarbeiter_id BigInt?
+  id             Int        @id @default(autoincrement())
+  mitarbeiter_id Int?
   plusstunden    Decimal?      @default(0) @db.Decimal(6, 2)
   ueberstunden   Decimal?      @default(0) @db.Decimal(6, 2)
   urlaubstage    Int?          @default(0)
@@ -1166,7 +1166,7 @@ model jahresbilanzs {
 }
 
 model kalendermarkierungs {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   category   String?   @db.VarChar
   name       String?   @db.VarChar
   color      String?   @db.VarChar
@@ -1179,7 +1179,7 @@ model kalendermarkierungs {
 }
 
 model kalenderwoches {
-  id            BigInt          @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   jahr          Int
   kw            Int
   montag        DateTime        @db.Date
@@ -1193,9 +1193,9 @@ model kalenderwoches {
 }
 
 model kontingent_po_diensts {
-  id                      BigInt       @id @default(autoincrement())
-  kontingent_id           BigInt?
-  po_dienst_id            BigInt?
+  id                      Int       @id @default(autoincrement())
+  kontingent_id           Int?
+  po_dienst_id            Int?
   eingeteilt_count_factor Int          @default(1)
   created_at              DateTime     @db.Timestamp(6)
   updated_at              DateTime     @db.Timestamp(6)
@@ -1208,15 +1208,15 @@ model kontingent_po_diensts {
 }
 
 model kontingents {
-  id                    BigInt                  @id @default(autoincrement())
+  id                    Int                  @id @default(autoincrement())
   name                  String?                 @db.VarChar
   kommentar             String?
   created_at            DateTime?               @db.Timestamp(6)
   updated_at            DateTime?               @db.Timestamp(6)
   position              Int?
   kurzname              String?                 @db.VarChar
-  thema_ids             BigInt[]
-  team_id               BigInt?                 @default(8)
+  thema_ids             Int[]
+  team_id               Int?                 @default(8)
   default               Boolean?                @default(false)
   sonderrotation        Boolean?                @default(false)
   einteilung_rotations  einteilung_rotations[]
@@ -1227,7 +1227,7 @@ model kontingents {
 }
 
 model kostenstelles {
-  id               BigInt             @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
   name             String?            @db.VarChar
   nummer           String?            @db.VarChar
   created_at       DateTime           @db.Timestamp(6)
@@ -1240,7 +1240,7 @@ model kostenstelles {
 }
 
 model links {
-  id           BigInt   @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
   url          String?  @db.VarChar
@@ -1248,10 +1248,89 @@ model links {
   updated_at   DateTime @db.Timestamp(6)
 }
 
+model mailer_addresses {
+  id                                                            Int            @id @default(autoincrement())
+  name                                                          String?           @db.VarChar
+  addresse                                                      String?           @db.VarChar
+  created_at                                                    DateTime          @db.Timestamp(6)
+  updated_at                                                    DateTime          @db.Timestamp(6)
+  mailer_ccs                                                    mailer_ccs[]
+  mailer_contexts_mailer_contexts_from_idTomailer_addresses     mailer_contexts[] @relation("mailer_contexts_from_idTomailer_addresses")
+  mailer_contexts_mailer_contexts_reply_to_idTomailer_addresses mailer_contexts[] @relation("mailer_contexts_reply_to_idTomailer_addresses")
+  mailer_tos                                                    mailer_tos[]
+}
+
+model mailer_ccs {
+  id                 Int            @id @default(autoincrement())
+  mailer_context_id  Int?
+  mailer_addresse_id Int?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_6fb0b59cad")
+  mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75d69d0976")
+
+  @@index([mailer_addresse_id], map: "index_mailer_ccs_on_mailer_addresse_id")
+  @@index([mailer_context_id], map: "index_mailer_ccs_on_mailer_context_id")
+}
+
+model mailer_contexts {
+  id                                                             Int            @id @default(autoincrement())
+  context                                                        String            @default("") @db.VarChar
+  subject                                                        String            @default("") @db.VarChar
+  body                                                           String            @default("")
+  from_id                                                        Int?
+  reply_to_id                                                    Int?
+  created_at                                                     DateTime          @db.Timestamp(6)
+  updated_at                                                     DateTime          @db.Timestamp(6)
+  mailer_ccs                                                     mailer_ccs[]
+  mailer_addresses_mailer_contexts_from_idTomailer_addresses     mailer_addresses? @relation("mailer_contexts_from_idTomailer_addresses", fields: [from_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_35af776dcd")
+  mailer_addresses_mailer_contexts_reply_to_idTomailer_addresses mailer_addresses? @relation("mailer_contexts_reply_to_idTomailer_addresses", fields: [reply_to_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d9811e872a")
+  mailer_tos                                                     mailer_tos[]
+
+  @@index([from_id], map: "index_mailer_contexts_on_from_id")
+  @@index([reply_to_id], map: "index_mailer_contexts_on_reply_to_id")
+}
+
+model mailer_tos {
+  id                 Int            @id @default(autoincrement())
+  mailer_context_id  Int?
+  mailer_addresse_id Int?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08dc607943")
+  mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3324b483bd")
+
+  @@index([mailer_addresse_id], map: "index_mailer_tos_on_mailer_addresse_id")
+  @@index([mailer_context_id], map: "index_mailer_tos_on_mailer_context_id")
+}
+
+model merkmal_options {
+  id         Int    @id @default(autoincrement())
+  merkmal_id Int?
+  wert       String?   @db.VarChar
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+  merkmals   merkmals? @relation(fields: [merkmal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e746e9188c")
+
+  @@index([merkmal_id], map: "index_merkmal_options_on_merkmal_id")
+}
+
+model merkmals {
+  id                  Int                @id @default(autoincrement())
+  name                String?               @db.VarChar
+  beschreibung        String?               @db.VarChar
+  can_edit            Boolean?
+  typ                 String?               @db.VarChar
+  created_at          DateTime              @db.Timestamp(6)
+  updated_at          DateTime              @db.Timestamp(6)
+  merkmal_options     merkmal_options[]
+  mitarbeitermerkmals mitarbeitermerkmals[]
+}
+
 model mitarbeiter_default_eingeteilts {
-  id             BigInt        @id @default(autoincrement())
-  mitarbeiter_id BigInt?
-  po_dienst_id   BigInt?
+  id             Int        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  po_dienst_id   Int?
   year           Int
   eingeteilt     Int           @default(0)
   created_at     DateTime      @db.Timestamp(6)
@@ -1263,8 +1342,23 @@ model mitarbeiter_default_eingeteilts {
   @@index([po_dienst_id], map: "index_mitarbeiter_default_eingeteilts_on_po_dienst_id")
 }
 
+model mitarbeitermerkmals {
+  id             Int        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  merkmal_id     Int?
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  wert           String?       @db.VarChar
+  freitext       String?       @db.VarChar
+  merkmals       merkmals?     @relation(fields: [merkmal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_41412590af")
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c1efcdc64d")
+
+  @@index([merkmal_id], map: "index_mitarbeitermerkmals_on_merkmal_id")
+  @@index([mitarbeiter_id], map: "index_mitarbeitermerkmals_on_mitarbeiter_id")
+}
+
 model mitarbeiters {
-  id                                                           BigInt                              @id @default(autoincrement())
+  id                                                           Int                              @id @default(autoincrement())
   name                                                         String?                             @default("") @db.VarChar(255)
   created_at                                                   DateTime?                           @db.Timestamp(6)
   updated_at                                                   DateTime?                           @db.Timestamp(6)
@@ -1278,7 +1372,7 @@ model mitarbeiters {
   zeit_kommentar                                               String?                             @db.VarChar
   abwesend                                                     Boolean?                            @default(false)
   pass_count                                                   Int?                                @default(0)
-  funktion_id                                                  BigInt?                             @default(6)
+  funktion_id                                                  Int?                             @default(6)
   personalnummer                                               String?                             @default("") @db.VarChar
   abwesentheitenueberblick_counters                            abwesentheitenueberblick_counters[]
   abwesentheitenueberblick_settings                            abwesentheitenueberblick_settings[]
@@ -1298,6 +1392,7 @@ model mitarbeiters {
   geraetepasses                                                geraetepasses[]
   jahresbilanzs                                                jahresbilanzs[]
   mitarbeiter_default_eingeteilts                              mitarbeiter_default_eingeteilts[]
+  mitarbeitermerkmals                                          mitarbeitermerkmals[]
   funktions                                                    funktions?                          @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5006408ec6")
   nicht_einteilen_absprachens                                  nicht_einteilen_absprachens[]
   notes                                                        notes[]
@@ -1313,11 +1408,11 @@ model mitarbeiters {
 }
 
 model nef_fahrts {
-  id                         BigInt                    @id @default(autoincrement())
-  notfallmedizin_register_id BigInt?
+  id                         Int                    @id @default(autoincrement())
+  notfallmedizin_register_id Int?
   fahrtnummer                Int?
   datum                      DateTime?                 @db.Date
-  einsatznummer              BigInt?
+  einsatznummer              Int?
   diagnose_therapie          String?                   @db.VarChar
   notarzt                    String?                   @db.VarChar
   bemerkung                  String?                   @db.VarChar
@@ -1329,12 +1424,12 @@ model nef_fahrts {
 }
 
 model nicht_einteilen_absprachens {
-  id                              BigInt                            @id @default(autoincrement())
-  mitarbeiter_id                  BigInt
-  zeitraumkategorie_id            BigInt
+  id                              Int                            @id @default(autoincrement())
+  mitarbeiter_id                  Int
+  zeitraumkategorie_id            Int
   von                             DateTime?                         @db.Date
   bis                             DateTime?                         @db.Date
-  vertrags_phase_id               BigInt?
+  vertrags_phase_id               Int?
   mitarbeiters                    mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c13db17963")
   vertrags_phases                 vertrags_phases?                  @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d4a48572df")
   zeitraumkategories              zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f981032257")
@@ -1346,10 +1441,10 @@ model nicht_einteilen_absprachens {
 }
 
 model nicht_einteilen_standort_themen {
-  id                          BigInt                      @id @default(autoincrement())
-  absprache_id                BigInt
-  standort_id                 BigInt
-  thema_id                    BigInt
+  id                          Int                      @id @default(autoincrement())
+  absprache_id                Int
+  standort_id                 Int
+  thema_id                    Int
   nicht_einteilen_absprachens nicht_einteilen_absprachens @relation(fields: [absprache_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_44fd8a9177")
   standorts                   standorts                   @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_77f147e42b")
   themas                      themas                      @relation(fields: [thema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fd8449d811")
@@ -1360,7 +1455,7 @@ model nicht_einteilen_standort_themen {
 }
 
 model note_categories {
-  id         BigInt   @id @default(autoincrement())
+  id         Int   @id @default(autoincrement())
   category   String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
@@ -1368,15 +1463,15 @@ model note_categories {
 }
 
 model notes {
-  id               BigInt            @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   notiz            String?           @db.VarChar
   created_at       DateTime          @db.Timestamp(6)
   updated_at       DateTime          @db.Timestamp(6)
-  mitarbeiter_id   BigInt?
-  ersteller_id     BigInt?
+  mitarbeiter_id   Int?
+  ersteller_id     Int?
   private_note     Boolean?          @default(false)
   title            String?           @db.VarChar
-  note_category_id BigInt?
+  note_category_id Int?
   mitarbeiters     mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_660860a381")
   note_categories  note_categories?  @relation(fields: [note_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e70fa12604")
   notes_histories  notes_histories[]
@@ -1387,10 +1482,10 @@ model notes {
 }
 
 model notes_histories {
-  id                                                        BigInt        @id @default(autoincrement())
-  note_id                                                   BigInt?
-  mitarbeiter_id                                            BigInt?
-  ersteller_id                                              BigInt?
+  id                                                        Int        @id @default(autoincrement())
+  note_id                                                   Int?
+  mitarbeiter_id                                            Int?
+  ersteller_id                                              Int?
   private_note                                              Boolean?
   notiz                                                     String?       @db.VarChar
   created_at                                                DateTime      @db.Timestamp(6)
@@ -1405,8 +1500,8 @@ model notes_histories {
 }
 
 model notfallmedizin_registers {
-  id                       BigInt                   @id @default(autoincrement())
-  mitarbeiter_id           BigInt?
+  id                       Int                   @id @default(autoincrement())
+  mitarbeiter_id           Int?
   titel                    String?                  @default("") @db.VarChar
   anrede                   String?                  @default("") @db.VarChar
   nasim                    Boolean?                 @default(false)
@@ -1425,7 +1520,7 @@ model notfallmedizin_registers {
   freigabe_date            DateTime?                @db.Date
   pruefung                 DateTime?                @db.Date
   hospitation              DateTime?                @db.Date
-  notfallmedizin_status_id BigInt?                     @default(1)
+  notfallmedizin_status_id Int?                     @default(1)
   mails_send               Boolean?                 @default(true)
   aktiv                    Boolean?                 @default(true)
   nef_fahrts               nef_fahrts[]
@@ -1436,7 +1531,7 @@ model notfallmedizin_registers {
 }
 
 model notfallmedizin_statuses {
-  id                        BigInt                     @id @default(autoincrement())
+  id                        Int                     @id @default(autoincrement())
   name                      String?                    @db.VarChar
   color                     String?                    @db.VarChar
   created_at                DateTime                   @db.Timestamp(6)
@@ -1454,7 +1549,7 @@ model notfallmedizin_statuses {
 }
 
 model oauth_access_grants {
-  id                BigInt    @id @default(autoincrement())
+  id                Int    @id @default(autoincrement())
   resource_owner_id Int
   application_id    Int
   token             String    @unique(map: "index_oauth_access_grants_on_token") @db.VarChar(255)
@@ -1466,7 +1561,7 @@ model oauth_access_grants {
 }
 
 model oauth_access_tokens {
-  id                BigInt    @id @default(autoincrement())
+  id                Int    @id @default(autoincrement())
   resource_owner_id Int?
   application_id    Int?
   token             String    @unique(map: "index_oauth_access_tokens_on_token") @db.VarChar(255)
@@ -1480,7 +1575,7 @@ model oauth_access_tokens {
 }
 
 model oauth_applications {
-  id           BigInt    @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String    @db.VarChar(255)
   uid          String    @unique(map: "index_oauth_applications_on_uid") @db.VarChar(255)
   secret       String    @db.VarChar(255)
@@ -1492,7 +1587,7 @@ model oauth_applications {
 }
 
 model parametersets {
-  id                     BigInt                 @id @default(autoincrement())
+  id                     Int                 @id @default(autoincrement())
   name                   String?                @db.VarChar
   beschreibung           String?                @db.VarChar
   sys                    Boolean?               @default(false)
@@ -1509,24 +1604,24 @@ model parametersets {
 }
 
 model plan_tabs {
-  id               BigInt             @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
   name             String?            @default("") @db.VarChar
   position         Int                @default(0)
   dienstplan_paths dienstplan_paths[]
 }
 
 model planintervals {
-  id               BigInt             @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
   typ              String?            @default("") @db.VarChar
   dienstplan_paths dienstplan_paths[]
 }
 
 model planparameters {
-  id                      BigInt               @id @default(autoincrement())
-  parameterset_id         BigInt?
+  id                      Int               @id @default(autoincrement())
+  parameterset_id         Int?
   num_threads             Int?
   relevant_timeframe_size Int?
-  einteilungsstatus_id    BigInt?
+  einteilungsstatus_id    Int?
   default_rating          Int?
   debugging               Boolean?
   reuse_bedarf            Boolean?
@@ -1545,7 +1640,7 @@ model planparameters {
 }
 
 model po_diensts {
-  id                                                                 BigInt                              @id @default(autoincrement())
+  id                                                                 Int                              @id @default(autoincrement())
   name                                                               String?                             @db.VarChar
   beschreibung                                                       String?
   created_at                                                         DateTime                            @db.Timestamp(6)
@@ -1555,13 +1650,13 @@ model po_diensts {
   freigabetypen_ids                                                  Int[]                               @default([])
   preset                                                             Boolean?                            @default(false)
   sys                                                                Boolean?                            @default(false)
-  thema_ids                                                          BigInt[]
+  thema_ids                                                          Int[]
   aufwand                                                            Int?                                @default(0)
   aneasy_name                                                        String?                             @default("") @db.VarChar
   order                                                              Int?                                @default(0)
   priorisiere_wunsch                                                 Boolean?                            @default(false)
-  team_id                                                            BigInt?                             @default(8)
-  kostenstelle_id                                                    BigInt?                             @default(1)
+  team_id                                                            Int?                             @default(8)
+  kostenstelle_id                                                    Int?                             @default(1)
   stundennachweis_urlaub                                             Boolean?                            @default(false)
   stundennachweis_krank                                              Boolean?                            @default(false)
   stundennachweis_sonstig                                            Boolean?                            @default(false)
@@ -1604,11 +1699,11 @@ model schema_migrations {
 }
 
 model schichts {
-  id                 BigInt            @id @default(autoincrement())
-  bedarfs_eintrag_id BigInt?
+  id                 Int            @id @default(autoincrement())
+  bedarfs_eintrag_id Int?
   anfang             DateTime?         @db.Timestamp(6)
   ende               DateTime?         @db.Timestamp(6)
-  arbeitszeittyp_id  BigInt?
+  arbeitszeittyp_id  Int?
   schicht_nummer     Int?              @default(1)
   arbeitszeit        Int?
   created_at         DateTime          @db.Timestamp(6)
@@ -1621,7 +1716,7 @@ model schichts {
 }
 
 model standorts {
-  id                              BigInt                            @id @default(autoincrement())
+  id                              Int                            @id @default(autoincrement())
   name                            String?                           @db.VarChar(255)
   name_url                        String?                           @db.VarChar(255)
   adresse                         String?
@@ -1639,9 +1734,9 @@ model standorts {
 }
 
 model stundennachweis {
-  id                        BigInt                    @id @default(autoincrement())
-  mitarbeiter_id            BigInt?
-  kostenstelle_id           BigInt?
+  id                        Int                    @id @default(autoincrement())
+  mitarbeiter_id            Int?
+  kostenstelle_id           Int?
   tag                       DateTime?                 @db.Date
   von                       DateTime?                 @db.Time(6)
   bis                       DateTime?                 @db.Time(6)
@@ -1655,7 +1750,7 @@ model stundennachweis {
   created_at                DateTime                  @db.Timestamp(6)
   updated_at                DateTime                  @db.Timestamp(6)
   von_einteilung            Int?                      @default(-1)
-  stundennachweis_status_id BigInt?                   @default(1)
+  stundennachweis_status_id Int?                   @default(1)
   vollarbeit                Boolean?                  @default(true)
   pause                     DateTime?                 @default(dbgenerated("'00:00:00'::time without time zone")) @db.Time(6)
   rufbereitschaft_von       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
@@ -1671,7 +1766,7 @@ model stundennachweis {
 }
 
 model stundennachweis_statuses {
-  id              BigInt            @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   name            String?           @db.VarChar
   confirmed       Boolean?
   submitted       Boolean?
@@ -1681,22 +1776,22 @@ model stundennachweis_statuses {
 }
 
 model tagesverteiler_layouts {
-  id                    BigInt               @id @default(autoincrement())
+  id                    Int               @id @default(autoincrement())
   device                String?              @db.VarChar
   rows                  Int?
   cols                  Int?
   grid                  String?              @db.VarChar
   created_at            DateTime             @db.Timestamp(6)
   updated_at            DateTime             @db.Timestamp(6)
-  verteiler_vorlagen_id BigInt?
+  verteiler_vorlagen_id Int?
   verteiler_vorlagens   verteiler_vorlagens? @relation(fields: [verteiler_vorlagen_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9293af7154")
 
   @@index([verteiler_vorlagen_id], map: "index_tagesverteiler_layouts_on_verteiler_vorlagen_id")
 }
 
 model tagesverteiler_user_settings {
-  id           BigInt   @id @default(autoincrement())
-  user_id      BigInt?
+  id           Int   @id @default(autoincrement())
+  user_id      Int?
   funktion_ids Int[]    @default([])
   funktion_box String?  @db.VarChar
   created_at   DateTime @db.Timestamp(6)
@@ -1708,7 +1803,7 @@ model tagesverteiler_user_settings {
 }
 
 model tagesverteilers {
-  id                      BigInt                    @id @default(autoincrement())
+  id                      Int                    @id @default(autoincrement())
   name                    String?                   @db.VarChar
   color                   String?                   @db.VarChar
   planname                String?                   @db.VarChar
@@ -1718,16 +1813,16 @@ model tagesverteilers {
 }
 
 model tagkategories {
-  id         BigInt   @id @default(autoincrement())
+  id         Int   @id @default(autoincrement())
   name       String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
 }
 
 model team_funktions {
-  id          BigInt     @id @default(autoincrement())
-  team_id     BigInt?
-  funktion_id BigInt?
+  id          Int     @id @default(autoincrement())
+  team_id     Int?
+  funktion_id Int?
   created_at  DateTime   @db.Timestamp(6)
   updated_at  DateTime   @db.Timestamp(6)
   teams       teams?     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
@@ -1738,7 +1833,7 @@ model team_funktions {
 }
 
 model team_kw_krankpuffer_versions {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -1750,9 +1845,9 @@ model team_kw_krankpuffer_versions {
 }
 
 model team_kw_krankpuffers {
-  id         BigInt   @id @default(autoincrement())
+  id         Int   @id @default(autoincrement())
   kw         Int      @default(0)
-  team_id    BigInt?
+  team_id    Int?
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
   puffer     Int      @default(0)
@@ -1762,11 +1857,11 @@ model team_kw_krankpuffers {
 }
 
 model teams {
-  id                    BigInt                  @id @default(autoincrement())
+  id                    Int                  @id @default(autoincrement())
   name                  String?                 @db.VarChar
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
-  kostenstelle_id       BigInt?                 @default(2)
+  kostenstelle_id       Int?                 @default(2)
   default               Boolean?                @default(false)
   krank_puffer          Int                     @default(0)
   verteiler_default     Boolean?                @default(false)
@@ -1784,7 +1879,7 @@ model teams {
 }
 
 model telefonlistes {
-  id           BigInt   @id @default(autoincrement())
+  id           Int   @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?
   mitarbeiter  String?  @db.VarChar
@@ -1794,7 +1889,7 @@ model telefonlistes {
 }
 
 model themas {
-  id                              BigInt                            @id @default(autoincrement())
+  id                              Int                            @id @default(autoincrement())
   name                            String?                           @db.VarChar
   beschreibung                    String?                           @db.VarChar
   color                           String?                           @db.VarChar
@@ -1805,7 +1900,7 @@ model themas {
 }
 
 model user_versions {
-  id             BigInt    @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -1823,7 +1918,7 @@ model user_versions {
 }
 
 model users {
-  id                                BigInt                              @id @default(autoincrement())
+  id                                Int                              @id @default(autoincrement())
   name                              String?                             @db.VarChar(255)
   uid                               Int?
   login                             String?                             @db.VarChar(255)
@@ -1865,8 +1960,8 @@ model users {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model users_gruppes {
-  user_id   BigInt?
-  gruppe_id BigInt?
+  user_id   Int?
+  gruppe_id Int?
   gruppes   gruppes? @relation(fields: [gruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c3453aa77")
   users     users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cec3e4ee8f")
 
@@ -1875,7 +1970,7 @@ model users_gruppes {
 }
 
 model version_associations {
-  id               BigInt  @id @default(autoincrement())
+  id               Int  @id @default(autoincrement())
   version_id       Int?
   foreign_key_name String  @db.VarChar
   foreign_key_id   Int?
@@ -1886,7 +1981,7 @@ model version_associations {
 }
 
 model versions {
-  id             BigInt    @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -1901,7 +1996,7 @@ model versions {
 }
 
 model verteiler_tagesverteilers {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   raw_json   String?
   datum      DateTime? @db.Timestamp(6)
   version    String?   @db.VarChar
@@ -1910,11 +2005,11 @@ model verteiler_tagesverteilers {
 }
 
 model verteiler_vorlagens {
-  id                                BigInt                              @id @default(autoincrement())
+  id                                Int                              @id @default(autoincrement())
   name                              String                              @default("Vorlage") @db.VarChar
   beschreibung                      String                              @default("") @db.VarChar
   typ                               String                              @default("wochenverteiler") @db.VarChar
-  dienstplan_path_id                BigInt?
+  dienstplan_path_id                Int?
   order                             Int                                 @default(0)
   bereiche_ids                      Int[]                               @default([])
   dienste_ids                       Int[]                               @default([])
@@ -1929,10 +2024,10 @@ model verteiler_vorlagens {
 }
 
 model verteilungsoverrides {
-  id                      BigInt                 @id @default(autoincrement())
-  parameterset_id         BigInt?
-  dienstbedarf_id         BigInt?
-  dienstverteilungstyp_id BigInt?
+  id                      Int                 @id @default(autoincrement())
+  parameterset_id         Int?
+  dienstbedarf_id         Int?
+  dienstverteilungstyp_id Int?
   verteilungscode         String?                @db.VarChar
   created_at              DateTime               @db.Timestamp(6)
   updated_at              DateTime               @db.Timestamp(6)
@@ -1946,14 +2041,14 @@ model verteilungsoverrides {
 }
 
 model vertrags {
-  id                BigInt            @id @default(autoincrement())
-  mitarbeiter_id    BigInt?
+  id                Int            @id @default(autoincrement())
+  mitarbeiter_id    Int?
   created_at        DateTime          @db.Timestamp(6)
   updated_at        DateTime          @db.Timestamp(6)
-  vertragstyp_id    BigInt?
+  vertragstyp_id    Int?
   anfang            DateTime?         @db.Date
   ende              DateTime?         @db.Date
-  vertragsgruppe_id BigInt?
+  vertragsgruppe_id Int?
   vertragsgruppes   vertragsgruppes?  @relation(fields: [vertragsgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_36207cab70")
   mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b20fe19842")
   vertragstyps      vertragstyps?     @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f2cec23b66")
@@ -1964,22 +2059,22 @@ model vertrags {
 }
 
 model vertrags_aenderungs {
-  id             BigInt    @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   von            DateTime? @db.Timestamp(6)
   bis            DateTime? @db.Timestamp(6)
   teilzeitAnteil Int?
   rolle          String?   @db.VarChar
   vertrag_id     Int?
   kommentar      String?
-  mitarbeiter_id BigInt?
+  mitarbeiter_id Int?
   vertrag_ruht   Boolean?
   created_at     DateTime  @db.Timestamp(6)
   updated_at     DateTime  @db.Timestamp(6)
 }
 
 model vertrags_phases {
-  id                          BigInt                        @id @default(autoincrement())
-  vertrag_id                  BigInt?
+  id                          Int                        @id @default(autoincrement())
+  vertrag_id                  Int?
   vk                          Decimal?                      @db.Decimal(3, 2)
   stufe                       Int?
   von                         DateTime?                     @db.Date
@@ -1996,10 +2091,10 @@ model vertrags_phases {
 }
 
 model vertrags_variantes {
-  id             BigInt           @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   von            DateTime?        @db.Date
   bis            DateTime?        @db.Date
-  vertragstyp_id BigInt?
+  vertragstyp_id Int?
   name           String?          @db.VarChar
   wochenstunden  Int?
   created_at     DateTime         @db.Timestamp(6)
@@ -2011,9 +2106,9 @@ model vertrags_variantes {
 }
 
 model vertragsgruppes {
-  id             BigInt           @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   name           String?          @db.VarChar
-  vertragstyp_id BigInt?
+  vertragstyp_id Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
   vertrags       vertrags[]
@@ -2024,15 +2119,15 @@ model vertragsgruppes {
 }
 
 model vertragsstuves {
-  id                   BigInt              @id @default(autoincrement())
+  id                   Int              @id @default(autoincrement())
   name                 String?             @db.VarChar
   stufe                Int?
   nach_jahren          Int?
   monatsgehalt         Decimal?            @db.Decimal(15, 2)
   created_at           DateTime            @db.Timestamp(6)
   updated_at           DateTime            @db.Timestamp(6)
-  vertragsgruppe_id    BigInt?
-  vertrags_variante_id BigInt?
+  vertragsgruppe_id    Int?
+  vertrags_variante_id Int?
   vertragsgruppes      vertragsgruppes?    @relation(fields: [vertragsgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75bdf87379")
   vertrags_variantes   vertrags_variantes? @relation(fields: [vertrags_variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_91403e2823")
 
@@ -2041,7 +2136,7 @@ model vertragsstuves {
 }
 
 model vertragstyps {
-  id                 BigInt               @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
@@ -2052,13 +2147,13 @@ model vertragstyps {
 }
 
 model vorlages {
-  id                      BigInt                    @id @default(autoincrement())
-  mitarbeiter_id          BigInt?
+  id                      Int                    @id @default(autoincrement())
+  mitarbeiter_id          Int?
   name                    String?                   @db.VarChar
   dienste                 Int[]
   created_at              DateTime                  @db.Timestamp(6)
   updated_at              DateTime                  @db.Timestamp(6)
-  team_id                 BigInt?
+  team_id                 Int?
   funktionen_ids          Int[]                     @default([])
   ansicht_id              Int?                      @default(0)
   position                Int                       @default(0)
@@ -2072,9 +2167,9 @@ model vorlages {
 }
 
 model wochenbilanzs {
-  id                            BigInt          @id @default(autoincrement())
-  kalenderwoche_id              BigInt?
-  mitarbeiter_id                BigInt?
+  id                            Int          @id @default(autoincrement())
+  kalenderwoche_id              Int?
+  mitarbeiter_id                Int?
   geplante_arbeitszeit          Decimal?        @default(0) @db.Decimal(6, 2)
   geplante_rufbereitschaftszeit Decimal?        @default(0) @db.Decimal(6, 2)
   geplante_bereitschaftszeit    Decimal?        @default(0) @db.Decimal(6, 2)
@@ -2093,10 +2188,10 @@ model wochenbilanzs {
 }
 
 model zeitraumkategories {
-  id                          BigInt                        @id @default(autoincrement())
+  id                          Int                        @id @default(autoincrement())
   name                        String?                       @db.VarChar
   beschreibung                String?                       @db.VarChar
-  zeitraumregel_id            BigInt?
+  zeitraumregel_id            Int?
   prio                        Int?
   anfang                      DateTime?                     @db.Date
   ende                        DateTime?                     @db.Date
@@ -2115,7 +2210,7 @@ model zeitraumkategories {
 }
 
 model zeitraumregels {
-  id                 BigInt               @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)

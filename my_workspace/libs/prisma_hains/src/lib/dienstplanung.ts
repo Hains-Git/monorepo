@@ -1,10 +1,20 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
 import { prismaHains } from './prisma-hains';
-import { addDays, isTuesday, subDays } from 'date-fns';
+import {
+  addDays,
+  getWeek,
+  getYear,
+  isTuesday,
+  setISODay,
+  setISOWeek,
+  startOfYear,
+  subDays,
+} from 'date-fns';
 import { getAllApiData } from './apidata';
 import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
+import { checkWeek } from './utils/feiertag';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
@@ -42,6 +52,25 @@ function get_dpl_anfang_ende(dienstplan: any) {
     anfang_frame,
     ende_frame,
   };
+}
+
+function dateCommercial(year: number, week: number, day: number): Date {
+  // Start with the beginning of the specified year
+  let date = startOfYear(new Date(year, 0, 1));
+
+  // Set the ISO week
+  date = setISOWeek(date, week);
+
+  // Set the day of the week (1-7, where 1 is Monday and 7 is Sunday)
+  date = setISODay(date, day);
+
+  // Ensure we're in the correct year
+  if (getYear(date) !== year) {
+    date = setISOWeek(new Date(year, 11, 31), week);
+    date = setISODay(date, day);
+  }
+
+  return date;
 }
 
 async function getZeitraumkategorien(anfang: Date, ende: Date) {
@@ -384,7 +413,68 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   return dates;
 }
 
-// async function getDienstbedarfEintrag(bedarfsEintraegeHash: any) {}
+async function getDienstbedarfEintrag(dienste: any, bedarfsEintraegeHash: any) {
+  const dienstBedarfEintrag: { [key: string]: any } = {};
+  const bedarfsEintraege = Object.values(bedarfsEintraegeHash);
+  bedarfsEintraege.forEach((be: any) => {
+    const po_dienst_id = be.po_dienst_id;
+    const tag = format(be.tag, 'yyyy-MM-dd');
+    const id = be.id;
+    if (!dienstBedarfEintrag?.[po_dienst_id]) {
+      dienstBedarfEintrag[po_dienst_id] = {};
+    }
+    if (!dienstBedarfEintrag?.[po_dienst_id]?.[tag]) {
+      dienstBedarfEintrag[po_dienst_id][tag] = [];
+    }
+    dienstBedarfEintrag[po_dienst_id][tag].push(id);
+  });
+
+  Object.keys(dienste).forEach((dienstId) => {
+    if (!dienstBedarfEintrag[dienstId]) {
+      dienstBedarfEintrag[dienstId] = {};
+    }
+  });
+  return dienstBedarfEintrag;
+}
+
+async function getKalenderWochen(date: Date) {
+  const kalenderwoche = await prismaDb.kalenderwoches.findFirst({
+    where: {
+      AND: [{ montag: { lte: date } }, { sonntag: { gte: date } }],
+    },
+  });
+  if (kalenderwoche) {
+    return kalenderwoche;
+  }
+  const week = getWeek(date);
+  const year = date.getFullYear();
+  const monday = dateCommercial(year, week, 1);
+  const friday = dateCommercial(year, week, 5);
+  const sunday = dateCommercial(year, week, 7);
+  const [nFeiertage, nArbeitstage] = await checkWeek(monday, sunday);
+
+  return await prismaDb.kalenderwoches.create({
+    data: {
+      jahr: year,
+      kw: week,
+      montag: monday,
+      freitag: friday,
+      sonntag: sunday,
+      arbeitstage: nArbeitstage,
+      feiertage: nFeiertage,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  });
+}
+
+async function getWochenbilanzen(dienstplan: any) {
+  let { anfang: bilanzDate } = check_anfang_ende(dienstplan);
+  for (let i = 0; i < 5; i++) {
+    bilanzDate = subDays(bilanzDate, 7);
+    const kw = await getKalenderWochen(bilanzDate);
+  }
+}
 
 async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
@@ -397,9 +487,13 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
   const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
   const bedarf = await getDienstbedarfe(anfangFrame);
-  // const dienst_bedarfeintrag = await getDienstbedarfEintrag(bedarfs_eintraege);
-
   const dates = await createDateGridReact(anfangFrame, endeFrame);
+  const dienst_bedarfeintrag = await getDienstbedarfEintrag(
+    dienste,
+    bedarfs_eintraege
+  );
+  const wochenbilanzen_kws = await getWochenbilanzen(dienstplan);
+
   console.log(anfangFrame, endeFrame);
 
   return {
@@ -414,6 +508,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     schichten,
     bedarf,
     dates,
+    dienst_bedarfeintrag,
   };
 }
 

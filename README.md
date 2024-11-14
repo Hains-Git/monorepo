@@ -26,4 +26,44 @@ Innerhalb des hains_monorepo Containers ausführen!
   `npx nx g @nx/next:component apps/hains/components/my-new-component`
 
 [^1]: Beispiel für die UI Bibliothek.
+
 [^2]: Beispiel für die Prisma Bibliothek
+
+### Prisma pull DB
+
+- `npx prisma db pull`
+
+  > Jedoch sollte im prisma ordner zuerst die Datei schem.prisma erstellt sein mit folgendem Content.
+
+  ```prisma
+  generator client {
+  provider = "prisma-client-js"
+  }
+
+  datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  }
+  ```
+
+- Dann in den Container den Befehl ausfuehren `npx prisma db pull`
+
+```
+
+```
+
+### Prisma Migrations
+
+- `prisma migrate dev --name bigint_to_int`
+  > LOESCHT DIE DATEN IN DER DATENBANK!!! DANGER!!!
+
+### Migration richtig ausfuehren!!:
+
+> Info Bei jeder Migration die 0 => 1,2,3,4,.. hoch zaehlen!
+
+- `mkdir -p prisma/migrations/0_init`
+- `npx prisma migrate diff \
+--from-empty \
+--to-schema-datamodel prisma/schema.prisma \
+--script > prisma/migrations/0_init/migration.sql`
+- Im docker container run `npx prisma migrate resolve --applied 0_init`

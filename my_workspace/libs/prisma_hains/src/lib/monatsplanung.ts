@@ -1,53 +1,5 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-
-import { prismaHains } from './prisma-hains';
-import { addDays, subDays } from 'date-fns';
-import { getAllApiData } from './apidata';
-
-let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
-
-/**
-Ruby on Rails Model!
-Rewrite for JavaScript/TypeScript!
-
+const railsClass = `
 class Dienstplan < ApplicationRecord
-  belongs_to :parameterset
-  belongs_to :dienstplanstatus
-  belongs_to :dienstplanbedarf, optional: true
-  has_many :bedarfs_eintrag, through: :dienstplanbedarf
-  has_many :schicht, through: :bedarfs_eintrag
-  has_many :diensteinteilung, dependent: :delete_all
-
-  ATTRIBUTES = [
-    :recompute,
-    :bedarfs_eintraege,
-    :einteilungen,
-    :rotationen,
-    :wuensche,
-    :dates,
-    # :logger,
-    :dienst_bedarfeintrag,
-    :schichten,
-    :bedarf,
-    :wochenbilanzen,
-    :kws,
-    :plantime_anfang,
-    :plantime_ende,
-    :anfang_frame,
-    :ende_frame
-  ]
-
-  COMPACT = [
-    :bedarfs_eintraege,
-    :schichten,
-    :einteilungen,
-    :rotationen,
-    :wuensche,
-    :mitarbeiter_dienst,
-    :dienst_mitarbeiter,
-    :dates,
-    :themen
-  ]
 
   CHECK_TEAM_QUERY = "(
     (
@@ -74,26 +26,11 @@ class Dienstplan < ApplicationRecord
   MAX_RATING = 5
   MAX_WOCHENENDEN = 2
 
-  attr_accessor :mitarbeiter, :recompute, :vorschlag, :bedarfs_eintraege, :dienste, :einteilungen, :rotationen, :wuensche, :anfang_frame, :ende_frame
-  attr_accessor :ratings, :kontingente, :freigaben, :zeitraumkategorien ,:dienstkategorien, :dates, :bedarf, :themen, :logger, :mitarbeiter_dienst
-  attr_accessor :dienst_mitarbeiter, :arbeitszeitverteilungen, :dienst_bedarf, :dienst_bedarfeintrag, :arbeitszeittypen, :kontingent_dienste
-  attr_accessor :dienstkategorie_dienste, :schichten, :log_status, :wochenbilanzen, :kws, :mitarbeiter_freigabetypen, :plantime_anfang, :plantime_ende
-
   def is_date(d)
     if d.respond_to?(:strftime)
       return true
     end
     return false
-  end
-
-  #--------------------------------------------------------------------------------
-  def init(recompute = false, vorschlag = true)
-    measure("init") {
-      @recompute = recompute
-      @vorschlag = vorschlag
-      anfang_ende = get_dpl_anfang_ende
-      load_basics(anfang_ende[:anfang], anfang_ende[:ende])
-    }
   end
 
 
@@ -105,10 +42,31 @@ class Dienstplan < ApplicationRecord
     @bedarfs_eintraege
   end
 
+  def get_basic_api_data()
+    setup_parameters("log")
+    load_dienste(false)
+    load_mitarbeiter(false)
+    load_freigaben()
+    load_dienstkategorien(false)
+    load_kontingente(false)
+    load_ratings()
+    load_themen()
+    load_zeitraumkategorien()
+    load_arbeitszeitverteilungen()
+  end
+
   def load_basics(anfang_dpl, ende_dpl)
-    create_date_grid_react(anfang_dpl, ende_dpl)
     check_dpb()
+    load_dienste()
     load_bedarf()
+    load_einteilungen()
+  end
+
+  def setup_parameters(status = nil)
+    @log_status = status.nil? ? "Debug" : status
+    # Ohne Time.zone = "UTC" werden die Schichten beim respond im controller als falsche Time.zone interpretiert
+    Time.zone = "UTC"
+    init_logger()
   end
 
   def compute_dienste()
@@ -127,6 +85,7 @@ class Dienstplan < ApplicationRecord
     end
   end
 
+
   def compute_mitarbeiter()
     log("Compute Mitarbeiter")
     get_wochenbilanzen()
@@ -141,6 +100,32 @@ class Dienstplan < ApplicationRecord
       end
     end
   end
+
+//
+//     def self.von_tag(date)
+//     w = Kalenderwoche.where("montag <= ? and sonntag >= ?", date, date).limit(1)
+//     if w.present?
+//         return w.first
+//     else
+//         kw = date.cweek
+//         year = date.year
+//         monday = Date.commercial(year, kw, 1)
+//         friday = Date.commercial(year, kw, 5)
+//         sunday = Date.commercial(year, kw, 7)
+//         n_feiertage, n_arbeitstage = Feiertage.check_week(monday, sunday)
+//         w = Kalenderwoche.create(
+//         jahr: year, 
+//         kw: kw, 
+//         montag: monday, 
+//         freitag: friday, 
+//         sonntag: sunday, 
+//         arbeitstage: n_arbeitstage, 
+//         feiertage: n_feiertage
+//         )
+//         return w
+//     end
+// end
+
 
   def get_wochenbilanzen()
     @wochenbilanzen = {}
@@ -163,71 +148,11 @@ class Dienstplan < ApplicationRecord
     }
   end
 
-  def create_date_grid_react(anfang_dpl, ende_dpl)
-    log("Creating Dates")
-    @dates = {}
-    week_counter = 0
-    # date_grid für jeden Tag mit einem Date-Objekt füllen, bis das Ende erreicht ist
-    @window_anfang = anfang_dpl
-    @window_ende = ende_dpl
-    anfang = @window_anfang
-    zeitraumkategorien = Zeitraumkategorie.load_zeitraumkategorien_in(anfang_dpl, ende_dpl)
-    until anfang == @window_ende do
-      planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-      @dates[planer_date.id] = planer_date
-      anfang = anfang + 1.days
-      # week_counter:
-      # Wochenden gelten von Fr. Abend, bis Mo. Morgen
-      # -> Fr. - Mo. zählen zu einem Wochenende, welches den week_counter nutzt
-      if anfang.wday == 2
-        week_counter = week_counter + 1
-      end
-    end
-    # Letztes Datum (Ende) hinzufügen
-    planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-    @dates[planer_date.id] = planer_date
-  end
-
-  # Erstellen eines Array mit Objekten für jeden Tag von Anfang bis Ende und mit den Feiertagen für die betroffenen Jahre
-  def create_date_grid
-    window_anfang = self.anfang - self.parameterset.planparameter.relevant_timeframe_size.days
-    window_ende = self.ende + self.parameterset.planparameter.relevant_timeframe_size.days
-    create_date_grid_react(window_anfang, window_ende)
-  end
-
   def dienstplan_einteilungen()
     log("Loading Einteilungen")
     @einteilungen = hash_by_key(Diensteinteilung.joins(:einteilungsstatus, :mitarbeiter)
       .where("tag >= ? and tag <= ? and (dienstplan_id = ? or counts)", @window_anfang, @window_ende, self[:id])
       .where(:mitarbeiters => { platzhalter: false}))
-  end
-
-  # Order ist für den Dienstplaner relevant
-  # Einteilungen nach update Datum sortieren
-  def load_einteilungen()
-    log("Loading Einteilungen")
-    @einteilungen = {}
-    einteilungen = Diensteinteilung.joins(:einteilungsstatus, :mitarbeiter)
-      .includes(:einteilungsstatus)
-      .where("diensteinteilungs.tag >= ? AND diensteinteilungs.tag <= ?", @window_anfang, @window_ende)
-      .where("(
-          (diensteinteilungs.dienstplan_id = ?
-            AND einteilungsstatuses.vorschlag = TRUE
-            AND ?)
-          OR einteilungsstatuses.counts = TRUE
-        )", self[:id], @vorschlag)
-      .where(:mitarbeiters => { platzhalter: false})
-      .order("diensteinteilungs.tag ASC,
-        diensteinteilungs.po_dienst_id ASC,
-        einteilungsstatuses.public DESC,
-        diensteinteilungs.bereich_id ASC,
-        diensteinteilungs.updated_at ASC")
-
-      einteilungen.find_in_batches do |batch|
-        @einteilungen = hash_by_key(batch, :id, @einteilungen){ |einteilung|
-          compute_einteilung(einteilung)
-        }
-      end
   end
 
   def compute_dates_einteilungen()
@@ -267,7 +192,6 @@ class Dienstplan < ApplicationRecord
       end
     end
   end
-
 
   def compute_wunsch_dienste(wunsch)
     tag = wunsch.date_id
@@ -377,6 +301,16 @@ class Dienstplan < ApplicationRecord
     @zeitraumkategorien = hash_by_key(Zeitraumkategorie.all)
   end
 
+  def load_dienstkategorien(compute = true)
+    @dienstkategorie_dienste = {}
+    log("Loading Dienstkategorien")
+    @dienstkategorien = hash_by_key(Dienstkategorie.includes(:dienstkategoriethemas).all){ |kat|
+      if compute
+        compute_dienstkategorie_dienste(kat)
+      end
+    }
+  end
+
   def compute_dienstkategorie_dienste(kat)
     kat_id = kat.id
     @dienstkategorie_dienste[kat_id] = []
@@ -413,11 +347,6 @@ class Dienstplan < ApplicationRecord
     else
       log("Reloading Bedarf")
     end
-    #load from Database
-    # @bedarfs_eintraege = hash_by_key(self.bedarfs_eintrag){ |be|
-    #   compute_date_dienst_bedarfseintrag(be)
-    # }
-    # @schichten = matrix_by_key(self.schicht, :bedarfs_eintrag_id)
     @bedarfs_eintraege = {}
     @schichten = {}
     self.bedarfs_eintrag.find_in_batches do |batch|
@@ -428,21 +357,6 @@ class Dienstplan < ApplicationRecord
     self.schicht.find_in_batches do |batch|
       @schichten = matrix_by_key(batch, :bedarfs_eintrag_id, false, @schichten)
     end
-  end
-
-  def load_bedarfs_eintraege()
-    shall_compute = !parameterset.planparameter.reuse_bedarf || @recompute || dienstplanbedarf.anfang != @window_anfang || dienstplanbedarf.ende != @window_ende
-    if shall_compute === true
-      load_zeitraumkategorien()
-      compute_tage_schichten()
-      @bedarf = hash_by_key(Dienstbedarf.bedarfe_by_date(@window_anfang))
-      compute_bedarf()
-    else
-      log("Reloading Bedarf")
-    end
-    #load from Database
-    @bedarfs_eintraege = mapmap_by_key(self.bedarfs_eintrag)
-    @schichten = matrix_by_key(self.schicht, :bedarfs_eintrag_id)
   end
 
   def compute_bedarf()
@@ -676,90 +590,6 @@ class Dienstplan < ApplicationRecord
     einteilung
   end
 
-  # Einteilungen aus dem Dienstplan zu gültigen Einteilungen setzen
-  def publish(vorlage, teams, is_dienstplaner = false, is_urlaubsplaner = false, dates = nil)
-    # Vorschläge holen und Einteilungsstatus ändern
-    public_status = Einteilungsstatus.public_status
-    res = {einteilungen: false, info: "Keine Einteilungen vorgenommen!"}
-    # res[:deaktiviert] = true
-    # res[:info] = "Einteilungen werden aktuell nicht in den Mitarbeiter-Kalender geschrieben."
-    # res[:info] << "\nWir entschuldigen uns um die Unannehmlichkeiten und bitten um Geduld, bis das Problem gelöst ist."
-    # res[:info] << "\nBitte informieren Sie die Mitarbeiter, dass sie sich an der PDF orientieren sollen, bis das Problem behoben wurde."
-    # return res
-    if !(is_urlaubsplaner || is_dienstplaner)
-      res[:info] = "Keine Berechtigung für diese Aktion."
-    elsif public_status.nil?
-      res[:info] = "Public Einteilungsstatus nicht gefunden."
-    elsif vorlage.nil?
-      res[:info] = "Vorlage nicht gefunden."
-    else
-      # today = Date.today.at_beginning_of_month
-      plantime = check_anfang_ende()
-      ende = plantime[:ende]
-      anfang = plantime[:anfang]
-      today = anfang
-      funktionen_ids = vorlage.funktionen_ids
-      tage = dates.nil? ? (anfang..ende) : dates
-      # Nicht öffentliche Einteilungen aus dem Dienstplan oder counts im Zeitraum des Dienstplans.
-      # Dienste aus der Vorlage.
-      # Mitarbeiter mit der passenden Funktion und im Vorlage-Team.
-      # Urlaubsplaner -> nur Einteilungen mit frei_eintragbar = true
-      # Dienstplaner -> Dienst dpl_all_teams, alle Mitarbeiter erlaubt
-      # Dienstplaner -> Dienst mit erlaubtem Team, alle Mitarbeiter erlaubt
-      # Dienstplaner -> frei_eintragbar und Mitarbeiter im Team des Planers erlaubt
-      check_team = Dienstplan::CHECK_TEAM_QUERY
-      vorlage_team_id = vorlage.team_id
-      res[:einteilungen] = Diensteinteilung.joins(:po_dienst, :einteilungsstatus, mitarbeiter: [:funktion])
-        .left_outer_joins(mitarbeiter: [einteilung_rotations: [kontingent: [:team]]])
-        .includes(:einteilungsstatus, :mitarbeiter, :po_dienst)
-        .where("diensteinteilungs.tag >= ? AND diensteinteilungs.tag >= ? AND diensteinteilungs.tag <= ?", today, anfang, ende)
-        .where(tag: tage)
-        .where("((diensteinteilungs.dienstplan_id = ? AND einteilungsstatuses.vorschlag = TRUE) OR einteilungsstatuses.counts = TRUE)", self[:id])
-        .where("einteilungsstatuses.public = FALSE")
-        .where(po_dienst_id: vorlage.dienste)
-        .where("mitarbeiters.platzhalter = FALSE AND mitarbeiters.funktion_id IN(?)", funktionen_ids)
-        .where("
-            ? IS TRUE OR #{check_team}
-          ",
-          vorlage_team_id.nil?,
-          vorlage_team_id,
-          vorlage_team_id,
-          vorlage_team_id,
-          anfang, anfang,
-          ende, ende,
-          anfang, ende,
-          vorlage_team_id
-        ).where("
-            (po_diensts.frei_eintragbar IS TRUE AND (? IS TRUE OR #{check_team}))
-            OR (po_diensts.dpl_all_teams IS TRUE OR po_diensts.team_id IN (?))
-          ",
-          is_urlaubsplaner,
-          teams,
-          teams,
-          teams,
-          anfang, anfang,
-          ende, ende,
-          anfang, ende,
-          teams,
-          teams
-        ).order(
-          tag: :asc,
-          po_dienst_id: :asc,
-          bereich_id: :asc,
-          updated_at: :asc
-        )
-
-      if res[:einteilungen].present?
-        res[:einteilungen].update({einteilungsstatus_id: public_status.id})
-        info = res[:einteilungen].map.with_index{ |e, i| "#{i % 5 == 0 ? "\n" : ""}#{e.tag} #{e.mitarbeiter.planname} #{e.po_dienst.planname}"}
-        res[:info] = "Einteilungen (DPL-ID #{self[:id]}):\nAnzahl: #{res[:einteilungen].size}\n#{info.join(", ")}.\n"
-        Dienstplan.broadcast_einteilungen(res[:einteilungen])
-      end
-    end
-    puts "Dienstplan publish Info: #{res[:info]}"
-    res
-  end
-
   def self.add_einteilungen_by_dienstplan_key(einteilungen_hash, einteilung)
     key = einteilung.dienstplan_key
     unless einteilungen_hash.has_key?(key)
@@ -776,69 +606,7 @@ class Dienstplan < ApplicationRecord
     end
   end
 
-  def self.broadcast_einteilungen(einteilungen)
-    unless einteilungen.respond_to?(:each)
-      einteilungen = [einteilungen]
-    end
-    results = {:einteilungen => {}}
-    aw_result = {
-      :einteilungen_aw => [],
-      :mitarbeiter_ids => [],
-      :von => nil,
-      :bis => nil
-    }
-    # Einteilungen mit bereich_id = nil sind für alle Bereiche und werden von jedem Bereich separat geladen
-    einteilungen.each do |e|
-      unless e[:id].nil?
-        unless aw_result[:mitarbeiter_ids].include?(e[:mitarbeiter_id])
-          aw_result[:mitarbeiter_ids] << e[:mitarbeiter_id]
-        end
-        if aw_result[:von].nil? || e[:tag] < aw_result[:von]
-          aw_result[:von] = e[:tag]
-        end
-        if aw_result[:bis].nil? || e[:tag] > aw_result[:bis]
-          aw_result[:bis] = e[:tag]
-        end
-        Dienstplan.add_einteilungen_by_dienstplan_key(results[:einteilungen], e)
-      end
-    end
 
-    ActionCable.server.broadcast(AppChannel::ROOM_NAME, results)
-    if aw_result[:von].present? && aw_result[:bis].present? && aw_result[:mitarbeiter_ids].present?
-      aw_result[:einteilungen_aw] = Diensteinteilung.ohne_bedarf(aw_result[:von], aw_result[:bis], true, true, nil, aw_result[:mitarbeiter_ids])
-      ActionCable.server.broadcast(AppChannel::ROOM_NAME, aw_result)
-    end
-  end
-
-  def self.broadcast_wunsch(wunsch)
-    msg = {
-      wunsch: wunsch.as_json(:methods => [:remove_wunsch]),
-      remove_wunsch: wunsch.remove_wunsch
-    }
-    ActionCable.server.broadcast(AppChannel::ROOM_NAME, msg)
-  end
-
-  def self.broadcast_freigabe(freigabe)
-    unless freigabe.mitarbeiter.platzhalter
-      msg = {
-        freigabe: freigabe,
-        freigabetypen_dienste_ids: freigabe.freigabetyp.dienste_ids
-      }
-      ActionCable.server.broadcast(AppChannel::ROOM_NAME, msg)
-    end
-  end
-
-  def self.broadcast_rotation(rotation)
-    unless rotation.mitarbeiter.platzhalter
-      add = EinteilungRotation.find_by(id: rotation.id)
-      vk_team_overview = {}
-      if rotation.von.present? && rotation.bis.present?
-        vk_team_overview = Mitarbeiter.get_vk_team_overview(rotation.von.to_s, rotation.bis.to_s)
-      end
-      msg = {rotation: rotation, addRotation: !!add, vk_team_overview: vk_team_overview}
-      ActionCable.server.broadcast(AppChannel::ROOM_NAME, msg)
-    end
-  end
 
   def self.load_einteilungen_by_einteilung(einteilung)
     Diensteinteilung.joins(:einteilungsstatus, :mitarbeiter)
@@ -977,436 +745,4 @@ class Dienstplan < ApplicationRecord
       ActionCable.server.broadcast(AppChannel::ROOM_NAME, msg)
     end
 end
-;
-**/
-
-function getDataByHash(data: any, key = 'id') {
-  return data.reduce((hash: any, value: any) => {
-    hash[value[key]] = value;
-    return hash;
-  }, {});
-}
-
-function check_anfang_ende(dienstplan: any) {
-  let anfang = dienstplan.anfang;
-  let ende = dienstplan.ende;
-  const startOfNextMonth = new Date(
-    anfang.getFullYear(),
-    anfang.getMonth() + 1,
-    1
-  );
-  if (anfang.getDate() !== 1) {
-    anfang = startOfNextMonth;
-  }
-  ende = new Date(
-    startOfNextMonth.getFullYear(),
-    startOfNextMonth.getMonth(),
-    -1
-  );
-  return { anfang, ende };
-}
-
-function get_dpl_anfang_ende(dienstplan: any) {
-  const { anfang, ende } = check_anfang_ende(dienstplan);
-  const relevant_timeframe_size =
-    dienstplan?.parametersets?.planparameters?.[0]?.relevant_timeframe_size;
-  const anfang_frame = subDays(anfang, relevant_timeframe_size);
-  const ende_frame = addDays(ende, relevant_timeframe_size);
-  return {
-    anfang,
-    ende,
-    anfang_frame,
-    ende_frame,
-  };
-}
-
-async function getZeitraumkategorien(anfang: Date, ende: Date) {
-  const zeitraumkategorien = await prismaDb.zeitraumkategories.findMany({
-    where: {
-      AND: [
-        {
-          OR: [{ anfang: null }, { anfang: { gte: anfang } }],
-        },
-        {
-          OR: [{ ende: null }, { ende: { lt: ende } }],
-        },
-      ],
-    },
-    orderBy: {
-      prio: 'desc',
-    },
-  });
-
-  return zeitraumkategorien;
-}
-
-async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
-  // const dates = {};
-  // const week_counter = 0;
-  const zeitraumkategorie = await getZeitraumkategorien(anfang_dpl, ende_dpl);
-  console.log({ zeitraumkategorie });
-
-  // date_grid für jeden Tag mit einem Date-Objekt füllen, bis das Ende erreicht ist
-  // @window_anfang = anfang_dpl
-  // @window_ende = ende_dpl
-  // anfang = @window_anfang
-  // zeitraumkategorien = Zeitraumkategorie.load_zeitraumkategorien_in(anfang_dpl, ende_dpl)
-  // until anfang == @window_ende do
-  //   planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-  //   @dates[planer_date.id] = planer_date
-  //   anfang = anfang + 1.days
-  //   # week_counter:
-  //   # Wochenden gelten von Fr. Abend, bis Mo. Morgen
-  //   # -> Fr. - Mo. zählen zu einem Wochenende, welches den week_counter nutzt
-  //   if anfang.wday == 2
-  //     week_counter = week_counter + 1
-  //   end
-  // end
-  // # Letztes Datum (Ende) hinzufügen
-  // planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-  // @dates[planer_date.id] = planer_date
-}
-
-async function getEinteilungen(
-  id: number,
-  windowAnfang: Date,
-  windowEnde: Date
-) {
-  const einteilungen = await prismaDb.diensteinteilungs.findMany({
-    where: {
-      tag: {
-        gte: windowAnfang,
-        lte: windowEnde,
-      },
-      OR: [
-        {
-          dienstplan_id: id,
-          einteilungsstatuses: {
-            vorschlag: true,
-          },
-        },
-        {
-          einteilungsstatuses: {
-            counts: true,
-          },
-        },
-      ],
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    orderBy: [
-      { tag: 'asc' },
-      { po_dienst_id: 'asc' },
-      { einteilungsstatuses: { public: 'desc' } },
-      { bereich_id: 'asc' },
-      { updated_at: 'asc' },
-    ],
-  });
-  return getDataByHash(einteilungen);
-}
-
-async function getPoDienste(compute = true) {
-  const dienste = await prismaDb.po_diensts.findMany({
-    // include: {
-    //   dienstratings: true,
-    //   dienstbedarves: true,
-    // },
-  });
-
-  return getDataByHash(dienste);
-
-  // def load_dienste(compute = true)
-  //   log("Loading Dienste")
-  //   @dienst_mitarbeiter = {}
-  //   @dienst_bedarf = {}
-  //   @dienst_bedarfeintrag = {}
-  //   @dienste = hash_by_key(PoDienst.includes(:dienstratings, :dienstbedarves).all
-  //     .order(:order)) { |dienst|
-  //     id = dienst.id
-  //     @dienst_mitarbeiter[id] = {}
-  //     @dienst_bedarf[id] = []
-  //     @dienst_bedarfeintrag[id] = {}
-  //   }
-  //
-  //   if compute
-  //     compute_dienste()
-  //   end
-  // end
-}
-
-async function getMitarbeiters(compute = true, as_ids = false) {
-  const mitarbeiter = as_ids
-    ? await prismaDb.mitarbeiters.findMany({
-        where: {
-          platzhalter: false,
-        },
-        select: {
-          id: true,
-        },
-        orderBy: {
-          planname: 'asc',
-        },
-      })
-    : await prismaDb.mitarbeiters.findMany({
-        where: {
-          platzhalter: false,
-        },
-        include: {
-          account_infos: true,
-          dienstratings: true,
-          // qualifizierte_freigaben: true,
-          // vertrags_phases: true,
-          vertrags: true,
-        },
-        orderBy: {
-          planname: 'asc',
-        },
-      });
-  return getDataByHash(mitarbeiter);
-}
-
-async function getDienstkategories(compute = true) {
-  const dienstkategories = await prismaDb.dienstkategories.findMany({
-    include: {
-      dienstkategoriethemas: true,
-    },
-  });
-  return getDataByHash(dienstkategories);
-
-  // def load_dienstkategorien(compute = true)
-  //   @dienstkategorie_dienste = {}
-  //   log("Loading Dienstkategorien")
-  //   @dienstkategorien = hash_by_key(Dienstkategorie.includes(:dienstkategoriethemas).all){ |kat|
-  //     if compute
-  //       compute_dienstkategorie_dienste(kat)
-  //     end
-  //   }
-  // end
-}
-
-async function getKontingente(compute = true) {
-  const kontingente = await prismaDb.kontingents.findMany({
-    include: {
-      kontingent_po_diensts: true,
-    },
-  });
-  return getDataByHash(kontingente);
-  // def load_kontingente(compute = true)
-  //   log("Loading Kontingente")
-  //   @kontingent_dienste = {}
-  //   @kontingente = hash_by_key(Kontingent.includes(:kontingent_po_dienst).all){ |kon|
-  //     if compute
-  //       compute_kontingent_dienste(kon)
-  //     end
-  //   }
-  // end
-}
-
-async function getWuensche(windowAnfang: Date, windowEnde: Date) {
-  const wuensche = await prismaDb.dienstwunsches.findMany({
-    where: {
-      tag: {
-        gte: windowAnfang,
-        lte: windowEnde,
-      },
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    include: {
-      mitarbeiters: true,
-    },
-    orderBy: {
-      dienstkategorie_id: 'asc',
-    },
-  });
-
-  return getDataByHash(wuensche);
-
-  // def load_wuensche()
-  //   log("Loading Wünsche")
-  //   @wuensche = hash_by_key(Dienstwunsch.joins(:mitarbeiter)
-  //     .where("tag >= ? and tag <= ?", @window_anfang, @window_ende)
-  //     .where(:mitarbeiters => { platzhalter: false })
-  //     .order(:dienstkategorie_id)){ |wunsch|
-  //       compute_wunsch_dienste(wunsch)
-  //     }
-  // end
-}
-
-async function getRotationen(compute = true, anfang: Date, ende: Date) {
-  const rotationen = await prismaDb.einteilung_rotations.findMany({
-    where: {
-      OR: [
-        {
-          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }],
-        },
-        {
-          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }],
-        },
-        {
-          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }],
-        },
-      ],
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    include: {
-      kontingents: {
-        include: {
-          teams: true,
-        },
-      },
-      mitarbeiters: {
-        include: {
-          vertrags: {
-            include: {
-              vertragsgruppes: true,
-              vertrags_phases: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  return getDataByHash(rotationen);
-
-  // def load_rotationen(compute = true)
-  //   log("Loading Rotationen")
-  //   # Anfang oder Ende ist zwischen von und bis oder anfang ist kleiner und ende ist größer
-  //   @rotationen = hash_by_key(
-  //     EinteilungRotation.rotationen_in(@window_anfang, @window_ende)
-  //     .order(:mitarbeiter_id)){ |rot|
-  //       if compute
-  //         compute_rotations_dienste(rot)
-  //       end
-  //     }
-  // end
-}
-
-async function getBedarfe(dienstplanbedarf_id: number) {
-  const bedarfs_eintraege = await prismaDb.bedarfs_eintrags.findMany({
-    where: {
-      dienstplanbedarf_id,
-    },
-  });
-  return getDataByHash(bedarfs_eintraege);
-
-  // def load_bedarf()
-  //   @bedarf = hash_by_key(Dienstbedarf.bedarfe_by_date(@window_anfang))
-  //   shall_compute = !parameterset.planparameter.reuse_bedarf || @recompute  || dienstplanbedarf.anfang != @window_anfang || dienstplanbedarf.ende != @window_ende || self.bedarfs_eintrag.count == 0
-  //   # Irgendwie geht er in compute_bedarf, obwohl shall_compute false ist, deshalb das === true
-  //   if shall_compute === true
-  //     load_zeitraumkategorien()
-  //     compute_tage_schichten()
-  //     compute_bedarf()
-  //   else
-  //     log("Reloading Bedarf")
-  //   end
-  //   #load from Database
-  //   # @bedarfs_eintraege = hash_by_key(self.bedarfs_eintrag){ |be|
-  //   #   compute_date_dienst_bedarfseintrag(be)
-  //   # }
-  //   # @schichten = matrix_by_key(self.schicht, :bedarfs_eintrag_id)
-  //   @bedarfs_eintraege = {}
-  //   @schichten = {}
-  //   self.bedarfs_eintrag.find_in_batches do |batch|
-  //     @bedarfs_eintraege = hash_by_key(batch, :id, @bedarfs_eintraege){ |be|
-  //       compute_date_dienst_bedarfseintrag(be)
-  //     }
-  //   end
-  //   self.schicht.find_in_batches do |batch|
-  //     @schichten = matrix_by_key(batch, :bedarfs_eintrag_id, false, @schichten)
-  //   end
-  // end
-}
-
-async function getSchichten(dienstplanbedarf_id: number) {
-  const schichten = await prismaDb.schichts.findMany({
-    where: {
-      bedarfs_eintrags: { dienstplanbedarf_id },
-    },
-  });
-  return schichten.reduce((hash: any, value) => {
-    const key = String(value?.bedarfs_eintrag_id) || 0;
-    hash[key] = hash[key] || [];
-    hash[key].push(value);
-    return hash;
-  }, {});
-}
-
-async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
-  const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
-  const dienste = await getPoDienste();
-  const mitarbeiter = await getMitarbeiters(true, true);
-  const dienstkategorien = await getDienstkategories();
-  const kontingente = await getKontingente();
-  const wuensche = await getWuensche(anfangFrame, endeFrame);
-  const rotationen = await getRotationen(true, anfangFrame, endeFrame);
-  const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
-  const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
-
-  // createDateGridReact(anfang_dpl, ende_dpl);
-  return {
-    einteilungen,
-    dienste,
-    mitarbeiter,
-    dienstkategorien,
-    kontingente,
-    wuensche,
-    rotationen,
-    bedarfs_eintraege,
-    schichten,
-  };
-}
-
-export async function getMonatsplanung(dpl_id: number) {
-  const db = prismaHains();
-  prismaDb = db;
-
-  const dienstplan = await prismaDb.dienstplans.findFirst({
-    where: {
-      id: 64,
-    },
-    include: {
-      parametersets: {
-        include: {
-          planparameters: true,
-        },
-      },
-    },
-  });
-
-  const { anfang, ende, anfang_frame, ende_frame } =
-    get_dpl_anfang_ende(dienstplan);
-  const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
-
-  const sum = Object.values(data).reduce(
-    (sum, obj) => sum + Object.values(obj).length,
-    0
-  );
-  console.log(
-    Object.entries(data).map(
-      ([key, value]) => `${key}: ${Object.values(value).length}`
-    )
-  );
-  console.log('sum', sum);
-
-  const apiData = await getAllApiData();
-  console.log(
-    Object.entries(apiData).map(
-      ([key, value]) => `${key}: ${Object.values(value).length}`
-    )
-  );
-
-  return {
-    dienstplan,
-    anfang,
-    ende,
-    ...data,
-    apiData,
-  };
-}
+`;
