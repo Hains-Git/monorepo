@@ -6,6 +6,7 @@ import {
   getWeek,
   getYear,
   isTuesday,
+  parseISO,
   setISODay,
   setISOWeek,
   startOfYear,
@@ -15,6 +16,7 @@ import { getAllApiData } from './apidata';
 import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
+import { async } from 'rxjs';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
@@ -139,26 +141,7 @@ async function getPoDienste(compute = true) {
     //   dienstbedarves: true,
     // },
   });
-
   return getDataByHash(dienste);
-
-  // def load_dienste(compute = true)
-  //   log("Loading Dienste")
-  //   @dienst_mitarbeiter = {}
-  //   @dienst_bedarf = {}
-  //   @dienst_bedarfeintrag = {}
-  //   @dienste = hash_by_key(PoDienst.includes(:dienstratings, :dienstbedarves).all
-  //     .order(:order)) { |dienst|
-  //     id = dienst.id
-  //     @dienst_mitarbeiter[id] = {}
-  //     @dienst_bedarf[id] = []
-  //     @dienst_bedarfeintrag[id] = {}
-  //   }
-  //
-  //   if compute
-  //     compute_dienste()
-  //   end
-  // end
 }
 
 async function getMitarbeiters(compute = true, as_ids = false) {
@@ -189,7 +172,9 @@ async function getMitarbeiters(compute = true, as_ids = false) {
           planname: 'asc',
         },
       });
-  return getDataByHash(mitarbeiter);
+  return as_ids
+    ? mitarbeiter.map((item) => item.id)
+    : getDataByHash(mitarbeiter);
 }
 
 async function getDienstkategories(compute = true) {
@@ -437,7 +422,7 @@ async function getDienstbedarfEintrag(dienste: any, bedarfsEintraegeHash: any) {
   return dienstBedarfEintrag;
 }
 
-async function getKalenderWochen(date: Date) {
+async function getKalenderWoche(date: Date) {
   const kalenderwoche = await prismaDb.kalenderwoches.findFirst({
     where: {
       AND: [{ montag: { lte: date } }, { sonntag: { gte: date } }],
@@ -470,13 +455,201 @@ async function getKalenderWochen(date: Date) {
 
 async function getWochenbilanzen(dienstplan: any) {
   let { anfang: bilanzDate } = check_anfang_ende(dienstplan);
+  const kws: { [key: string]: any } = {};
+  const wochenbilanzen: { [key: string]: any } = {};
+  const mitarbeiterIds = await getMitarbeiters(false, true);
+
   for (let i = 0; i < 5; i++) {
     bilanzDate = subDays(bilanzDate, 7);
-    const kw = await getKalenderWochen(bilanzDate);
+    const kw = await getKalenderWoche(bilanzDate);
+    const wochenbilanzenMitarbeiters = await prismaDb.wochenbilanzs.findMany({
+      where: {
+        kalenderwoche_id: kw.id,
+        mitarbeiter_id: {
+          in: mitarbeiterIds,
+        },
+      },
+    });
+
+    if (kw) {
+      kws[kw.kw] = kw;
+      wochenbilanzen[kw.kw] = getDataByHash(
+        wochenbilanzenMitarbeiters,
+        'mitarbeiter_id'
+      );
+    }
   }
+
+  return { kws, wochenbilanzen };
+}
+
+function getRotationenIdsInRangeDate(
+  dateStr: string,
+  data: any,
+  kontingente: any
+) {
+  const date = new Date(dateStr);
+  return data.reduce((dateHash: any, rotation: any) => {
+    const vonDate = rotation.von;
+    const bisDate = rotation.bis;
+    const mitarbeiter_id = rotation.mitarbeiter_id;
+
+    if (date >= vonDate && date <= bisDate) {
+      if (!dateHash[dateStr]) {
+        dateHash[dateStr] = {
+          by_dienst: {},
+          by_mitarbeiter: {},
+          ids: [],
+        };
+      }
+      dateHash[dateStr].ids.push(rotation.id);
+      if (!dateHash[dateStr].by_mitarbeiter[mitarbeiter_id]) {
+        dateHash[dateStr].by_mitarbeiter[mitarbeiter_id] = [];
+      }
+      dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
+      // TODO: get kontingent, po_dienst_id, = compute_rotations_dienste
+
+      // if (!dateHash[dateStr].by_dienst[po_dienst_id]) {
+      //   dateHash[dateStr].by_dienst[po_dienst_id] = [];
+      // }
+      // dateHash[dateStr].by_dienst[po_dienst_id].push(rotation.id);
+    }
+    return dateHash;
+  }, {});
+}
+
+function getRotationenByDienstByMitarbeiter(dateStr: string, data: any) {
+  const date = new Date(dateStr);
+  return data.reduce((dateHash: any, rotation: any) => {
+    const vonDate = rotation.von;
+    const bisDate = rotation.bis;
+    const po_dienst_id = rotation.po_dienst_id;
+    const mitarbeiter_id = rotation.mitarbeiter_id;
+
+    if (date >= vonDate && date <= bisDate) {
+      if (!dateHash[dateStr]) {
+        dateHash[dateStr] = {
+          by_dienst: {},
+          by_mitarbeiter: {},
+          ids: [],
+        };
+      }
+      if (!dateHash[dateStr].by_dienst[po_dienst_id]) {
+        dateHash[dateStr].by_dienst[po_dienst_id] = [];
+      }
+      if (!dateHash[dateStr].by_dienst[mitarbeiter_id]) {
+        dateHash[dateStr].by_dienst[mitarbeiter_id] = [];
+      }
+      console.log(dateHash);
+      // dateHash[dateStr].by_dienst[po_dienst_id].push(rotation.id);
+      // dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
+      // dateHash[dateStr].ids.push(rotation.id);
+    }
+    return dateHash;
+  }, {});
+}
+
+function createDateIdMap(data: any[], keys: string[]) {
+  return data.reduce((map: { [key: string]: any }, value: any) => {
+    const dateFormatted = format(value.tag, 'yyyy-MM-dd');
+    if (!map[dateFormatted]) {
+      map[dateFormatted] = {};
+    }
+    keys.forEach((key: string) => {
+      if (!map[dateFormatted][key]) {
+        map[dateFormatted][key] = [];
+      }
+      map[dateFormatted][key].push(value[key]);
+    });
+    return map;
+  }, {});
+}
+
+function computeEinteilung(einteilungen: any, dates: any) {
+  einteilungen.forEach((einteilung: any) => {
+    let bereichId = 0;
+    const bedarfEintragId = 0;
+    const dateId = format(einteilung.tag, 'yyyy-MM-dd');
+    if (einteilung.bereich_id) {
+      bereichId = einteilung.bereich_id;
+    }
+    const planerDate = dates[dateId];
+    const po_dienst_id = einteilung.po_dienst_id;
+
+    if (planerDate) {
+      if (!planerDate.by_dienst[po_dienst_id]) {
+        planerDate.by_dienst[po_dienst_id] = {
+          bereiche_ids: {},
+          einteilung_ids: {},
+          rotation_ids: [],
+          wunsch_ids: [],
+          id: po_dienst_id,
+        };
+      }
+      if (!planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId]) {
+        planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId] = {
+          id: bereichId,
+          bedarfeintrag_id: bedarfEintragId,
+          einteilungen: [],
+        };
+        planerDate.by_dienst[po_dienst_id].bereiche_ids[
+          bereichId
+        ].einteilungen.push(einteilung.id);
+      }
+    }
+  });
+}
+
+async function computeDates(props: any) {
+  const {
+    dates,
+    bedarfs_eintraege,
+    einteilungen,
+    rotationen,
+    wuensche,
+    dienste,
+    kontingente,
+  } = props;
+
+  const bedarfsEintraegeMap = createDateIdMap(
+    Object.values(bedarfs_eintraege),
+    ['id', 'dienstbedarf_id']
+  );
+  const einteilungenMap = createDateIdMap(Object.values(einteilungen), ['id']);
+  const wuenscheMap = createDateIdMap(Object.values(wuensche), ['id']);
+  const rotationenArr = Object.values(rotationen);
+  const diensteArr = Object.values(dienste);
+
+  Object.keys(dates).forEach((dateStr) => {
+    dates[dateStr].bedarfseintraege = bedarfsEintraegeMap[dateStr].id || [];
+    dates[dateStr].bedarf = bedarfsEintraegeMap[dateStr].dienstbedarf_id || [];
+    dates[dateStr].einteilungen = einteilungenMap[dateStr].id || [];
+    dates[dateStr].wuensche = wuenscheMap[dateStr].id || [];
+    const rotationenHash = getRotationenIdsInRangeDate(
+      dateStr,
+      rotationenArr,
+      kontingente
+    );
+    console.log(rotationenHash);
+    // dates[dateStr].rotationen = rotationenHash?.[dateStr].ids || [];
+
+    diensteArr.forEach((dienst: any) => {
+      dates[dateStr].by_dienst[dienst.id] = {
+        bedarf_id: 0,
+        bereiche_ids: {},
+        einteilung_ids: {},
+        id: dienst.id,
+        rotation_ids: [],
+        wunsch_ids: [],
+      };
+    });
+  });
+
+  computeEinteilung(Object.values(einteilungen), dates);
 }
 
 async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
+  const dates = await createDateGridReact(anfangFrame, endeFrame);
   const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
   const dienste = await getPoDienste();
   const mitarbeiter = await getMitarbeiters(true, true);
@@ -487,12 +660,24 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
   const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
   const bedarf = await getDienstbedarfe(anfangFrame);
-  const dates = await createDateGridReact(anfangFrame, endeFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(
     dienste,
     bedarfs_eintraege
   );
-  const wochenbilanzen_kws = await getWochenbilanzen(dienstplan);
+  const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
+  console.time('computeDates');
+  const computedDates = await computeDates({
+    dates,
+    bedarfs_eintraege,
+    einteilungen,
+    dienste,
+    mitarbeiter,
+    rotationen,
+    wuensche,
+    bedarf,
+    kontingente,
+  });
+  console.timeEnd('computeDates');
 
   console.log(anfangFrame, endeFrame);
 
@@ -509,6 +694,8 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     bedarf,
     dates,
     dienst_bedarfeintrag,
+    kws,
+    wochenbilanzen,
   };
 }
 
