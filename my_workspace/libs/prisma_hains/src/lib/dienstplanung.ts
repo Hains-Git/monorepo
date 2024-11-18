@@ -6,7 +6,6 @@ import {
   getWeek,
   getYear,
   isTuesday,
-  parseISO,
   setISODay,
   setISOWeek,
   startOfYear,
@@ -16,7 +15,6 @@ import { getAllApiData } from './apidata';
 import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
-import { async } from 'rxjs';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
@@ -25,6 +23,10 @@ function getDataByHash(data: any, key = 'id') {
     hash[value[key]] = value;
     return hash;
   }, {});
+}
+
+function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
+  return firstArr.filter((id: any) => secondArr.includes(id));
 }
 
 function check_anfang_ende(dienstplan: any) {
@@ -193,15 +195,6 @@ async function getKontingente(compute = true) {
     },
   });
   return getDataByHash(kontingente);
-  // def load_kontingente(compute = true)
-  //   log("Loading Kontingente")
-  //   @kontingent_dienste = {}
-  //   @kontingente = hash_by_key(Kontingent.includes(:kontingent_po_dienst).all){ |kon|
-  //     if compute
-  //       compute_kontingent_dienste(kon)
-  //     end
-  //   }
-  // end
 }
 
 async function getWuensche(windowAnfang: Date, windowEnde: Date) {
@@ -224,16 +217,6 @@ async function getWuensche(windowAnfang: Date, windowEnde: Date) {
   });
 
   return getDataByHash(wuensche);
-
-  // def load_wuensche()
-  //   log("Loading Wünsche")
-  //   @wuensche = hash_by_key(Dienstwunsch.joins(:mitarbeiter)
-  //     .where("tag >= ? and tag <= ?", @window_anfang, @window_ende)
-  //     .where(:mitarbeiters => { platzhalter: false })
-  //     .order(:dienstkategorie_id)){ |wunsch|
-  //       compute_wunsch_dienste(wunsch)
-  //     }
-  // end
 }
 
 async function getRotationen(compute = true, anfang: Date, ende: Date) {
@@ -274,18 +257,6 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
   });
 
   return getDataByHash(rotationen);
-
-  // def load_rotationen(compute = true)
-  //   log("Loading Rotationen")
-  //   # Anfang oder Ende ist zwischen von und bis oder anfang ist kleiner und ende ist größer
-  //   @rotationen = hash_by_key(
-  //     EinteilungRotation.rotationen_in(@window_anfang, @window_ende)
-  //     .order(:mitarbeiter_id)){ |rot|
-  //       if compute
-  //         compute_rotations_dienste(rot)
-  //       end
-  //     }
-  // end
 }
 
 async function getBedarfe(dienstplanbedarf_id: number) {
@@ -295,34 +266,6 @@ async function getBedarfe(dienstplanbedarf_id: number) {
     },
   });
   return getDataByHash(bedarfs_eintraege);
-
-  // def load_bedarf()
-  //   @bedarf = hash_by_key(Dienstbedarf.bedarfe_by_date(@window_anfang))
-  //   shall_compute = !parameterset.planparameter.reuse_bedarf || @recompute  || dienstplanbedarf.anfang != @window_anfang || dienstplanbedarf.ende != @window_ende || self.bedarfs_eintrag.count == 0
-  //   # Irgendwie geht er in compute_bedarf, obwohl shall_compute false ist, deshalb das === true
-  //   if shall_compute === true
-  //     load_zeitraumkategorien()
-  //     compute_tage_schichten()
-  //     compute_bedarf()
-  //   else
-  //     log("Reloading Bedarf")
-  //   end
-  //   #load from Database
-  //   # @bedarfs_eintraege = hash_by_key(self.bedarfs_eintrag){ |be|
-  //   #   compute_date_dienst_bedarfseintrag(be)
-  //   # }
-  //   # @schichten = matrix_by_key(self.schicht, :bedarfs_eintrag_id)
-  //   @bedarfs_eintraege = {}
-  //   @schichten = {}
-  //   self.bedarfs_eintrag.find_in_batches do |batch|
-  //     @bedarfs_eintraege = hash_by_key(batch, :id, @bedarfs_eintraege){ |be|
-  //       compute_date_dienst_bedarfseintrag(be)
-  //     }
-  //   end
-  //   self.schicht.find_in_batches do |batch|
-  //     @schichten = matrix_by_key(batch, :bedarfs_eintrag_id, false, @schichten)
-  //   end
-  // end
 }
 
 async function getSchichten(dienstplanbedarf_id: number) {
@@ -571,10 +514,6 @@ function computeEinteilung(einteilungen: any, dates: any) {
       }
     }
   });
-}
-
-function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
-  return firstArr.filter((id: any) => secondArr.includes(id));
 }
 
 async function getKontingenteDienste(diensteArr: any) {
