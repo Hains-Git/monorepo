@@ -184,16 +184,6 @@ async function getDienstkategories(compute = true) {
     },
   });
   return getDataByHash(dienstkategories);
-
-  // def load_dienstkategorien(compute = true)
-  //   @dienstkategorie_dienste = {}
-  //   log("Loading Dienstkategorien")
-  //   @dienstkategorien = hash_by_key(Dienstkategorie.includes(:dienstkategoriethemas).all){ |kat|
-  //     if compute
-  //       compute_dienstkategorie_dienste(kat)
-  //     end
-  //   }
-  // end
 }
 
 async function getKontingente(compute = true) {
@@ -486,9 +476,10 @@ async function getWochenbilanzen(dienstplan: any) {
 function getRotationenIdsInRangeDate(
   dateStr: string,
   data: any,
-  kontingente: any
+  kontingenteDienste: any
 ) {
   const date = new Date(dateStr);
+
   return data.reduce((dateHash: any, rotation: any) => {
     const vonDate = rotation.von;
     const bisDate = rotation.bis;
@@ -503,47 +494,20 @@ function getRotationenIdsInRangeDate(
         };
       }
       dateHash[dateStr].ids.push(rotation.id);
+
       if (!dateHash[dateStr].by_mitarbeiter[mitarbeiter_id]) {
         dateHash[dateStr].by_mitarbeiter[mitarbeiter_id] = [];
       }
       dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
-      // TODO: get kontingent, po_dienst_id, = compute_rotations_dienste
 
-      // if (!dateHash[dateStr].by_dienst[po_dienst_id]) {
-      //   dateHash[dateStr].by_dienst[po_dienst_id] = [];
-      // }
-      // dateHash[dateStr].by_dienst[po_dienst_id].push(rotation.id);
-    }
-    return dateHash;
-  }, {});
-}
-
-function getRotationenByDienstByMitarbeiter(dateStr: string, data: any) {
-  const date = new Date(dateStr);
-  return data.reduce((dateHash: any, rotation: any) => {
-    const vonDate = rotation.von;
-    const bisDate = rotation.bis;
-    const po_dienst_id = rotation.po_dienst_id;
-    const mitarbeiter_id = rotation.mitarbeiter_id;
-
-    if (date >= vonDate && date <= bisDate) {
-      if (!dateHash[dateStr]) {
-        dateHash[dateStr] = {
-          by_dienst: {},
-          by_mitarbeiter: {},
-          ids: [],
-        };
-      }
-      if (!dateHash[dateStr].by_dienst[po_dienst_id]) {
-        dateHash[dateStr].by_dienst[po_dienst_id] = [];
-      }
-      if (!dateHash[dateStr].by_dienst[mitarbeiter_id]) {
-        dateHash[dateStr].by_dienst[mitarbeiter_id] = [];
-      }
-      console.log(dateHash);
-      // dateHash[dateStr].by_dienst[po_dienst_id].push(rotation.id);
-      // dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
-      // dateHash[dateStr].ids.push(rotation.id);
+      kontingenteDienste?.[rotation.kontingent_id]?.forEach?.(
+        (dienstId: number) => {
+          if (!dateHash[dateStr].by_dienst[dienstId]) {
+            dateHash[dateStr].by_dienst[dienstId] = [];
+          }
+          dateHash[dateStr].by_dienst[dienstId].push(rotation.id);
+        }
+      );
     }
     return dateHash;
   }, {});
@@ -575,6 +539,7 @@ function computeEinteilung(einteilungen: any, dates: any) {
     }
     const planerDate = dates[dateId];
     const po_dienst_id = einteilung.po_dienst_id;
+    const mitarbeiter_id = einteilung.mitarbeiter_id;
 
     if (planerDate) {
       if (!planerDate.by_dienst[po_dienst_id]) {
@@ -584,6 +549,14 @@ function computeEinteilung(einteilungen: any, dates: any) {
           rotation_ids: [],
           wunsch_ids: [],
           id: po_dienst_id,
+        };
+      }
+      if (!planerDate.by_mitarbeiter[mitarbeiter_id]) {
+        console.log(mitarbeiter_id);
+        planerDate.by_mitarbeiter[mitarbeiter_id] = {
+          einteilung_ids: {},
+          rotation_ids: [],
+          wunsch_id: 0,
         };
       }
       if (!planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId]) {
@@ -600,6 +573,79 @@ function computeEinteilung(einteilungen: any, dates: any) {
   });
 }
 
+function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
+  return firstArr.filter((id: any) => secondArr.includes(id));
+}
+
+async function getKontingenteDienste(diensteArr: any) {
+  const kontingenteWithPoDienst = await prismaDb.kontingents.findMany({
+    include: { kontingent_po_diensts: true },
+  });
+
+  const kontingentDienste = kontingenteWithPoDienst.reduce(
+    (hashObj: any, value: any) => {
+      const kontingentId = value.id;
+      hashObj[kontingentId] = [];
+      diensteArr.forEach((dienst: any) => {
+        const dienstId = dienst.id;
+        if (dienst.thema_ids && value.thema_ids) {
+          const intersectionIds =
+            getInterSectionArrays(dienst.thema_ids, value.thema_ids) || [];
+
+          if (intersectionIds.length > 0) {
+            hashObj[kontingentId].push(dienstId);
+          }
+        }
+      });
+      return hashObj;
+    },
+    {}
+  );
+  return kontingentDienste;
+}
+
+function getDienstkategorieDienste(dienstkategorien: any, dienste: any) {
+  const diensteArr = Object.values(dienste);
+
+  const dienstkategoreieDienste = Object.values(dienstkategorien).reduce(
+    (hashObj: any, dk: any) => {
+      const katId = dk.id;
+      hashObj[katId] = [];
+      const themaIds = dk.dienstkategoriethemas.map((dkt: any) => dkt.thema_id);
+      diensteArr.forEach((dienst: any) => {
+        const dienstId = dienst.id;
+        if (dienst?.thema_ids && themaIds?.length) {
+          const intersectionIds = getInterSectionArrays(
+            dienst.thema_ids,
+            themaIds
+          );
+          if (intersectionIds.length > 0) {
+            hashObj[katId].push(dienstId);
+          }
+        }
+      });
+      return hashObj;
+    },
+    {}
+  );
+  return dienstkategoreieDienste;
+}
+
+function computeWuensche(
+  wuensche: any[],
+  dates: any,
+  dienstkategoreieDienste: any
+) {
+  wuensche.forEach((wunsch: any) => {
+    const dateStr = format(wunsch.tag, 'yyyy-MM-dd');
+    dates[dateStr].by_mitarbeiter[wunsch.mitarbeiter_id].wunsch_id = wunsch.id;
+    const dienstKategorieId = wunsch.dienstkategorie_id;
+    dienstkategoreieDienste[dienstKategorieId].forEach((id: number) => {
+      dates[dateStr].by_dienst[id].wunsch_ids.push(wunsch.id);
+    });
+  });
+}
+
 async function computeDates(props: any) {
   const {
     dates,
@@ -608,17 +654,21 @@ async function computeDates(props: any) {
     rotationen,
     wuensche,
     dienste,
-    kontingente,
+    mitarbeiter,
+    dienstkategoreieDienste,
   } = props;
 
   const bedarfsEintraegeMap = createDateIdMap(
     Object.values(bedarfs_eintraege),
     ['id', 'dienstbedarf_id']
   );
+  const wuenschArr = Object.values(wuensche);
   const einteilungenMap = createDateIdMap(Object.values(einteilungen), ['id']);
-  const wuenscheMap = createDateIdMap(Object.values(wuensche), ['id']);
+  const wuenscheMap = createDateIdMap(wuenschArr, ['id']);
   const rotationenArr = Object.values(rotationen);
   const diensteArr = Object.values(dienste);
+  const mitarbeiterArr = Object.values(mitarbeiter);
+  const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
     dates[dateStr].bedarfseintraege = bedarfsEintraegeMap[dateStr].id || [];
@@ -628,10 +678,9 @@ async function computeDates(props: any) {
     const rotationenHash = getRotationenIdsInRangeDate(
       dateStr,
       rotationenArr,
-      kontingente
+      kontigentDienste
     );
-    console.log(rotationenHash);
-    // dates[dateStr].rotationen = rotationenHash?.[dateStr].ids || [];
+    dates[dateStr].rotationen = rotationenHash?.[dateStr].ids || [];
 
     diensteArr.forEach((dienst: any) => {
       dates[dateStr].by_dienst[dienst.id] = {
@@ -642,10 +691,23 @@ async function computeDates(props: any) {
         rotation_ids: [],
         wunsch_ids: [],
       };
+      dates[dateStr].by_dienst[dienst.id].rotation_ids =
+        rotationenHash?.[dateStr].by_dienst[dienst.id] || [];
+    });
+
+    mitarbeiterArr.forEach((mId: any) => {
+      dates[dateStr].by_mitarbeiter[mId] = {
+        einteilung_ids: {},
+        id: mId,
+        rotation_ids: [],
+        wunsch_id: 0,
+      };
+      dates[dateStr].by_mitarbeiter[mId].rotation_ids =
+        rotationenHash?.[dateStr].by_mitarbeiter[mId] || [];
     });
   });
-
   computeEinteilung(Object.values(einteilungen), dates);
+  computeWuensche(wuenschArr, dates, dienstkategoreieDienste);
 }
 
 async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
@@ -665,8 +727,14 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     bedarfs_eintraege
   );
   const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
+
+  const dienstkategoreieDienste = getDienstkategorieDienste(
+    dienstkategorien,
+    dienste
+  );
+
   console.time('computeDates');
-  const computedDates = await computeDates({
+  await computeDates({
     dates,
     bedarfs_eintraege,
     einteilungen,
@@ -675,7 +743,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     rotationen,
     wuensche,
     bedarf,
-    kontingente,
+    dienstkategoreieDienste,
   });
   console.timeEnd('computeDates');
 
