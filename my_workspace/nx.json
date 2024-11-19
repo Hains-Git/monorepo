@@ -1,5 +1,9 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "libs"
+  },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
@@ -73,7 +77,8 @@
     "@nx/next": {
       "application": {
         "style": "css",
-        "linter": "eslint"
+        "linter": "eslint",
+        "directory": "apps"
       }
     },
     "@nx/react": {
