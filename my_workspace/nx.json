@@ -1,8 +1,8 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "workspaceLayout": {
-    "appsDir": "apps",
-    "libsDir": "libs"
+    "libsDir": "libs",
+    "appsDir": "apps"
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -78,6 +78,11 @@
       "application": {
         "style": "css",
         "linter": "eslint",
+        "directory": "apps"
+      }
+    },
+    "@nx/nest": {
+      "application": {
         "directory": "apps"
       }
     },

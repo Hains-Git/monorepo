@@ -1,2 +1,3 @@
 export * from './lib/prisma-hains';
-export { getMonatsplanung } from './lib/dienstplanung';
+export { getDienstplanung } from './lib/dienstplanung';
+export { getAllApiData } from './lib/apidata';

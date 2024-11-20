@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { getMonatsplanung } from '@my-workspace/prisma_hains';
+import { getDienstplanung } from '@my-workspace/prisma_hains';
+import { getAllApiData } from '@my-workspace/prisma_hains';
 
 @Injectable()
 export class AppService {
-  async getData() {
-    const data = await getMonatsplanung(65);
+  async getDienstplanung() {
+    const data = await getDienstplanung(65);
     return { data };
+  }
+  async getApiData() {
+    const data = await getAllApiData();
+    return data;
   }
 }

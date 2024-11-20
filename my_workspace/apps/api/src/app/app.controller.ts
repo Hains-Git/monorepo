@@ -8,6 +8,10 @@ export class AppController {
 
   @Get('dienstplanung')
   getData() {
-    return this.appService.getData();
+    return this.appService.getDienstplanung();
+  }
+  @Get('apidata')
+  getApiData() {
+    return this.appService.getApiData();
   }
 }

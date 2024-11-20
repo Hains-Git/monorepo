@@ -11,6 +11,7 @@ import {
   startOfYear,
   subDays,
 } from 'date-fns';
+
 import { getAllApiData } from './apidata';
 import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
@@ -706,7 +707,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   };
 }
 
-export async function getMonatsplanung(dpl_id: number) {
+export async function getDienstplanung(dpl_id: number) {
   const db = prismaHains();
   prismaDb = db;
 
@@ -726,7 +727,6 @@ export async function getMonatsplanung(dpl_id: number) {
   const { anfang, ende, anfang_frame, ende_frame } =
     get_dpl_anfang_ende(dienstplan);
   const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
-  const apiData = await getAllApiData();
 
   // const sum = Object.values(data).reduce(
   //   (sum, obj) => sum + Object.values(obj).length,
@@ -763,6 +763,5 @@ export async function getMonatsplanung(dpl_id: number) {
     dienstplanstatus_id: dienstplan?.dienstplanstatus_id,
     dienstplanbedarf_id: dienstplan?.dienstplanbedarf_id,
     ...data,
-    apiData,
   };
 }

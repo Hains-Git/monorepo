@@ -25,6 +25,12 @@ Innerhalb des hains_monorepo Containers ausführen!
 - Next.js Komponente erstellen:
   `npx nx g @nx/next:component apps/hains/components/my-new-component`
 
+### Create new app.
+
+- `npx nx g @nx/nest:app --dry-run`
+  -> Which directory do you want to create the application in? · apps/apiv2
+  > Important here is, to specify the apiv2, that is the new folder which would be created.
+
 [^1]: Beispiel für die UI Bibliothek.
 
 [^2]: Beispiel für die Prisma Bibliothek
