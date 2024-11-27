@@ -4,7 +4,7 @@
   "arrowParens": "always",
   "arrowFunctionParentheses": "always",
   "trailingComma": "none",
-  "printWidth": 140,
+  "printWidth": 80,
   "overrides": [
     {
       "files": "**/*.css",

@@ -1250,4 +1250,40 @@ const apidData = `
       head :unauthorized
     end
   end
+
+  def load_freigaben()
+    log("Loading Freigaben")
+    @freigaben = hash_by_key(Dienstfreigabe.joins(:mitarbeiter, :freigabestatus)
+      .where(:freigabestatuses => {:qualifiziert => true},:mitarbeiters => {:platzhalter => false}))
+  end
+
+    def get_monatsplanung_settings(user)
+      mitarbeiter_id = user[:user].accountInfo.mitarbeiter_id.to_i
+      res = {
+        :vorlagen => [],
+        :dienstplan_custom_felder => [],
+        :dienstplan_custom_counter => [],
+        :dienstplaner_settings => {},
+      }
+      if user[:is_dienstplaner] || user[:is_urlaubsplaner]
+        if user[:is_admin]
+          # Soll alle allgemeinen vorlagen mitnehmen, falls es dazu auch ein Feld gibt
+          res[:vorlagen] = Vorlage.admin_get_vorlagen(mitarbeiter_id)
+        else
+          res[:vorlagen] = Vorlage.user_get_vorlagen(mitarbeiter_id)
+        end
+        vorlage_ids = !user[:is_admin] && user[:is_dienstplaner] ? get_public_vorlagen_ids_teams(user[:teams]) : res[:vorlagen].select("id")
+        res[:dienstplan_custom_felder] = DienstplanCustomFeld.where(:vorlage_id => vorlage_ids).order(:vorlage_id, :ansicht_id, :index)
+        res[:dienstplan_custom_counter] = DienstplanCustomCounter.where(:dienstplan_custom_feld_id => res[:dienstplan_custom_felder]
+          .select("id")).order(:dienstplan_custom_feld_id, :id)
+        res[:dienstplaner_settings] = user[:user].get_dienstplaner_settings
+        # Vorlagen müssen noch in die richtige Form gebracht werden
+        res[:vorlagen] = res[:vorlagen].as_json(:include => {:allgemeine_vorlage => {
+          :except => [:created_at, :updated_at],
+          :methods => [:publish]
+        }})
+      end
+      res
+    end
+
 `;

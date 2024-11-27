@@ -6,7 +6,7 @@ import { getAllApiData } from '@my-workspace/prisma_hains';
 export class AppService {
   async getDienstplanung() {
     const data = await getDienstplanung(65);
-    return { data };
+    return data;
   }
   async getApiData() {
     const data = await getAllApiData();
