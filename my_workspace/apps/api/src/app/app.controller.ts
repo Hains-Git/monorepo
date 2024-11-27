@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -7,11 +7,11 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('dienstplanung')
-  getData() {
-    return this.appService.getDienstplanung();
+  getData(@Query() query: any) {
+    return this.appService.getDienstplanung(query.dienstplan_id);
   }
   @Get('apidata')
-  getApiData() {
-    return this.appService.getApiData();
+  getApiData(@Query() query: any) {
+    return this.appService.getApiData(query?.user_id);
   }
 }

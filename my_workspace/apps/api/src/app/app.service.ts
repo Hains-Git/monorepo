@@ -4,12 +4,12 @@ import { getAllApiData } from '@my-workspace/prisma_hains';
 
 @Injectable()
 export class AppService {
-  async getDienstplanung() {
-    const data = await getDienstplanung(65);
+  async getDienstplanung(dienstplanId) {
+    const data = await getDienstplanung(dienstplanId);
     return data;
   }
-  async getApiData() {
-    const data = await getAllApiData();
+  async getApiData(userId) {
+    const data = await getAllApiData(Number(userId));
     return data;
   }
 }

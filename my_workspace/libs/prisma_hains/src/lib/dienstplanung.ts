@@ -3,7 +3,6 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { prismaHains } from './prisma-hains';
 import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYear, subDays } from 'date-fns';
 
-import { getAllApiData } from './apidata';
 import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
@@ -600,12 +599,12 @@ async function computeDates(props: any) {
   const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
-    dates[dateStr].bedarfseintraege = bedarfsEintraegeMap[dateStr].id || [];
-    dates[dateStr].bedarf = bedarfsEintraegeMap[dateStr].dienstbedarf_id || [];
-    dates[dateStr].einteilungen = einteilungenMap[dateStr] || {};
-    dates[dateStr].wuensche = wuenscheMap[dateStr].id || [];
+    dates[dateStr].bedarfseintraege = bedarfsEintraegeMap?.[dateStr]?.id || [];
+    dates[dateStr].bedarf = bedarfsEintraegeMap?.[dateStr]?.dienstbedarf_id || [];
+    dates[dateStr].einteilungen = einteilungenMap?.[dateStr] || {};
+    dates[dateStr].wuensche = wuenscheMap?.[dateStr]?.id || [];
     const rotationenHash = getRotationenIdsInRangeDate(dateStr, rotationenArr, kontigentDienste);
-    dates[dateStr].rotationen = rotationenHash?.[dateStr].ids || [];
+    dates[dateStr].rotationen = rotationenHash?.[dateStr]?.ids || [];
 
     diensteArr.forEach((dienst: any) => {
       dates[dateStr].by_dienst[dienst.id] = {
@@ -635,6 +634,10 @@ async function computeDates(props: any) {
 }
 
 async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
+  const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
+  if (Object.keys(bedarfs_eintraege).length === 0) {
+    return false;
+  }
   const dates = await createDateGridReact(anfangFrame, endeFrame);
   const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
   const dienste = await getPoDienste();
@@ -643,7 +646,6 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const kontingente = await getKontingente();
   const wuensche = await getWuensche(anfangFrame, endeFrame);
   const rotationen = await getRotationen(true, anfangFrame, endeFrame);
-  const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
   const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
   const bedarf = await getDienstbedarfe(anfangFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(dienste, bedarfs_eintraege);
@@ -688,7 +690,7 @@ export async function getDienstplanung(dpl_id: number) {
 
   const dienstplan = await prismaDb.dienstplans.findFirst({
     where: {
-      id: dpl_id || 65
+      id: Number(dpl_id) || 0
     },
     include: {
       parametersets: {
@@ -699,8 +701,16 @@ export async function getDienstplanung(dpl_id: number) {
     }
   });
 
+  if (!dienstplan) {
+    return '';
+  }
+
   const { anfang, ende, anfang_frame, ende_frame } = get_dpl_anfang_ende(dienstplan);
   const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
+
+  if (!data) {
+    return '';
+  }
 
   return {
     anfang: format(anfang, 'yyyy-MM-dd'),
@@ -709,7 +719,6 @@ export async function getDienstplanung(dpl_id: number) {
     created_at: dienstplan?.created_at,
     beschreibung: dienstplan?.beschreibung,
     id: dienstplan?.id,
-    // dienstplan,
     ende: format(ende, 'yyyy-MM-dd'),
     parameterset_id: dienstplan?.parameterset_id,
     plantime_anfang: format(anfang, 'yyyy-MM-dd'),

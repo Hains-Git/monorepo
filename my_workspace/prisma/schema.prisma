@@ -1222,6 +1222,7 @@ model kontingents {
   einteilung_rotations  einteilung_rotations[]
   kontingent_po_diensts kontingent_po_diensts[]
   teams                 teams?                  @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_99108947ac")
+  show_all_rotations    Boolean?                @default(false)
 
   @@index([team_id], map: "index_kontingents_on_team_id")
 }

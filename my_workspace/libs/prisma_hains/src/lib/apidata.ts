@@ -118,9 +118,11 @@ function transformTeams(team: any) {
   return team;
 }
 
-async function getAllApiData() {
+async function getAllApiData(userId: number) {
   prismaDb = prismaHains();
   const res: any = {};
+
+  console.log('userId:', userId);
 
   const bereicheArr = await getApiDataByKey('bereiches', {});
   const poDiensteArr = await getApiDataByKey('po_diensts', {
