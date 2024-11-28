@@ -35,6 +35,13 @@ Innerhalb des hains_monorepo Containers ausführen!
 
 [^2]: Beispiel für die Prisma Bibliothek
 
+# Prisma
+
+## Prisma Schema
+
+- changing schema and adding just relations no need for migration.
+- just run `npx prisma generate` or docker restart
+
 ### Prisma pull DB
 
 - `npx prisma db pull`
@@ -53,10 +60,6 @@ Innerhalb des hains_monorepo Containers ausführen!
   ```
 
 - Dann in den Container den Befehl ausfuehren `npx prisma db pull`
-
-```
-
-```
 
 ### Prisma Migrations
 

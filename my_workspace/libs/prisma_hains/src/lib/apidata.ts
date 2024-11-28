@@ -1,7 +1,9 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { prismaHains } from './prisma-hains';
+import { getUserById } from './crud/user';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
+import { get } from 'http';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
@@ -176,6 +178,9 @@ async function getAllApiData(userId: number) {
   }, {});
   res['vertragsvarianten'] = processData('id', vertragsvarianten);
   res['zeitraumkategorien'] = processData('id', await getApiDataByKey('zeitraumkategories'));
+
+  const user = await getUserById(userId, { account_info: true });
+  console.log(user);
 
   res['monatsplanung_settings'] = {
     vorlagen: [

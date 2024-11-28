@@ -95,7 +95,7 @@ model account_infos {
   aktivAb             DateTime?     @db.Timestamp(6)
   aktivBis            DateTime?     @db.Timestamp(6)
   mitarbeiter_id      Int?
-  user_id             Int?
+  user_id             Int?          @unique
   geburtsdatum        DateTime?     @db.Date
   teilzeit            String?       @db.VarChar
   funktion            String?       @db.VarChar
@@ -104,6 +104,7 @@ model account_infos {
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
   mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
+  user                users?
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
 }
@@ -1944,7 +1945,8 @@ model users {
   locked_at                         DateTime?                           @db.Timestamp(6)
   admin                             Boolean?                            @default(false)
   deactivated                       Boolean?
-  account_info_id                   Int?
+  account_info_id                   Int                                 @unique
+  account_info                      account_infos                       @relation(fields: [account_info_id], references: [id])
   otp_secret_key                    String?                             @db.VarChar
   otp_enabled                       Boolean?                            @default(false)
   otp_counter                       Int?                                @default(0)
