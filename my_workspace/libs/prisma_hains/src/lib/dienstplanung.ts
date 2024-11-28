@@ -7,6 +7,8 @@ import { format, lastDayOfMonth } from 'date-fns';
 import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
 
+import { processData, mapIdToKeys } from '@my-workspace/utils';
+
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
 function getDataByHash(data: any, key = 'id') {
@@ -119,12 +121,7 @@ async function getEinteilungen(id: number, windowAnfang: Date, windowEnde: Date)
 }
 
 async function getPoDienste(compute = true) {
-  const dienste = await prismaDb.po_diensts.findMany({
-    // include: {
-    //   dienstratings: true,
-    //   dienstbedarves: true,
-    // },
-  });
+  const dienste = await prismaDb.po_diensts.findMany({});
   return getDataByHash(dienste);
 }
 
@@ -166,15 +163,6 @@ async function getDienstkategories(compute = true) {
     }
   });
   return getDataByHash(dienstkategories);
-}
-
-async function getKontingente(compute = true) {
-  const kontingente = await prismaDb.kontingents.findMany({
-    include: {
-      kontingent_po_diensts: true
-    }
-  });
-  return getDataByHash(kontingente);
 }
 
 async function getWuensche(windowAnfang: Date, windowEnde: Date) {
@@ -235,8 +223,18 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
       }
     }
   });
+  return rotationen;
+}
 
-  return getDataByHash(rotationen);
+async function getAllRotationenByKontingentFlag() {
+  const rotationen = await prismaDb.einteilung_rotations.findMany({
+    where: {
+      kontingents: {
+        show_all_rotations: true
+      }
+    }
+  });
+  return rotationen;
 }
 
 async function getBedarfe(dienstplanbedarf_id: number) {
@@ -582,7 +580,7 @@ async function computeDates(props: any) {
     bedarfs_eintraege,
     dienst_bedarfeintrag,
     einteilungen,
-    rotationen,
+    rotationenArr,
     wuensche,
     dienste,
     mitarbeiter,
@@ -593,7 +591,6 @@ async function computeDates(props: any) {
   const wuenschArr = Object.values(wuensche);
   const einteilungenMap = createDateEinteilungMap(Object.values(einteilungen));
   const wuenscheMap = createDateIdMap(wuenschArr, ['id']);
-  const rotationenArr = Object.values(rotationen);
   const diensteArr = Object.values(dienste);
   const mitarbeiterArr = Object.values(mitarbeiter);
   const kontigentDienste = await getKontingenteDienste(diensteArr);
@@ -643,13 +640,22 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const dienste = await getPoDienste();
   const mitarbeiter = await getMitarbeiters(true, true);
   const dienstkategorien = await getDienstkategories();
-  const kontingente = await getKontingente();
   const wuensche = await getWuensche(anfangFrame, endeFrame);
-  const rotationen = await getRotationen(true, anfangFrame, endeFrame);
+  const rotationenArr = await getRotationen(true, anfangFrame, endeFrame);
   const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
   const bedarf = await getDienstbedarfe(anfangFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(dienste, bedarfs_eintraege);
   const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
+
+  const rotationenByKontingentFlag = await getAllRotationenByKontingentFlag();
+  const mitarbeiterRotsationenMap = mapIdToKeys(rotationenByKontingentFlag, 'mitarbeiter_id', ['id']);
+
+  const rotationen = processData('id', rotationenArr, [
+    (item: any) => {
+      item['all_rotations'] = mitarbeiterRotsationenMap?.[item.mitarbeiter_id]?.id || [];
+      return item;
+    }
+  ]);
 
   const dienstkategoreieDienste = getDienstkategorieDienste(dienstkategorien, dienste);
 
@@ -660,7 +666,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
     einteilungen,
     dienste,
     mitarbeiter,
-    rotationen,
+    rotationenArr,
     wuensche,
     bedarf,
     dienstkategoreieDienste,

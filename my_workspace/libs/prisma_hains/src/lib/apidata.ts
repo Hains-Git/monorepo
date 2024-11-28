@@ -1,75 +1,18 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { prismaHains } from './prisma-hains';
 
+import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
+
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
 const MONATSPLAN_ANSICHTEN = ['Datum-Dienste', 'Mitarbeiter-Datum', 'Mitarbeiter-Dienste'];
-
-function convertStringToSnakeCase(str: string) {
-  return str.toLowerCase().replace(/[-\s]+/g, '_');
-}
-
-function processData<T>(hashKey: keyof T = 'id' as keyof T, dataArr: T[], cbs?: ((data: T) => T)[]) {
-  return dataArr.reduce((hashObj: Record<string | number, T>, dataItem: T) => {
-    let processedItem = dataItem;
-
-    if (Array.isArray(cbs)) {
-      processedItem = cbs.reduce((item, cb) => cb(item), dataItem);
-    }
-
-    const key = processedItem[hashKey];
-    if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
-      hashObj[key] = processedItem;
-    }
-
-    return hashObj;
-  }, {});
-}
-
-async function processAsyncData<T>(
-  hashKey: keyof T = 'id' as keyof T,
-  dataArr: T[],
-  cbs: ((data: T) => T | Promise<T>)[] = []
-): Promise<Record<string | number, T>> {
-  const processItem = async (item: T): Promise<T> => {
-    let processedItem = item;
-    for (const cb of cbs) {
-      processedItem = await Promise.resolve(cb(processedItem));
-    }
-    return processedItem;
-  };
-
-  const processedItems = await Promise.all(dataArr.map(processItem));
-
-  return processedItems.reduce(
-    (hashObj, item) => {
-      const key = item[hashKey];
-      if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
-        hashObj[key] = item;
-      }
-      return hashObj;
-    },
-    {} as Record<string | number, T>
-  );
-}
-
-function convertBereichPlanname(data: any) {
-  const converted_planname = convertStringToSnakeCase(data.planname);
-  data['converted_planname'] = `b-${converted_planname}`;
-  return data;
-}
-
-function convertDienstPlanname(data: any) {
-  const converted_planname = convertStringToSnakeCase(data.planname);
-  data['converted_planname'] = `d-${converted_planname}`;
-  return data;
-}
 
 function transformPodienst(poDienst: any) {
   poDienst['dienstbedarves'] = poDienst.dienstbedarves.map((dienstbedarf: any) => dienstbedarf.id);
   poDienst['dienstratings'] = poDienst.dienstratings.map((dienstrating: any) => dienstrating.id);
   return poDienst;
 }
+
 function transformDienstkategorie(dienstkategorie: any) {
   dienstkategorie['dienstkategoriethemas'] = dienstkategorie.dienstkategoriethemas.map(
     (dienstkategoriethema: any) => dienstkategoriethema.thema_id
