@@ -120,21 +120,13 @@ async function getPublicVorlagesIdsByTeams(teamIds: number[]) {
   return publicVorlagen.map((v) => v.id || 0) || [];
 }
 
-async function getMonatsplanungSettings(userId: number) {
-  const user = await getUserById(userId, {
-    account_info: true,
-    dienstplaners_teams: true,
-    dienstplaner_user_settings: true,
-    dienstplaner_user_farbgruppens: true,
-    user_gruppes: {
-      include: { gruppes: true }
-    }
-  });
+async function getMonatsplanungSettings(user: any) {
   if (!user) return {};
   const teamIds = user.dienstplaners_teams.map((team: any) => team.team_id);
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
   const isAdmin = userGroupsNames.includes('HAINS Admins');
-  const canAcces = userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
+  const canAcces =
+    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
   const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
   const res = {
     vorlagen: <any[]>[],
@@ -152,7 +144,8 @@ async function getMonatsplanungSettings(userId: number) {
   } else {
     res['vorlagen'] = await getUserVorlagen(mitarbeiterId);
   }
-  const vorlagenIds = !isAdmin && canAcces ? await getPublicVorlagesIdsByTeams(teamIds) : res.vorlagen.map((v) => v.id || 0) || [];
+  const vorlagenIds =
+    !isAdmin && canAcces ? await getPublicVorlagesIdsByTeams(teamIds) : res.vorlagen.map((v) => v.id || 0) || [];
 
   const dienstplanCustomFelder = await prismaDb.dienstplan_custom_felds.findMany({
     where: {
@@ -186,11 +179,94 @@ async function getMonatsplanungSettings(userId: number) {
   return res;
 }
 
-async function getPublicVorlagen() {}
+function addPropertiesToVorlage(vorlage: any) {
+  const filepattern = vorlage.allgemeine_vorlages?.[0].filepattern;
+  if (vorlage.allgemeine_vorlages.length !== 0) {
+    vorlage.allgemeine_vorlages[0].publish = filepattern
+      ? filepattern
+          .split('_')[2]
+          .replace(/[\(\)]/g, '')
+          .split('|')
+      : '';
+  }
+  return vorlage;
+}
+
+async function getPublicVorlagen(user: any) {
+  const teamIds = user.dienstplaners_teams.map((team: any) => team.team_id);
+  const vorlagenIds = await getAllgemeineVorlagenIds();
+  const vorlagen = await prismaDb.vorlages.findMany({
+    where: {
+      OR: [{ team_id: null }, { team_id: { in: teamIds } }],
+      id: { in: vorlagenIds }
+    },
+    include: {
+      allgemeine_vorlages: {
+        select: {
+          dienstplan_path_id: true,
+          publishable: true,
+          order: true,
+          filepattern: true
+        }
+      }
+    },
+    orderBy: [{ id: 'asc' }]
+  });
+  return processData('id', vorlagen, [addPropertiesToVorlage]);
+}
+
+function getAnfang(absprache: any) {
+  let result = new Date();
+  result.setMonth(0); // January
+  result.setDate(1); // 1st day of the month
+  result.setFullYear(new Date().getFullYear()); // Beginning of the current year
+
+  if (absprache.von) {
+    result = absprache.von;
+  } else if (absprache.vertragsPhase?.von) {
+    result = absprache.vertragsPhase.von;
+  } else if (absprache.zeitraumKategorie?.anfang) {
+    result = absprache.zeitraumKategorie.anfang;
+  }
+
+  return result;
+}
+
+function getEnde(absprache: any) {
+  let result = null;
+
+  if (absprache.bis) {
+    result = absprache.bis;
+  } else if (absprache.vertragsPhase?.bis) {
+    result = absprache.vertragsPhase.bis;
+  } else if (absprache.zeitraumKategorie?.ende) {
+    result = absprache.zeitraumKategorie.ende;
+  }
+
+  return result;
+}
+
+function addAnfangEndeToNichtEinteilenAbsprache(absprache: any) {
+  // TODO DB Table is lee check in prod
+  console.log('absprache', absprache);
+  // absprache['anfang'] = getAnfang(absprache);
+  // absprache['ende'] = getEnde(absprache);
+  return absprache;
+}
 
 async function getAllApiData(userId: number) {
   prismaDb = prismaHains();
   const res: any = {};
+
+  const user = await getUserById(userId, {
+    account_info: true,
+    dienstplaners_teams: true,
+    dienstplaner_user_settings: true,
+    dienstplaner_user_farbgruppens: true,
+    user_gruppes: {
+      include: { gruppes: true }
+    }
+  });
 
   const bereicheArr = await getApiDataByKey('bereiches', {});
   const poDiensteArr = await getApiDataByKey('po_diensts', {
@@ -267,9 +343,25 @@ async function getAllApiData(userId: number) {
     [transformMitarbeiter]
   );
   res['monatsplan_ansichten'] = MONATSPLAN_ANSICHTEN;
-  res['nicht_einteilen_absprachen'] = processData('id', await getApiDataByKey('nicht_einteilen_absprachens'));
+  res['monatsplanung_settings'] = await getMonatsplanungSettings(user);
+  res['nicht_einteilen_absprachen'] = processData(
+    'mitarbeiter_id',
+    await getApiDataByKey('nicht_einteilen_absprachens', {
+      where: {
+        mitarbeiters: {
+          platzhalter: false
+        }
+      },
+      include: {
+        vertrags_phases: true,
+        zeitraumkategories: true
+      },
+      orderBy: [{ mitarbeiter_id: 'asc' }, { von: 'desc' }, { bis: 'desc' }]
+    }),
+    [addAnfangEndeToNichtEinteilenAbsprache]
+  );
   res['po_dienste'] = poDienste;
-  res['publicvorlagen'] = getPublicVorlagen();
+  res['publicvorlagen'] = await getPublicVorlagen(user);
   res['ratings'] = processData('id', await getApiDataByKey('dienstratings'));
 
   res['standorte'] = processData('id', await getApiDataByKey('standorts'));
@@ -301,8 +393,6 @@ async function getAllApiData(userId: number) {
   }, {});
   res['vertragsvarianten'] = processData('id', vertragsvarianten);
   res['zeitraumkategorien'] = processData('id', await getApiDataByKey('zeitraumkategories'));
-
-  res['monatsplanung_settings'] = await getMonatsplanungSettings(userId);
 
   return res;
 }
