@@ -11,3 +11,17 @@ export async function getUserById(id: number, include: Prisma.usersInclude = {})
     include
   });
 }
+// export async function getUserById() {
+//   return await prisma.users.findUnique({
+//     where: {
+//       id: 543
+//     },
+//     include: {
+//       user_gruppes: {
+//         include: {
+//           gruppes: true
+//         }
+//       }
+//     }
+//   });
+// }

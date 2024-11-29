@@ -648,11 +648,11 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
 
   const rotationenByKontingentFlag = await getAllRotationenByKontingentFlag();
-  const mitarbeiterRotsationenMap = mapIdToKeys(rotationenByKontingentFlag, 'mitarbeiter_id', ['id']);
+  const mitarbeiterRotsationenMap = mapIdToKeys(rotationenByKontingentFlag, 'mitarbeiter_id', ['obj']);
 
   const rotationen = processData('id', rotationenArr, [
     (item: any) => {
-      item['all_rotations'] = mitarbeiterRotsationenMap?.[item.mitarbeiter_id]?.id || [];
+      item['all_rotations'] = mitarbeiterRotsationenMap?.[item.mitarbeiter_id]?.obj || [];
       return item;
     }
   ]);

@@ -1116,7 +1116,7 @@ model gruppes {
   resource_type String?         @db.VarChar(255)
   created_at    DateTime?       @db.Timestamp(6)
   updated_at    DateTime?       @db.Timestamp(6)
-  users_gruppes users_gruppes[] @ignore
+  users         users_gruppes[]
 
   @@index([name], map: "index_gruppes_on_name")
   @@index([name, resource_type, resource_id], map: "index_gruppes_on_name_and_resource_type_and_resource_id")
@@ -1956,20 +1956,20 @@ model users {
   dienstplaner_user_settings        dienstplaner_user_settings[]
   dienstplaners_teams               dienstplaners_teams[]
   dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
-  users_gruppes                     users_gruppes[]                     @ignore
+  user_gruppes                      users_gruppes[]
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model users_gruppes {
-  user_id   Int?
-  gruppe_id Int?
+  user_id   Int
+  gruppe_id Int
   gruppes   gruppes? @relation(fields: [gruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c3453aa77")
   users     users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cec3e4ee8f")
 
+  @@id([user_id, gruppe_id]) // Composite primary key
   @@index([user_id, gruppe_id], map: "index_users_gruppes_on_user_id_and_gruppe_id")
-  @@ignore
 }
 
 model version_associations {

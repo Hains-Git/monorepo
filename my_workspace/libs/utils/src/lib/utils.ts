@@ -80,26 +80,32 @@ export function convertDienstPlanname(data: any) {
 export function mapIdToKeys<T extends Record<string, any>, K extends keyof T = keyof T>(
   data: T[],
   hashObjKey: K = 'id' as K,
-  keys: K[] = []
-): Record<T[K] & (string | number), Partial<Record<K, T[K][]>>> {
+  keys: (K | 'obj')[] = [] // Allow 'obj' as a valid key
+): Record<T[K] & (string | number), Partial<Record<K | 'obj', T[]>>> {
+  // Change T to T[]
   return data.reduce(
-    (hashObj: Record<T[K] & (string | number), Partial<Record<K, T[K][]>>>, dataItem: T) => {
+    (hashObj: Record<T[K] & (string | number), Partial<Record<K | 'obj', T[]>>>, dataItem: T) => {
       const id = dataItem[hashObjKey];
       if (id !== undefined && (typeof id === 'string' || typeof id === 'number')) {
         if (!hashObj[id]) {
-          hashObj[id] = {};
+          hashObj[id] = {} as Partial<Record<K | 'obj', T[]>>; // Initialize as an empty object
         }
         keys.forEach((key) => {
           if (!hashObj[id][key]) {
             hashObj[id][key] = [];
           }
-          if (!hashObj[id][key].includes(dataItem[key])) {
-            (hashObj[id][key] as T[K][]).push(dataItem[key]);
+          if (key !== 'obj') {
+            const value = dataItem[key];
+            if (value !== undefined && !hashObj[id][key].includes(value)) {
+              (hashObj[id][key] as T[]).push(value);
+            }
+          } else {
+            hashObj[id][key].push(dataItem);
           }
         });
       }
       return hashObj;
     },
-    {} as Record<T[K] & (string | number), Partial<Record<K, T[K][]>>>
+    {} as Record<T[K] & (string | number), Partial<Record<K | 'obj', T[]>>> // Initialize correctly
   );
 }
