@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { prismaHains } from './prisma-hains';
 import { getUserById } from './crud/user';
+import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
 
@@ -166,12 +167,7 @@ async function getMonatsplanungSettings(user: any) {
   res.vorlagen = res.vorlagen.map((v) => {
     const filepattern = v.allgemeine_vorlages?.[0].filepattern;
     if (v.allgemeine_vorlages.length !== 0) {
-      v.allgemeine_vorlages[0].publish = filepattern
-        ? filepattern
-            .split('_')[2]
-            .replace(/[\(\)]/g, '')
-            .split('|')
-        : '';
+      v.allgemeine_vorlages[0].publish = filepattern ? filepattern.split('_')[2].replace(/[()]/g, '').split('|') : '';
     }
     return v;
   });
@@ -183,10 +179,7 @@ function addPropertiesToVorlage(vorlage: any) {
   const filepattern = vorlage.allgemeine_vorlages?.[0].filepattern;
   if (vorlage.allgemeine_vorlages.length !== 0) {
     vorlage.allgemeine_vorlages[0].publish = filepattern
-      ? filepattern
-          .split('_')[2]
-          .replace(/[\(\)]/g, '')
-          .split('|')
+      ? filepattern.split('_')[2].replace(/[()]/g, '').split('|')
       : '';
   }
   return vorlage;
@@ -217,10 +210,9 @@ async function getPublicVorlagen(user: any) {
 
 function getAnfang(absprache: any) {
   let result = new Date();
-  result.setMonth(0); // January
-  result.setDate(1); // 1st day of the month
-  result.setFullYear(new Date().getFullYear()); // Beginning of the current year
-
+  result.setMonth(0);
+  result.setDate(1);
+  result.setFullYear(new Date().getFullYear());
   if (absprache.von) {
     result = absprache.von;
   } else if (absprache.vertragsPhase?.von) {
@@ -229,7 +221,7 @@ function getAnfang(absprache: any) {
     result = absprache.zeitraumKategorie.anfang;
   }
 
-  return result;
+  return format(result, 'yyyy-MM-dd');
 }
 
 function getEnde(absprache: any) {
@@ -243,14 +235,29 @@ function getEnde(absprache: any) {
     result = absprache.zeitraumKategorie.ende;
   }
 
-  return result;
+  return format(result, 'yyyy-MM-dd');
+}
+
+function getTimeFromDate(date: Date | string) {
+  const dateObj = new Date(date);
+  return format(dateObj, 'HH:mm');
 }
 
 function addAnfangEndeToNichtEinteilenAbsprache(absprache: any) {
-  // TODO DB Table is lee check in prod
-  console.log('absprache', absprache);
-  // absprache['anfang'] = getAnfang(absprache);
-  // absprache['ende'] = getEnde(absprache);
+  absprache['anfang'] = getAnfang(absprache);
+  absprache['ende'] = getEnde(absprache);
+  absprache.von = format(absprache.von, 'yyyy-MM-dd');
+  absprache.bis = format(absprache.bis, 'yyyy-MM-dd');
+  return absprache;
+}
+
+function transformArbeitszeitAbsprachen(absprache: any) {
+  absprache['anfang'] = getAnfang(absprache);
+  absprache['ende'] = getEnde(absprache);
+  absprache.arbeitszeit_von_time = getTimeFromDate(absprache.arbeitszeit_von);
+  absprache.arbeitszeit_bis_time = getTimeFromDate(absprache.arbeitszeit_bis);
+  absprache.von = format(absprache.von, 'yyyy-MM-dd');
+  absprache.bis = format(absprache.bis, 'yyyy-MM-dd');
   return absprache;
 }
 
@@ -283,7 +290,19 @@ async function getAllApiData(userId: number) {
   res['MAX_WOCHENENDEN'] = 2;
 
   res['arbeitsplaetze'] = processData('id', await getApiDataByKey('arbeitsplatzs'));
-  res['arbeitszeit_absprachen'] = processData('id', await getApiDataByKey('arbeitszeit_absprachens'));
+  res['arbeitszeit_absprachen'] = processData(
+    'mitarbeiter_id',
+    await getApiDataByKey('arbeitszeit_absprachens', {
+      where: {
+        mitarbeiters: {
+          platzhalter: false
+        }
+      },
+      orderBy: [{ mitarbeiter_id: 'asc' }, { von: 'desc' }, { bis: 'desc' }]
+    }),
+    [transformArbeitszeitAbsprachen],
+    true
+  );
   res['arbeitszeittypen'] = processData('id', await getApiDataByKey('arbeitszeittyps'));
   res['arbeitszeitverteilungen'] = processData('id', await getApiDataByKey('arbeitszeitverteilungs'));
   res['bereiche'] = bereiche;
@@ -353,13 +372,14 @@ async function getAllApiData(userId: number) {
         }
       },
       include: {
-        vertrags_phases: true,
-        zeitraumkategories: true
+        nicht_einteilen_standort_themen: true
       },
       orderBy: [{ mitarbeiter_id: 'asc' }, { von: 'desc' }, { bis: 'desc' }]
     }),
-    [addAnfangEndeToNichtEinteilenAbsprache]
+    [addAnfangEndeToNichtEinteilenAbsprache],
+    true
   );
+  // res['nicht_einteilen_absprachen'] = {};
   res['po_dienste'] = poDienste;
   res['publicvorlagen'] = await getPublicVorlagen(user);
   res['ratings'] = processData('id', await getApiDataByKey('dienstratings'));

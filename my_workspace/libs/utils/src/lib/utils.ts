@@ -4,10 +4,18 @@
  * @param hashKey - The key to be used for mapping the objects. Defaults to 'id'.
  * @param dataArr - The array of data items to be processed.
  * @param cbs - An optional array of callback functions to process each data item.
+ * @param isInArray - A flag to indicate whether the values in the hash object should be placed in a  array.
  * @returns A hash object where each key is an id from the data array, and the value is the processed data item.
  */
-export function processData<T>(hashKey: keyof T = 'id' as keyof T, dataArr: T[], cbs?: ((data: T) => T)[]) {
-  return dataArr.reduce((hashObj: Record<string | number, T>, dataItem: T) => {
+type HashObjType<T> = Record<string | number, T | T[]>;
+
+export function processData<T>(
+  hashKey: keyof T = 'id' as keyof T,
+  dataArr: T[],
+  cbs?: ((data: T) => T)[],
+  isInArray = false
+): HashObjType<T> {
+  return dataArr.reduce((hashObj: HashObjType<T>, dataItem: T) => {
     let processedItem = dataItem;
 
     if (Array.isArray(cbs)) {
@@ -16,7 +24,14 @@ export function processData<T>(hashKey: keyof T = 'id' as keyof T, dataArr: T[],
 
     const key = processedItem[hashKey];
     if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
-      hashObj[key] = processedItem;
+      if (isInArray) {
+        if (!Array.isArray(hashObj[key])) {
+          hashObj[key] = [];
+        }
+        (hashObj[key] as T[]).push(processedItem);
+      } else {
+        hashObj[key] = processedItem;
+      }
     }
 
     return hashObj;
