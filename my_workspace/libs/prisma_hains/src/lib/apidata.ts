@@ -165,7 +165,7 @@ async function getMonatsplanungSettings(user: any) {
   });
 
   res.vorlagen = res.vorlagen.map((v) => {
-    const filepattern = v.allgemeine_vorlages?.[0].filepattern;
+    const filepattern = v?.allgemeine_vorlages?.[0]?.filepattern;
     if (v.allgemeine_vorlages.length !== 0) {
       v.allgemeine_vorlages[0].publish = filepattern ? filepattern.split('_')[2].replace(/[()]/g, '').split('|') : '';
     }
@@ -176,7 +176,7 @@ async function getMonatsplanungSettings(user: any) {
 }
 
 function addPropertiesToVorlage(vorlage: any) {
-  const filepattern = vorlage.allgemeine_vorlages?.[0].filepattern;
+  const filepattern = vorlage?.allgemeine_vorlages?.[0]?.filepattern;
   if (vorlage.allgemeine_vorlages.length !== 0) {
     vorlage.allgemeine_vorlages[0].publish = filepattern
       ? filepattern.split('_')[2].replace(/[()]/g, '').split('|')
