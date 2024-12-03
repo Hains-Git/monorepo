@@ -1,4 +1,6 @@
+import { format } from 'date-fns';
 import { prismaHains } from '../prisma-hains';
+import { checkDate } from './zeitraumkategorie';
 
 class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -28,7 +30,7 @@ class PlanerDate {
   month_nr: number;
   is_weekend: boolean;
   weekend: string;
-  full_date: Date;
+  full_date: Date | string;
   week_day_nr: number;
   week: number;
   day_of_year: number;
@@ -69,7 +71,7 @@ class PlanerDate {
     this.month = PlanerDate.MONTHS[date.getMonth()];
     this.is_weekend = date.getDay() === 0 || date.getDay() === 6;
     this.weekend = this.is_weekend ? 'wochenende' : '';
-    this.full_date = date;
+    this.full_date = format(date, 'yyyy-MM-dd');
     this.week_day_nr = date.getDay();
     this.week = this.getWeekNumber(date);
     this.day_of_year = this.getDayOfYear(date);
@@ -280,7 +282,7 @@ class PlanerDate {
 
   private addZeitraumkategorien(zeitraumkategorien: any[] = []) {
     zeitraumkategorien.forEach((zeitraumkategorie) => {
-      if (zeitraumkategorie.checkDate(this)) {
+      if (checkDate(this, zeitraumkategorie)) {
         this.zeitraumkategorien.push(zeitraumkategorie.id);
       }
     });

@@ -1,15 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-
-import { prismaHains } from './prisma-hains';
-import { addDays, subDays } from 'date-fns';
-import { getAllApiData } from './apidata';
-
-let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
-
-/**
-Ruby on Rails Model!
-Rewrite for JavaScript/TypeScript!
-
+const railsClass = `
 class Dienstplan < ApplicationRecord
   belongs_to :parameterset
   belongs_to :dienstplanstatus
@@ -86,6 +75,17 @@ class Dienstplan < ApplicationRecord
     return false
   end
 
+  def get_dpl_anfang_ende
+    check_anfang_ende
+    setup_parameters()
+    @anfang_frame = @plantime_anfang - self.parameterset.planparameter.relevant_timeframe_size.days
+    @ende_frame = @plantime_ende + self.parameterset.planparameter.relevant_timeframe_size.days
+    return {
+      anfang: @anfang_frame,
+      ende: @ende_frame
+    }
+  end
+
   #--------------------------------------------------------------------------------
   def init(recompute = false, vorschlag = true)
     measure("init") {
@@ -96,6 +96,18 @@ class Dienstplan < ApplicationRecord
     }
   end
 
+  def check_anfang_ende
+    @plantime_anfang = self.anfang
+    @plantime_ende = self.ende
+    if @plantime_anfang.mday != 1
+      @plantime_anfang = @plantime_anfang.next_month.at_beginning_of_month
+    end
+    @plantime_ende = @plantime_anfang.at_end_of_month
+    return {
+      anfang: @plantime_anfang,
+      ende: @plantime_ende
+    }
+  end
 
   def update_bedarfseintraege()
     @recompute = true
@@ -105,10 +117,105 @@ class Dienstplan < ApplicationRecord
     @bedarfs_eintraege
   end
 
-  def load_basics(anfang_dpl, ende_dpl)
-    create_date_grid_react(anfang_dpl, ende_dpl)
+  def get_basic_api_data()
+    setup_parameters("log")
+    load_dienste(false)
+    load_mitarbeiter(false)
+    load_freigaben()
+    load_dienstkategorien(false)
+    load_kontingente(false)
+    load_ratings()
+    load_themen()
+    load_zeitraumkategorien()
+    load_arbeitszeitverteilungen()
+  end
+
+  def compact_init(recompute= false, vorschlag = true)
+    @recompute = recompute
+    @vorschlag = vorschlag
+    setup_parameters()
+    create_date_grid()
     check_dpb()
-    load_bedarf()
+    load_dienste()
+    load_mitarbeiter()
+    dienstplan_einteilungen()
+    load_themen()
+    load_dienstkategorien()#1.
+    load_wuensche()#2.
+    load_kontingente()#1.
+    load_rotationen()#2.
+    load_bedarfs_eintraege()#2.
+    compute_dates_einteilungen()
+  end
+
+  def load_basics(anfang_dpl, ende_dpl)
+    log("Getting basics")
+    measure("create_date_grid_react") {
+      create_date_grid_react(anfang_dpl, ende_dpl)
+    }
+    measure("check_dpb") {
+      check_dpb()
+    }
+    measure("load_dienste") {
+      load_dienste()
+    }
+    measure("load_mitarbeiter") {
+      load_mitarbeiter(true, true)
+    }
+    measure("load_dienstkategorien") {
+      load_dienstkategorien()
+    }
+    measure("load_kontingente") {
+      load_kontingente()
+    }
+    measure("load_wuensche") {
+      load_wuensche()
+    }
+    measure("load_rotationen") {
+      load_rotationen()
+    }
+    measure("load_bedarf") {
+      load_bedarf()
+    }
+    measure("load_einteilungen") {
+      load_einteilungen()
+    }
+  end
+
+  def setup_parameters(status = nil)
+    @log_status = status.nil? ? "Debug" : status
+    # Ohne Time.zone = "UTC" werden die Schichten beim respond im controller als falsche Time.zone interpretiert
+    Time.zone = "UTC"
+    init_logger()
+  end
+
+  def init_logger()
+    @logger = []
+    log("Logger Initialized.")
+  end
+
+  def log(text)
+    if @log_status == "Debug" && parameterset.planparameter.debugging || @log_status != "Debug"
+      @logger << {status: @log_status, msg: text, time: DateTime.now.to_s}
+    end
+  end
+
+  def load_dienste(compute = true)
+    log("Loading Dienste")
+    @dienst_mitarbeiter = {}
+    @dienst_bedarf = {}
+    @dienst_bedarfeintrag = {}
+    @dienste = hash_by_key(PoDienst.includes(:dienstratings, :dienstbedarves).all
+      .order(:order)) { |dienst|
+      id = dienst.id
+      @dienst_mitarbeiter[id] = {}
+      @dienst_bedarf[id] = []
+      @dienst_bedarfeintrag[id] = {}
+    }
+
+    if compute
+      compute_dienste()
+    end
   end
 
   def compute_dienste()
@@ -124,6 +231,33 @@ class Dienstplan < ApplicationRecord
         @dates[id].by_dienst[key][:bereiche_ids] = {}
         @dates[id].by_dienst[key][:id] = key.to_i
       end
+    end
+  end
+
+  def load_mitarbeiter(compute = true, as_ids = false)
+    log("Loading Mitarbeiter")
+    @mitarbeiter_ids = []
+    @mitarbeiter_dienst = {}
+    @mitarbeiter_freigabetypen = {}
+    mitarbeiter = []
+    if as_ids
+      mitarbeiter = Mitarbeiter.select("id")
+        .where( platzhalter: false)
+        .order(:planname)
+    else
+      mitarbeiter = Mitarbeiter
+      .includes(:accountInfo, :dienstratings, :qualifizierte_freigaben, :vertrags_phases, :vertrags)
+      .where( platzhalter: false)
+      .order(:planname)
+    end
+    @mitarbeiter = hash_by_key(mitarbeiter) { |mitarbeiter|
+      id = mitarbeiter.id
+      @mitarbeiter_dienst[id] = {}
+      @mitarbeiter_freigabetypen[id] = []
+      @mitarbeiter_ids << id
+    }
+    if compute
+      compute_mitarbeiter()
     end
   end
 
@@ -222,7 +356,6 @@ class Dienstplan < ApplicationRecord
         einteilungsstatuses.public DESC,
         diensteinteilungs.bereich_id ASC,
         diensteinteilungs.updated_at ASC")
-
       einteilungen.find_in_batches do |batch|
         @einteilungen = hash_by_key(batch, :id, @einteilungen){ |einteilung|
           compute_einteilung(einteilung)
@@ -256,6 +389,18 @@ class Dienstplan < ApplicationRecord
     end
   end
 
+  def load_rotationen(compute = true)
+    log("Loading Rotationen")
+    # Anfang oder Ende ist zwischen von und bis oder anfang ist kleiner und ende ist größer
+    @rotationen = hash_by_key(
+      EinteilungRotation.rotationen_in(@window_anfang, @window_ende)
+      .order(:mitarbeiter_id)){ |rot|
+        if compute
+          compute_rotations_dienste(rot)
+        end
+      }
+  end
+
   def compute_rotations_dienste(rot)
     @dates.each do |date_id, date|
       if date.full_date <= rot.bis && date.full_date >= rot.von
@@ -268,6 +413,15 @@ class Dienstplan < ApplicationRecord
     end
   end
 
+  def load_wuensche()
+    log("Loading Wünsche")
+    @wuensche = hash_by_key(Dienstwunsch.joins(:mitarbeiter)
+      .where("tag >= ? and tag <= ?", @window_anfang, @window_ende)
+      .where(:mitarbeiters => { platzhalter: false })
+      .order(:dienstkategorie_id)){ |wunsch|
+        compute_wunsch_dienste(wunsch)
+      }
+  end
 
   def compute_wunsch_dienste(wunsch)
     tag = wunsch.date_id
@@ -282,6 +436,16 @@ class Dienstplan < ApplicationRecord
     log("Loading Ratings")
     @ratings = hash_by_key(Dienstrating.includes(:mitarbeiter)
       .where(:mitarbeiters => {:platzhalter => false}))
+  end
+
+  def load_kontingente(compute = true)
+    log("Loading Kontingente")
+    @kontingent_dienste = {}
+    @kontingente = hash_by_key(Kontingent.includes(:kontingent_po_dienst).all){ |kon|
+      if compute
+        compute_kontingent_dienste(kon)
+      end
+    }
   end
 
   def compute_kontingent_dienste(kon)
@@ -375,6 +539,16 @@ class Dienstplan < ApplicationRecord
   def load_zeitraumkategorien()
     log("Loading Zeitraumkategorien")
     @zeitraumkategorien = hash_by_key(Zeitraumkategorie.all)
+  end
+
+  def load_dienstkategorien(compute = true)
+    @dienstkategorie_dienste = {}
+    log("Loading Dienstkategorien")
+    @dienstkategorien = hash_by_key(Dienstkategorie.includes(:dienstkategoriethemas).all){ |kat|
+      if compute
+        compute_dienstkategorie_dienste(kat)
+      end
+    }
   end
 
   def compute_dienstkategorie_dienste(kat)
@@ -977,461 +1151,139 @@ class Dienstplan < ApplicationRecord
       ActionCable.server.broadcast(AppChannel::ROOM_NAME, msg)
     end
 end
-;
-**/
+`;
 
-function getDataByHash(data: any, key = 'id') {
-  return data.reduce((hash: any, value: any) => {
-    hash[value[key]] = value;
-    return hash;
-  }, {});
-}
+const apidData = `
 
-function check_anfang_ende(dienstplan: any) {
-  let anfang = dienstplan.anfang;
-  let ende = dienstplan.ende;
-  const startOfNextMonth = new Date(
-    anfang.getFullYear(),
-    anfang.getMonth() + 1,
-    1
-  );
-  if (anfang.getDate() !== 1) {
-    anfang = startOfNextMonth;
-  }
-  ende = new Date(
-    startOfNextMonth.getFullYear(),
-    startOfNextMonth.getMonth(),
-    -1
-  );
-  return { anfang, ende };
-}
+  def react_api_model_data
+    user = is_dienst_urlaubs_planer
+    is_admin = user[:is_admin]
+    is_dienstplaner = user[:is_dienstplaner]
+    if can_use(true, true, true)
+      res = {}
 
-function get_dpl_anfang_ende(dienstplan: any) {
-  const { anfang, ende } = check_anfang_ende(dienstplan);
-  const relevant_timeframe_size =
-    dienstplan?.parametersets?.planparameters?.[0]?.relevant_timeframe_size;
-  const anfang_frame = subDays(anfang, relevant_timeframe_size);
-  const ende_frame = addDays(ende, relevant_timeframe_size);
-  return {
-    anfang,
-    ende,
-    anfang_frame,
-    ende_frame,
-  };
-}
+      res[:arbeitsplaetze] = hash_by_key(Arbeitsplatz.all)
+      res[:bereiche] = hash_by_key(Bereich.all.as_json(:methods => [:converted_planname]), "id")
+      res[:standorte] = hash_by_key(Standort.all)
+      res[:dienstgruppen] = hash_by_key(Dienstgruppe.all)
+      res[:dienstverteilungstypen] = hash_by_key(Dienstverteilungstyp.all)
+      res[:kostenstellen] = hash_by_key(Kostenstelle.all)
+      res[:funktionen] = hash_by_key(Funktion.all)
+      res[:themen] = hash_by_key(Thema.all)
+      res[:teams] = hash_by_key(Team.includes(:team_funktions, :po_diensts, :kontingents, :team_kw_krankpuffers).all
+      .as_json(:methods => [:funktionen_ids, :dienste_ids, :kontingente_ids, :team_kw_krankpuffers]), "id")
+      res[:freigabetypen] = hash_by_key(Freigabetyp.all)
+      res[:freigabestatuse] = hash_by_key(Freigabestatus.all)
+      res[:einteilungsstatuse] = hash_by_key(Einteilungsstatus.all)
+      res[:einteilungskontexte] = hash_by_key(Einteilungskontext.all)
+      dpl = Dienstplan.first
+      unless dpl.nil?
+        res[:dienstplanpfade] = {}
+        res[:publicvorlagen] = {}
+        res[:monatsplan_ansichten] = Vorlage::ANSICHTEN
+        # Admins bekommen die allgemeinen Vorlagen als ihre Vorlagen und Dienstplaner als default_vorlagen
+        if is_admin
+          res[:dienstplanpfade] = hash_by_key(DienstplanPath.all)
+        elsif is_dienstplaner
+          res[:publicvorlagen] = get_dienstplaner_vorlagen
+        end
+        res[:monatsplanung_settings] = get_monatsplanung_settings(user)
+        res[:MAX_RATING] = Dienstplan::MAX_RATING
+        res[:MAX_WOCHENENDEN] = Dienstplan::MAX_WOCHENENDEN
+        @vertraege_ids = []
+        @vertragstypen = []
+        @vertragstyp_varianten = {}
+        res[:vertraege] = hash_by_key(Vertrag.joins(:mitarbeiter)
+          .where(:mitarbeiters => { platzhalter: false})
+        ) { |vertrag|
+          @vertraege_ids << vertrag.id
+          unless @vertragstypen.include?(vertrag.vertragstyp_id)
+            @vertragstypen << vertrag.vertragstyp_id
+          end
+        }
+        res[:vertragsvarianten] = hash_by_key(VertragsVariante.where(vertragstyp_id: @vertragstypen).order(bis: :desc)) { |variante|
+          unless @vertragstyp_varianten.has_key?(variante.vertragstyp_id)
+            @vertragstyp_varianten[variante.vertragstyp_id] = []
+          end
+          @vertragstyp_varianten[variante.vertragstyp_id] << variante.id
+        }
+        res[:vertragsphasen] = hash_by_key(VertragsPhase.where(vertrag_id: @vertraege_ids))
+        res[:vertragstyp_varianten] = @vertragstyp_varianten
+        res[:arbeitszeit_absprachen] = matrix_by_key(ArbeitszeitAbsprachen
+          .joins(:mitarbeiter)
+          .includes(:vertrags_phase, :zeitraumkategorie)
+          .where(mitarbeiters: { platzhalter: false })
+          .order(mitarbeiter_id: :asc, von: :desc, bis: :desc)
+          .as_json({:except => [
+            :arbeitszeit_von, :arbeitszeit_bis
+          ], :methods => [
+            :anfang, :ende, :arbeitszeit_von_time, :arbeitszeit_bis_time
+          ]}), "mitarbeiter_id")
+        res[:nicht_einteilen_absprachen] = matrix_by_key(NichtEinteilenAbsprachen
+          .joins(:mitarbeiter)
+          .includes(:vertrags_phase, :zeitraumkategorie, :nicht_einteilen_standort_themens)
+          .where(mitarbeiters: { platzhalter: false })
+          .order(mitarbeiter_id: :asc, von: :desc, bis: :desc)
+          .as_json({:include => [
+            :nicht_einteilen_standort_themens
+          ], :methods => [
+            :anfang, :ende
+          ]}), "mitarbeiter_id")
 
-async function getZeitraumkategorien(anfang: Date, ende: Date) {
-  const zeitraumkategorien = await prismaDb.zeitraumkategories.findMany({
-    where: {
-      AND: [
-        {
-          OR: [{ anfang: null }, { anfang: { gte: anfang } }],
-        },
-        {
-          OR: [{ ende: null }, { ende: { lt: ende } }],
-        },
-      ],
-    },
-    orderBy: {
-      prio: 'desc',
-    },
-  });
+        dpl.get_basic_api_data
+        res[:arbeitszeittypen] = dpl.arbeitszeittypen
+        res[:arbeitszeitverteilungen] = dpl.arbeitszeitverteilungen
+        res[:po_dienste] = dpl.dienste.as_json(:methods => [:converted_planname, :rating_ids, :bedarf_ids])
+        res[:dienstkategorien] = dpl.dienstkategorien.as_json(:methods => [:thema_ids])
+        res[:freigaben] = dpl.freigaben
+        res[:kontingente] = dpl.kontingente.as_json(:include => [:kontingent_po_dienst])
+        res[:ratings] = dpl.ratings
+        res[:mitarbeiters] = dpl.mitarbeiter.as_json(:include => {
+          :accountInfo => {:only => [:dienstTelefon]}
+        }, :methods => [:rating_ids, :freigaben_ids, :freigabetypen_ids, :vertrag_ids, :vertragphasen_ids])
+        res[:themen] = dpl.themen
+        res[:zeitraumkategorien] = dpl.zeitraumkategorien
+      end
+      # respond_with(Oj.dump(res, mode: :compat, time_format: :ruby, use_to_json: true))
+      respond_with(res.to_json)
+    else
+      head :unauthorized
+    end
+  end
 
-  return zeitraumkategorien;
-}
+  def load_freigaben()
+    log("Loading Freigaben")
+    @freigaben = hash_by_key(Dienstfreigabe.joins(:mitarbeiter, :freigabestatus)
+      .where(:freigabestatuses => {:qualifiziert => true},:mitarbeiters => {:platzhalter => false}))
+  end
 
-async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
-  // const dates = {};
-  // const week_counter = 0;
-  const zeitraumkategorie = await getZeitraumkategorien(anfang_dpl, ende_dpl);
-  console.log({ zeitraumkategorie });
+    def get_monatsplanung_settings(user)
+      mitarbeiter_id = user[:user].accountInfo.mitarbeiter_id.to_i
+      res = {
+        :vorlagen => [],
+        :dienstplan_custom_felder => [],
+        :dienstplan_custom_counter => [],
+        :dienstplaner_settings => {},
+      }
+      if user[:is_dienstplaner] || user[:is_urlaubsplaner]
+        if user[:is_admin]
+          # Soll alle allgemeinen vorlagen mitnehmen, falls es dazu auch ein Feld gibt
+          res[:vorlagen] = Vorlage.admin_get_vorlagen(mitarbeiter_id)
+        else
+          res[:vorlagen] = Vorlage.user_get_vorlagen(mitarbeiter_id)
+        end
+        vorlage_ids = !user[:is_admin] && user[:is_dienstplaner] ? get_public_vorlagen_ids_teams(user[:teams]) : res[:vorlagen].select("id")
+        res[:dienstplan_custom_felder] = DienstplanCustomFeld.where(:vorlage_id => vorlage_ids).order(:vorlage_id, :ansicht_id, :index)
+        res[:dienstplan_custom_counter] = DienstplanCustomCounter.where(:dienstplan_custom_feld_id => res[:dienstplan_custom_felder]
+          .select("id")).order(:dienstplan_custom_feld_id, :id)
+        res[:dienstplaner_settings] = user[:user].get_dienstplaner_settings
+        # Vorlagen müssen noch in die richtige Form gebracht werden
+        res[:vorlagen] = res[:vorlagen].as_json(:include => {:allgemeine_vorlage => {
+          :except => [:created_at, :updated_at],
+          :methods => [:publish]
+        }})
+      end
+      res
+    end
 
-  // date_grid für jeden Tag mit einem Date-Objekt füllen, bis das Ende erreicht ist
-  // @window_anfang = anfang_dpl
-  // @window_ende = ende_dpl
-  // anfang = @window_anfang
-  // zeitraumkategorien = Zeitraumkategorie.load_zeitraumkategorien_in(anfang_dpl, ende_dpl)
-  // until anfang == @window_ende do
-  //   planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-  //   @dates[planer_date.id] = planer_date
-  //   anfang = anfang + 1.days
-  //   # week_counter:
-  //   # Wochenden gelten von Fr. Abend, bis Mo. Morgen
-  //   # -> Fr. - Mo. zählen zu einem Wochenende, welches den week_counter nutzt
-  //   if anfang.wday == 2
-  //     week_counter = week_counter + 1
-  //   end
-  // end
-  // # Letztes Datum (Ende) hinzufügen
-  // planer_date = PlanerDate.new(anfang, week_counter, zeitraumkategorien)
-  // @dates[planer_date.id] = planer_date
-}
-
-async function getEinteilungen(
-  id: number,
-  windowAnfang: Date,
-  windowEnde: Date
-) {
-  const einteilungen = await prismaDb.diensteinteilungs.findMany({
-    where: {
-      tag: {
-        gte: windowAnfang,
-        lte: windowEnde,
-      },
-      OR: [
-        {
-          dienstplan_id: id,
-          einteilungsstatuses: {
-            vorschlag: true,
-          },
-        },
-        {
-          einteilungsstatuses: {
-            counts: true,
-          },
-        },
-      ],
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    orderBy: [
-      { tag: 'asc' },
-      { po_dienst_id: 'asc' },
-      { einteilungsstatuses: { public: 'desc' } },
-      { bereich_id: 'asc' },
-      { updated_at: 'asc' },
-    ],
-  });
-  return getDataByHash(einteilungen);
-}
-
-async function getPoDienste(compute = true) {
-  const dienste = await prismaDb.po_diensts.findMany({
-    // include: {
-    //   dienstratings: true,
-    //   dienstbedarves: true,
-    // },
-  });
-
-  return getDataByHash(dienste);
-
-  // def load_dienste(compute = true)
-  //   log("Loading Dienste")
-  //   @dienst_mitarbeiter = {}
-  //   @dienst_bedarf = {}
-  //   @dienst_bedarfeintrag = {}
-  //   @dienste = hash_by_key(PoDienst.includes(:dienstratings, :dienstbedarves).all
-  //     .order(:order)) { |dienst|
-  //     id = dienst.id
-  //     @dienst_mitarbeiter[id] = {}
-  //     @dienst_bedarf[id] = []
-  //     @dienst_bedarfeintrag[id] = {}
-  //   }
-  //
-  //   if compute
-  //     compute_dienste()
-  //   end
-  // end
-}
-
-async function getMitarbeiters(compute = true, as_ids = false) {
-  const mitarbeiter = as_ids
-    ? await prismaDb.mitarbeiters.findMany({
-        where: {
-          platzhalter: false,
-        },
-        select: {
-          id: true,
-        },
-        orderBy: {
-          planname: 'asc',
-        },
-      })
-    : await prismaDb.mitarbeiters.findMany({
-        where: {
-          platzhalter: false,
-        },
-        include: {
-          account_infos: true,
-          dienstratings: true,
-          // qualifizierte_freigaben: true,
-          // vertrags_phases: true,
-          vertrags: true,
-        },
-        orderBy: {
-          planname: 'asc',
-        },
-      });
-  console.log(mitarbeiter);
-  return getDataByHash(mitarbeiter);
-  //   log("Loading Mitarbeiter")
-  //   @mitarbeiter_ids = []
-  //   @mitarbeiter_dienst = {}
-  //   @mitarbeiter_freigabetypen = {}
-  //   mitarbeiter = []
-  //   if as_ids
-  //     mitarbeiter = Mitarbeiter.select("id")
-  //       .where( platzhalter: false)
-  //       .order(:planname)
-  //   else
-  //     mitarbeiter = Mitarbeiter
-  //     .includes(:accountInfo, :dienstratings, :qualifizierte_freigaben, :vertrags_phases, :vertrags)
-  //     .where( platzhalter: false)
-  //     .order(:planname)
-  //   end
-  //   @mitarbeiter = hash_by_key(mitarbeiter) { |mitarbeiter|
-  //     id = mitarbeiter.id
-  //     @mitarbeiter_dienst[id] = {}
-  //     @mitarbeiter_freigabetypen[id] = []
-  //     @mitarbeiter_ids << id
-  //   }
-  //   if compute
-  //     compute_mitarbeiter()
-  //   end
-}
-
-async function getDienstkategories(compute = true) {
-  const dienstkategories = await prismaDb.dienstkategories.findMany({
-    include: {
-      dienstkategoriethemas: true,
-    },
-  });
-  return getDataByHash(dienstkategories);
-
-  // def load_dienstkategorien(compute = true)
-  //   @dienstkategorie_dienste = {}
-  //   log("Loading Dienstkategorien")
-  //   @dienstkategorien = hash_by_key(Dienstkategorie.includes(:dienstkategoriethemas).all){ |kat|
-  //     if compute
-  //       compute_dienstkategorie_dienste(kat)
-  //     end
-  //   }
-  // end
-}
-
-async function getKontingente(compute = true) {
-  const kontingente = await prismaDb.kontingents.findMany({
-    include: {
-      kontingent_po_diensts: true,
-    },
-  });
-  return getDataByHash(kontingente);
-  // def load_kontingente(compute = true)
-  //   log("Loading Kontingente")
-  //   @kontingent_dienste = {}
-  //   @kontingente = hash_by_key(Kontingent.includes(:kontingent_po_dienst).all){ |kon|
-  //     if compute
-  //       compute_kontingent_dienste(kon)
-  //     end
-  //   }
-  // end
-}
-
-async function getWuensche(windowAnfang: Date, windowEnde: Date) {
-  const wuensche = await prismaDb.dienstwunsches.findMany({
-    where: {
-      tag: {
-        gte: windowAnfang,
-        lte: windowEnde,
-      },
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    include: {
-      mitarbeiters: true,
-    },
-    orderBy: {
-      dienstkategorie_id: 'asc',
-    },
-  });
-
-  return getDataByHash(wuensche);
-
-  // def load_wuensche()
-  //   log("Loading Wünsche")
-  //   @wuensche = hash_by_key(Dienstwunsch.joins(:mitarbeiter)
-  //     .where("tag >= ? and tag <= ?", @window_anfang, @window_ende)
-  //     .where(:mitarbeiters => { platzhalter: false })
-  //     .order(:dienstkategorie_id)){ |wunsch|
-  //       compute_wunsch_dienste(wunsch)
-  //     }
-  // end
-}
-
-async function getRotationen(compute = true, anfang: Date, ende: Date) {
-  const rotationen = await prismaDb.einteilung_rotations.findMany({
-    where: {
-      OR: [
-        {
-          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }],
-        },
-        {
-          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }],
-        },
-        {
-          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }],
-        },
-      ],
-      mitarbeiters: {
-        platzhalter: false,
-      },
-    },
-    include: {
-      kontingents: {
-        include: {
-          teams: true,
-        },
-      },
-      mitarbeiters: {
-        include: {
-          vertrags: {
-            include: {
-              vertragsgruppes: true,
-              vertrags_phases: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  return getDataByHash(rotationen);
-
-  // def load_rotationen(compute = true)
-  //   log("Loading Rotationen")
-  //   # Anfang oder Ende ist zwischen von und bis oder anfang ist kleiner und ende ist größer
-  //   @rotationen = hash_by_key(
-  //     EinteilungRotation.rotationen_in(@window_anfang, @window_ende)
-  //     .order(:mitarbeiter_id)){ |rot|
-  //       if compute
-  //         compute_rotations_dienste(rot)
-  //       end
-  //     }
-  // end
-}
-
-async function getBedarfe(dienstplanbedarf_id: number) {
-  const bedarfs_eintraege = await prismaDb.bedarfs_eintrags.findMany({
-    where: {
-      dienstplanbedarf_id,
-    },
-  });
-  return getDataByHash(bedarfs_eintraege);
-
-  // def load_bedarf()
-  //   @bedarf = hash_by_key(Dienstbedarf.bedarfe_by_date(@window_anfang))
-  //   shall_compute = !parameterset.planparameter.reuse_bedarf || @recompute  || dienstplanbedarf.anfang != @window_anfang || dienstplanbedarf.ende != @window_ende || self.bedarfs_eintrag.count == 0
-  //   # Irgendwie geht er in compute_bedarf, obwohl shall_compute false ist, deshalb das === true
-  //   if shall_compute === true
-  //     load_zeitraumkategorien()
-  //     compute_tage_schichten()
-  //     compute_bedarf()
-  //   else
-  //     log("Reloading Bedarf")
-  //   end
-  //   #load from Database
-  //   # @bedarfs_eintraege = hash_by_key(self.bedarfs_eintrag){ |be|
-  //   #   compute_date_dienst_bedarfseintrag(be)
-  //   # }
-  //   # @schichten = matrix_by_key(self.schicht, :bedarfs_eintrag_id)
-  //   @bedarfs_eintraege = {}
-  //   @schichten = {}
-  //   self.bedarfs_eintrag.find_in_batches do |batch|
-  //     @bedarfs_eintraege = hash_by_key(batch, :id, @bedarfs_eintraege){ |be|
-  //       compute_date_dienst_bedarfseintrag(be)
-  //     }
-  //   end
-  //   self.schicht.find_in_batches do |batch|
-  //     @schichten = matrix_by_key(batch, :bedarfs_eintrag_id, false, @schichten)
-  //   end
-  // end
-}
-
-async function getSchichten(dienstplanbedarf_id: number) {
-  const schichten = await prismaDb.schichts.findMany({
-    where: {
-      bedarfs_eintrags: { dienstplanbedarf_id },
-    },
-  });
-  return schichten.reduce((hash: any, value) => {
-    const key = String(value?.bedarfs_eintrag_id) || 0;
-    hash[key] = hash[key] || [];
-    hash[key].push(value);
-    return hash;
-  }, {});
-}
-
-async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
-  const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
-  const dienste = await getPoDienste();
-  const mitarbeiter = await getMitarbeiters(true, true);
-  const dienstkategorien = await getDienstkategories();
-  const kontingente = await getKontingente();
-  const wuensche = await getWuensche(anfangFrame, endeFrame);
-  const rotationen = await getRotationen(true, anfangFrame, endeFrame);
-  const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
-  const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
-
-  // createDateGridReact(anfang_dpl, ende_dpl);
-  return {
-    einteilungen,
-    dienste,
-    mitarbeiter,
-    dienstkategorien,
-    kontingente,
-    wuensche,
-    rotationen,
-    bedarfs_eintraege,
-    schichten,
-  };
-}
-
-export async function getMonatsplanung(dpl_id: number) {
-  const db = prismaHains();
-  prismaDb = db;
-
-  const dienstplan = await prismaDb.dienstplans.findFirst({
-    where: {
-      id: 64,
-    },
-    include: {
-      parametersets: {
-        include: {
-          planparameters: true,
-        },
-      },
-    },
-  });
-
-  const { anfang, ende, anfang_frame, ende_frame } =
-    get_dpl_anfang_ende(dienstplan);
-  const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
-
-  const sum = Object.values(data).reduce(
-    (sum, obj) => sum + Object.values(obj).length,
-    0
-  );
-  console.log(
-    Object.entries(data).map(
-      ([key, value]) => `${key}: ${Object.values(value).length}`
-    )
-  );
-  console.log('sum', sum);
-
-  const apiData = await getAllApiData();
-  console.log(
-    Object.entries(apiData).map(
-      ([key, value]) => `${key}: ${Object.values(value).length}`
-    )
-  );
-
-  return {
-    dienstplan,
-    anfang,
-    ende,
-    ...data,
-    apiData,
-  };
-}
+`;
