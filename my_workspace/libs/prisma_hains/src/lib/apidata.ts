@@ -133,8 +133,8 @@ async function getMonatsplanungSettings(user: any) {
     vorlagen: <any[]>[],
     dienstplan_custom_felder: <any[]>[],
     dienstplan_custom_counter: <any[]>[],
-    dienstplan_settings: {
-      user_settings: user.dienstplaner_user_settings,
+    dienstplaner_settings: {
+      user_settings: user.dienstplaner_user_settings?.[0] || {},
       farbgruppen: user.dienstplaner_user_farbgruppens
     }
   };
