@@ -3,7 +3,7 @@
 - Zum Starten der Umgebung muss hains_docker gestartet sein (dadurch ist die Datenbank erreichbar).
 - Es braucht eine ./my_workspace/.env.
   - Diese enthält die Datenbank-Verbindung:
-    DATABASE_URL="postgresql://USER:PW@host.docker.internal:5444/DB_NAME?schema=public"
+    DATABASE_URL="postgresql://USER:PW@postgres:5432/DB_NAME?schema=public"
   - USER, PW und DB_NAME entsprechend ersetzen!
 
 ### Befehle:
@@ -32,7 +32,6 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
-
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
