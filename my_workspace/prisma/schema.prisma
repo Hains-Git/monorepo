@@ -277,14 +277,11 @@ model arbeitszeit_absprachens {
   arbeitszeit_von      DateTime           @db.Time(6)
   arbeitszeit_bis      DateTime           @db.Time(6)
   pause                Int                @default(0)
-  vertrags_phase_id    Int?
   bemerkung            String             @default("")
-  vertrags_phases      vertrags_phases?   @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0e2b934340")
   mitarbeiters         mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d5cc996a1")
   zeitraumkategories   zeitraumkategories @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4a9339ea11")
 
   @@index([mitarbeiter_id], map: "index_arbeitszeit_absprachens_on_mitarbeiter_id")
-  @@index([vertrags_phase_id], map: "index_arbeitszeit_absprachens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_arbeitszeit_absprachens_on_zeitraumkategorie_id")
 }
 
@@ -328,19 +325,16 @@ model automatische_einteilungens {
   id                   Int              @id @default(autoincrement())
   mitarbeiter_id       Int?
   po_dienst_id         Int?
-  vertrags_phase_id    Int?
   von                  DateTime?           @db.Date
   bis                  DateTime?           @db.Date
   zeitraumkategorie_id Int?
   days                 Int?                @default(0)
   po_diensts           po_diensts?         @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
-  vertrags_phases      vertrags_phases?    @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_17f873556d")
   mitarbeiters         mitarbeiters?       @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
   zeitraumkategories   zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3651daf545")
 
   @@index([mitarbeiter_id], map: "index_automatische_einteilungens_on_mitarbeiter_id")
   @@index([po_dienst_id], map: "index_automatische_einteilungens_on_po_dienst_id")
-  @@index([vertrags_phase_id], map: "index_automatische_einteilungens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_automatische_einteilungens_on_zeitraumkategorie_id")
 }
 
@@ -752,6 +746,7 @@ model dienstplan_paths {
   name                String                @default("") @db.VarChar
   position            Int                   @default(0)
   begin_on_monday     Boolean?              @default(false)
+  kalender_name       String?               @default("") @db.VarChar
   allgemeine_vorlages allgemeine_vorlages[]
   planintervals       planintervals?        @relation(fields: [planinterval_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1ef594e615")
   plan_tabs           plan_tabs?            @relation(fields: [plan_tab_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5a0e779422")
@@ -939,7 +934,7 @@ model einteilung_rotations {
   kommentar            String?
   created_at           DateTime?     @db.Timestamp(6)
   updated_at           DateTime?     @db.Timestamp(6)
-  published            Boolean?
+  published            Boolean?      @default(false)
   published_by         String?       @db.VarChar
   published_at         DateTime?     @db.Timestamp(6)
   position             Int?
@@ -1009,11 +1004,11 @@ model freigabestatuses {
   name            String?           @db.VarChar
   created_at      DateTime          @db.Timestamp(6)
   updated_at      DateTime          @db.Timestamp(6)
-  counts_active   Boolean?
+  counts_active   Boolean?          @default(false)
   sys             Boolean?          @default(false)
   color           String?           @db.VarChar
   beschreibung    String?           @db.VarChar
-  qualifiziert    Boolean?
+  qualifiziert    Boolean?          @default(false)
   dienstfreigabes dienstfreigabes[]
 }
 
@@ -1128,7 +1123,7 @@ model hains_tasks {
   beschreibung             String?
   created_at               DateTime  @db.Timestamp(6)
   updated_at               DateTime  @db.Timestamp(6)
-  als_popup                Boolean?
+  als_popup                Boolean?  @default(false)
   gruppe_id                Int?
   mitarbeiter_ids          Int[]
   benachrichtigungs_typ_id Int?
@@ -1321,7 +1316,7 @@ model merkmals {
   id                  Int                @id @default(autoincrement())
   name                String?               @db.VarChar
   beschreibung        String?               @db.VarChar
-  can_edit            Boolean?
+  can_edit            Boolean?              @default(false)
   typ                 String?               @db.VarChar
   created_at          DateTime              @db.Timestamp(6)
   updated_at          DateTime              @db.Timestamp(6)
@@ -1431,14 +1426,11 @@ model nicht_einteilen_absprachens {
   zeitraumkategorie_id            Int
   von                             DateTime?                         @db.Date
   bis                             DateTime?                         @db.Date
-  vertrags_phase_id               Int?
   mitarbeiters                    mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c13db17963")
-  vertrags_phases                 vertrags_phases?                  @relation(fields: [vertrags_phase_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d4a48572df")
   zeitraumkategories              zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f981032257")
   nicht_einteilen_standort_themen nicht_einteilen_standort_themen[]
 
   @@index([mitarbeiter_id], map: "index_nicht_einteilen_absprachens_on_mitarbeiter_id")
-  @@index([vertrags_phase_id], map: "index_nicht_einteilen_absprachens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_nicht_einteilen_absprachens_on_zeitraumkategorie_id")
 }
 
@@ -1488,7 +1480,7 @@ model notes_histories {
   note_id                                                   Int?
   mitarbeiter_id                                            Int?
   ersteller_id                                              Int?
-  private_note                                              Boolean?
+  private_note                                              Boolean?      @default(false)
   notiz                                                     String?       @db.VarChar
   created_at                                                DateTime      @db.Timestamp(6)
   updated_at                                                DateTime      @db.Timestamp(6)
@@ -1538,8 +1530,8 @@ model notfallmedizin_statuses {
   color                     String?                    @db.VarChar
   created_at                DateTime                   @db.Timestamp(6)
   updated_at                DateTime                   @db.Timestamp(6)
-  send_mitarbeiter_email    Boolean?
-  send_verwaltung_email     Boolean?
+  send_mitarbeiter_email    Boolean?                   @default(false)
+  send_verwaltung_email     Boolean?                   @default(false)
   verwaltung_email          String?                    @db.VarChar
   mitarbeiter_email_text    String?
   verwaltung_email_text     String?
@@ -1625,12 +1617,12 @@ model planparameters {
   relevant_timeframe_size Int?
   einteilungsstatus_id    Int?
   default_rating          Int?
-  debugging               Boolean?
-  reuse_bedarf            Boolean?
+  debugging               Boolean?          @default(false)
+  reuse_bedarf            Boolean?          @default(false)
   pref_weight             Float?
   rot_weight              Float?
   dist_weight             Float?
-  use_overrides           Boolean?
+  use_overrides           Boolean?          @default(false)
   created_at              DateTime             @db.Timestamp(6)
   updated_at              DateTime             @db.Timestamp(6)
   wish_weight             Float?
@@ -1770,8 +1762,8 @@ model stundennachweis {
 model stundennachweis_statuses {
   id              Int            @id @default(autoincrement())
   name            String?           @db.VarChar
-  confirmed       Boolean?
-  submitted       Boolean?
+  confirmed       Boolean?          @default(false)
+  submitted       Boolean?          @default(false)
   created_at      DateTime          @db.Timestamp(6)
   updated_at      DateTime          @db.Timestamp(6)
   stundennachweis stundennachweis[]
@@ -1944,7 +1936,7 @@ model users {
   unlock_token                      String?                             @db.VarChar(255)
   locked_at                         DateTime?                           @db.Timestamp(6)
   admin                             Boolean?                            @default(false)
-  deactivated                       Boolean?
+  deactivated                       Boolean?                            @default(false)
   account_info_id                   Int                                 @unique
   account_info                      account_infos                       @relation(fields: [account_info_id], references: [id])
   otp_secret_key                    String?                             @db.VarChar
@@ -2051,46 +2043,43 @@ model vertrags {
   vertragstyp_id    Int?
   anfang            DateTime?         @db.Date
   ende              DateTime?         @db.Date
-  vertragsgruppe_id Int?
-  vertragsgruppes   vertragsgruppes?  @relation(fields: [vertragsgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_36207cab70")
+  unbefristet       Boolean?          @default(false)
+  kommentar         String            @default("") @db.VarChar
   mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b20fe19842")
   vertragstyps      vertragstyps?     @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f2cec23b66")
   vertrags_phases   vertrags_phases[]
+  vertrags_arbeitszeits vertrags_arbeitszeits[]
 
-  @@index([vertragsgruppe_id], map: "index_vertrags_on_vertragsgruppe_id")
   @@index([vertragstyp_id], map: "index_vertrags_on_vertragstyp_id")
 }
 
-model vertrags_aenderungs {
-  id             Int    @id @default(autoincrement())
-  von            DateTime? @db.Timestamp(6)
-  bis            DateTime? @db.Timestamp(6)
-  teilzeitAnteil Int?
-  rolle          String?   @db.VarChar
-  vertrag_id     Int?
-  kommentar      String?
-  mitarbeiter_id Int?
-  vertrag_ruht   Boolean?
-  created_at     DateTime  @db.Timestamp(6)
-  updated_at     DateTime  @db.Timestamp(6)
+model vertrags_arbeitszeits {
+  id                          Int                           @id @default(autoincrement())
+  vertrag_id                  Int?
+  von                         DateTime?                     @db.Date
+  bis                         DateTime?                     @db.Date
+  vk                          Decimal?                      @db.Decimal(3, 2)
+  tage_woche                  Float?                        @default(5.0)
+  created_at                  DateTime                      @db.Timestamp(6)
+  updated_at                  DateTime                      @db.Timestamp(6)
+  vertrags                    vertrags?                     @relation(fields: [vertrag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8e47624856")
+
+  @@index([vertrag_id], map: "index_vertrags_arbeitszeits_on_vertrag_id")
 }
 
 model vertrags_phases {
-  id                          Int                        @id @default(autoincrement())
+  id                          Int                           @id @default(autoincrement())
   vertrag_id                  Int?
-  vk                          Decimal?                      @db.Decimal(3, 2)
-  stufe                       Int?
   von                         DateTime?                     @db.Date
   bis                         DateTime?                     @db.Date
   created_at                  DateTime                      @db.Timestamp(6)
   updated_at                  DateTime                      @db.Timestamp(6)
-  tage_woche                  Float?                        @default(5.0)
-  arbeitszeit_absprachens     arbeitszeit_absprachens[]
-  automatische_einteilungens  automatische_einteilungens[]
-  nicht_einteilen_absprachens nicht_einteilen_absprachens[]
+  vertragsstufe_id            Int?
   vertrags                    vertrags?                     @relation(fields: [vertrag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4db5fece40")
+  vertragsstuves              vertragsstuves?               @relation(fields: [vertragsstufe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f9b8646f70")
 
   @@index([vertrag_id], map: "index_vertrags_phases_on_vertrag_id")
+  @@index([vertragsstufe_id], map: "index_vertrags_phases_on_vertragsstufe_id")
 }
 
 model vertrags_variantes {
@@ -2099,9 +2088,10 @@ model vertrags_variantes {
   bis            DateTime?        @db.Date
   vertragstyp_id Int?
   name           String?          @db.VarChar
-  wochenstunden  Int?
+  wochenstunden  Int?             @default(0)
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
+  tage_monat     Float?           @default(2.5)
   vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e70c474827")
   vertragsstuves vertragsstuves[]
 
@@ -2114,7 +2104,6 @@ model vertragsgruppes {
   vertragstyp_id Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
-  vertrags       vertrags[]
   vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_26cb34c5df")
   vertragsstuves vertragsstuves[]
 
@@ -2123,7 +2112,6 @@ model vertragsgruppes {
 
 model vertragsstuves {
   id                   Int              @id @default(autoincrement())
-  name                 String?             @db.VarChar
   stufe                Int?
   nach_jahren          Int?
   monatsgehalt         Decimal?            @db.Decimal(15, 2)
@@ -2133,6 +2121,7 @@ model vertragsstuves {
   vertrags_variante_id Int?
   vertragsgruppes      vertragsgruppes?    @relation(fields: [vertragsgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75bdf87379")
   vertrags_variantes   vertrags_variantes? @relation(fields: [vertrags_variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_91403e2823")
+  vertrags_phases      vertrags_phases[]
 
   @@index([vertrags_variante_id], map: "index_vertragsstuves_on_vertrags_variante_id")
   @@index([vertragsgruppe_id], map: "index_vertragsstuves_on_vertragsgruppe_id")
@@ -2143,7 +2132,6 @@ model vertragstyps {
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
-  tage_monat         Float?               @default(2.5)
   vertrags           vertrags[]
   vertrags_variantes vertrags_variantes[]
   vertragsgruppes    vertragsgruppes[]
