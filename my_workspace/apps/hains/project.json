@@ -9,10 +9,10 @@
   "targets": {
     "serve": {
       "executor": "@nx/next:server",
+      "defaultConfiguration": "production",
       "options": {
         "buildTarget": "hains:build",
-        "port": 3010,
-        "dev": true
+        "port": 3010
       }
     },
     "build": {
