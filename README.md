@@ -3,7 +3,7 @@
 - Zum Starten der Umgebung muss hains_docker gestartet sein (dadurch ist die Datenbank erreichbar).
 - Es braucht eine ./my_workspace/.env.
   - Diese enthält die Datenbank-Verbindung:
-    DATABASE_URL="postgresql://USER:PW@postgres:5432/DB_NAME?schema=public"
+    DATABASE_URL=postgresql://USER:PW@postgres:5432/DB_NAME?schema=public
   - USER, PW und DB_NAME entsprechend ersetzen!
 
 ### Befehle:
