@@ -14,14 +14,12 @@ npx prisma generate
 rm /tmp/f53b52ad6d21cceb72df/fp184.sock
 
 # Development
-npx nx run-many --target=serve --projects=hains,api --parallel --verbose
-# npx nx serve hains --verbose &
-# npx nx serve api --watch --verbose
+npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose
 
 echo "Show open Ports after nx run-many"
 lsof -i -P -n
 
 # Production
-# npx nx build hains --prod --verbose
-# cd dist/apps/hains
-# npx next start -p 3010
+# echo "Start build"
+# npx nx run-many --target=build --configuration=production --projects=hains,api --parallel --verbose
+# npx nx run-many --target=serve --configuration=production --projects=hains,api --parallel --verbose
