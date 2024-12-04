@@ -2019,7 +2019,7 @@ model verteiler_vorlagens {
 }
 
 model verteilungsoverrides {
-  id                      Int                 @id @default(autoincrement())
+  id                      Int                    @id @default(autoincrement())
   parameterset_id         Int?
   dienstbedarf_id         Int?
   dienstverteilungstyp_id Int?
@@ -2036,7 +2036,7 @@ model verteilungsoverrides {
 }
 
 model vertrags {
-  id                Int            @id @default(autoincrement())
+  id                Int               @id @default(autoincrement())
   mitarbeiter_id    Int?
   created_at        DateTime          @db.Timestamp(6)
   updated_at        DateTime          @db.Timestamp(6)

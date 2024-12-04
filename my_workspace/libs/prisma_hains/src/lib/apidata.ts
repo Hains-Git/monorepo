@@ -70,19 +70,17 @@ async function transformMitarbeiter(mitarbeiter: any) {
   mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map(
     (dienstrating: any) => dienstrating.id
   );
-  mitarbeiter['vertragphasen_ids'] = mitarbeiter.vertrags.reduce(
-    (vertragsPhasenIds: any, vertrag: any) => {
-      const phasenIds = vertrag.vertrags_phases.map((phase: any) => phase.id);
-      if (phasenIds.length) {
-        vertragsPhasenIds.push(...phasenIds);
-      }
-      return vertragsPhasenIds;
-    },
-    []
-  );
-  mitarbeiter['vertrags'] = mitarbeiter.vertrags.map(
-    (vertrag: any) => vertrag.id
-  );
+  mitarbeiter['vertragphasen_ids'] = [];
+  mitarbeiter['vertrags_arbeitszeits_ids'] = [];
+  mitarbeiter['vertrags'] = mitarbeiter.vertrags.map((vertrag: any) => {
+    vertrag.vertrags_phases?.forEach?.((phase: any) => {
+      mitarbeiter['vertragphasen_ids'].push(phase.id);
+    });
+    vertrag.vertrags_arbeitszeits?.forEach?.((arbeitszeit: any) => {
+      mitarbeiter['vertrags_arbeitszeits_ids'].push(arbeitszeit.id);
+    });
+    return vertrag.id;
+  });
   return mitarbeiter;
 }
 
@@ -170,8 +168,8 @@ async function getMonatsplanungSettings(user: any) {
     vorlagen: <any[]>[],
     dienstplan_custom_felder: <any[]>[],
     dienstplan_custom_counter: <any[]>[],
-    dienstplan_settings: {
-      user_settings: user.dienstplaner_user_settings,
+    dienstplaner_settings: {
+      user_settings: user.dienstplaner_user_settings?.[0] || {},
       farbgruppen: user.dienstplaner_user_farbgruppens
     }
   };
@@ -259,8 +257,6 @@ function getAnfang(absprache: any) {
   result.setFullYear(new Date().getFullYear());
   if (absprache.von) {
     result = absprache.von;
-  } else if (absprache.vertragsPhase?.von) {
-    result = absprache.vertragsPhase.von;
   } else if (absprache.zeitraumKategorie?.anfang) {
     result = absprache.zeitraumKategorie.anfang;
   }
@@ -273,8 +269,6 @@ function getEnde(absprache: any) {
 
   if (absprache.bis) {
     result = absprache.bis;
-  } else if (absprache.vertragsPhase?.bis) {
-    result = absprache.vertragsPhase.bis;
   } else if (absprache.zeitraumKategorie?.ende) {
     result = absprache.zeitraumKategorie.ende;
   }
@@ -482,6 +476,14 @@ async function getAllApiData(userId: number) {
   res['vertragsphasen'] = processData(
     'id',
     await getApiDataByKey('vertrags_phases')
+  );
+  res['vertrags_arbeitszeiten'] = processData(
+    'id',
+    await getApiDataByKey('vertrags_arbeitszeits')
+  );
+  res['vertragsstufen'] = processData(
+    'id',
+    await getApiDataByKey('vertragsstuves')
   );
   const vertragsvarianten = await getApiDataByKey('vertrags_variantes');
   res['vertragstyp_varianten'] = vertragsvarianten.reduce(

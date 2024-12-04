@@ -9,7 +9,8 @@ export NX_DAEMON=true
 
 npm install --force
 # npx prisma format
-npx prisma generate
+npx prisma generate --watch &
+# npx prisma generate
 
 rm /tmp/f53b52ad6d21cceb72df/fp184.sock
 

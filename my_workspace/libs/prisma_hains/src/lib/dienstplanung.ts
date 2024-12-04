@@ -163,8 +163,6 @@ async function getMitarbeiters(compute = true, as_ids = false) {
         include: {
           account_infos: true,
           dienstratings: true,
-          // qualifizierte_freigaben: true,
-          // vertrags_phases: true,
           vertrags: true
         },
         orderBy: {
@@ -231,16 +229,7 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
           teams: true
         }
       },
-      mitarbeiters: {
-        include: {
-          vertrags: {
-            include: {
-              vertragsgruppes: true,
-              vertrags_phases: true
-            }
-          }
-        }
-      }
+      mitarbeiters: true
     }
   });
   return rotationen;
