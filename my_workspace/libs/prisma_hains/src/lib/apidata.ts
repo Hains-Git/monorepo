@@ -3,51 +3,32 @@ import { prismaHains } from './prisma-hains';
 import { getUserById } from './crud/user';
 import { format } from 'date-fns';
 
-import {
-  processData,
-  processAsyncData,
-  convertBereichPlanname,
-  convertDienstPlanname
-} from '@my-workspace/utils';
+import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
 
 let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
-const MONATSPLAN_ANSICHTEN = [
-  'Datum-Dienste',
-  'Mitarbeiter-Datum',
-  'Mitarbeiter-Dienste'
-];
+const MONATSPLAN_ANSICHTEN = ['Datum-Dienste', 'Mitarbeiter-Datum', 'Mitarbeiter-Dienste'];
 
 function transformPodienst(poDienst: any) {
-  poDienst['dienstbedarves'] = poDienst.dienstbedarves.map(
-    (dienstbedarf: any) => dienstbedarf.id
-  );
-  poDienst['dienstratings'] = poDienst.dienstratings.map(
-    (dienstrating: any) => dienstrating.id
-  );
+  poDienst['dienstbedarves'] = poDienst.dienstbedarves.map((dienstbedarf: any) => dienstbedarf.id);
+  poDienst['dienstratings'] = poDienst.dienstratings.map((dienstrating: any) => dienstrating.id);
   return poDienst;
 }
 
 function transformDienstkategorie(dienstkategorie: any) {
-  dienstkategorie['dienstkategoriethemas'] =
-    dienstkategorie.dienstkategoriethemas.map(
-      (dienstkategoriethema: any) => dienstkategoriethema.thema_id
-    );
+  dienstkategorie['dienstkategoriethemas'] = dienstkategorie.dienstkategoriethemas.map(
+    (dienstkategoriethema: any) => dienstkategoriethema.thema_id
+  );
   return dienstkategorie;
 }
 
 type PrismaModels = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
 
 type FindManyArgsTypes = {
-  [K in PrismaModels]: K extends keyof PrismaClient
-    ? Parameters<PrismaClient[K]['findMany']>[0]
-    : never;
+  [K in PrismaModels]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['findMany']>[0] : never;
 };
 
-async function getApiDataByKey<K extends PrismaModels>(
-  key: K,
-  args: FindManyArgsTypes[K] = {}
-) {
+async function getApiDataByKey<K extends PrismaModels>(key: K, args: FindManyArgsTypes[K] = {}) {
   const data = await (prismaDb[key] as any).findMany(args);
   return data;
 }
@@ -61,15 +42,9 @@ async function transformMitarbeiter(mitarbeiter: any) {
       }
     }
   });
-  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map(
-    (freigabe: any) => freigabe.freigabetyp_id
-  );
-  mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map(
-    (dienstfreigabe: any) => dienstfreigabe.id
-  );
-  mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map(
-    (dienstrating: any) => dienstrating.id
-  );
+  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe: any) => freigabe.freigabetyp_id);
+  mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map((dienstfreigabe: any) => dienstfreigabe.id);
+  mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map((dienstrating: any) => dienstrating.id);
   mitarbeiter['vertragphasen_ids'] = [];
   mitarbeiter['vertrags_arbeitszeits_ids'] = [];
   mitarbeiter['vertrags'] = mitarbeiter.vertrags.map((vertrag: any) => {
@@ -86,12 +61,8 @@ async function transformMitarbeiter(mitarbeiter: any) {
 
 function transformTeams(team: any) {
   team['po_diensts'] = team.po_diensts.map((po_dienst: any) => po_dienst.id);
-  team['team_funktions'] = team.team_funktions.map(
-    (team_funktion: any) => team_funktion.funktion_id
-  );
-  team['kontingents'] = team.kontingents.map(
-    (kontingent: any) => kontingent.id
-  );
+  team['team_funktions'] = team.team_funktions.map((team_funktion: any) => team_funktion.funktion_id);
+  team['kontingents'] = team.kontingents.map((kontingent: any) => kontingent.id);
   return team;
 }
 
@@ -153,16 +124,9 @@ async function getPublicVorlagesIdsByTeams(teamIds: number[]) {
   return publicVorlagen.map((v) => v.id || 0) || [];
 }
 
-async function getMonatsplanungSettings(user: any) {
+async function getMonatsplanungSettings(user: any, isAdmin: boolean, canAcces: boolean) {
   if (!user) return {};
   const teamIds = user.dienstplaners_teams.map((team: any) => team.team_id);
-  const userGroupsNames = user.user_gruppes.map(
-    (userGruppe: any) => userGruppe.gruppes.name
-  );
-  const isAdmin = userGroupsNames.includes('HAINS Admins');
-  const canAcces =
-    userGroupsNames.includes('Dienstplaner Anästhesie HD') ||
-    userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
   const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
   const res = {
     vorlagen: <any[]>[],
@@ -181,35 +145,28 @@ async function getMonatsplanungSettings(user: any) {
     res['vorlagen'] = await getUserVorlagen(mitarbeiterId);
   }
   const vorlagenIds =
-    !isAdmin && canAcces
-      ? await getPublicVorlagesIdsByTeams(teamIds)
-      : res.vorlagen.map((v) => v.id || 0) || [];
+    !isAdmin && canAcces ? await getPublicVorlagesIdsByTeams(teamIds) : res.vorlagen.map((v) => v.id || 0) || [];
 
-  const dienstplanCustomFelder =
-    await prismaDb.dienstplan_custom_felds.findMany({
-      where: {
-        vorlage_id: { in: vorlagenIds }
-      },
-      orderBy: [{ vorlage_id: 'asc' }, { ansicht_id: 'asc' }, { index: 'asc' }]
-    });
-  const dienstplanCustomFelderIds =
-    dienstplanCustomFelder.map((f) => f.id || 0) || [];
+  const dienstplanCustomFelder = await prismaDb.dienstplan_custom_felds.findMany({
+    where: {
+      vorlage_id: { in: vorlagenIds }
+    },
+    orderBy: [{ vorlage_id: 'asc' }, { ansicht_id: 'asc' }, { index: 'asc' }]
+  });
+  const dienstplanCustomFelderIds = dienstplanCustomFelder.map((f) => f.id || 0) || [];
 
   res.dienstplan_custom_felder = dienstplanCustomFelder;
-  res.dienstplan_custom_counter =
-    await prismaDb.dienstplan_custom_counters.findMany({
-      where: {
-        dienstplan_custom_feld_id: { in: dienstplanCustomFelderIds }
-      },
-      orderBy: [{ dienstplan_custom_feld_id: 'asc' }, { id: 'asc' }]
-    });
+  res.dienstplan_custom_counter = await prismaDb.dienstplan_custom_counters.findMany({
+    where: {
+      dienstplan_custom_feld_id: { in: dienstplanCustomFelderIds }
+    },
+    orderBy: [{ dienstplan_custom_feld_id: 'asc' }, { id: 'asc' }]
+  });
 
   res.vorlagen = res.vorlagen.map((v) => {
     const filepattern = v?.allgemeine_vorlages?.[0]?.filepattern;
     if (v.allgemeine_vorlages.length !== 0) {
-      v.allgemeine_vorlages[0].publish = filepattern
-        ? filepattern.split('_')[2].replace(/[()]/g, '').split('|')
-        : '';
+      v.allgemeine_vorlages[0].publish = filepattern ? filepattern.split('_')[2].replace(/[()]/g, '').split('|') : '';
     }
     return v;
   });
@@ -313,6 +270,13 @@ async function getAllApiData(userId: number) {
     }
   });
 
+  if (!user) return '';
+
+  const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
+  const isAdmin = userGroupsNames.includes('HAINS Admins');
+  const canAcces =
+    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
+
   const bereicheArr = await getApiDataByKey('bereiches', {});
   const poDiensteArr = await getApiDataByKey('po_diensts', {
     include: {
@@ -322,18 +286,12 @@ async function getAllApiData(userId: number) {
   });
 
   const bereiche = processData('id', bereicheArr, [convertBereichPlanname]);
-  const poDienste = processData('id', poDiensteArr, [
-    convertDienstPlanname,
-    transformPodienst
-  ]);
+  const poDienste = processData('id', poDiensteArr, [convertDienstPlanname, transformPodienst]);
 
   res['MAX_RATING'] = 5;
   res['MAX_WOCHENENDEN'] = 2;
 
-  res['arbeitsplaetze'] = processData(
-    'id',
-    await getApiDataByKey('arbeitsplatzs')
-  );
+  res['arbeitsplaetze'] = processData('id', await getApiDataByKey('arbeitsplatzs'));
   res['arbeitszeit_absprachen'] = processData(
     'mitarbeiter_id',
     await getApiDataByKey('arbeitszeit_absprachens', {
@@ -347,19 +305,10 @@ async function getAllApiData(userId: number) {
     [transformArbeitszeitAbsprachen],
     true
   );
-  res['arbeitszeittypen'] = processData(
-    'id',
-    await getApiDataByKey('arbeitszeittyps')
-  );
-  res['arbeitszeitverteilungen'] = processData(
-    'id',
-    await getApiDataByKey('arbeitszeitverteilungs')
-  );
+  res['arbeitszeittypen'] = processData('id', await getApiDataByKey('arbeitszeittyps'));
+  res['arbeitszeitverteilungen'] = processData('id', await getApiDataByKey('arbeitszeitverteilungs'));
   res['bereiche'] = bereiche;
-  res['dienstgruppen'] = processData(
-    'id',
-    await getApiDataByKey('dienstgruppes')
-  );
+  res['dienstgruppen'] = processData('id', await getApiDataByKey('dienstgruppes'));
   res['dienstkategorien'] = processData(
     'id',
     await getApiDataByKey('dienstkategories', {
@@ -369,22 +318,10 @@ async function getAllApiData(userId: number) {
     }),
     [transformDienstkategorie]
   );
-  res['dienstplanpfade'] = processData(
-    'id',
-    await getApiDataByKey('dienstplan_paths')
-  );
-  res['dienstverteilungstypen'] = processData(
-    'id',
-    await getApiDataByKey('dienstverteilungstyps')
-  );
-  res['einteilungskontexte'] = processData(
-    'id',
-    await getApiDataByKey('einteilungskontexts')
-  );
-  res['einteilungsstatuse'] = processData(
-    'id',
-    await getApiDataByKey('einteilungsstatuses')
-  );
+  res['dienstplanpfade'] = processData('id', await getApiDataByKey('dienstplan_paths'));
+  res['dienstverteilungstypen'] = processData('id', await getApiDataByKey('dienstverteilungstyps'));
+  res['einteilungskontexte'] = processData('id', await getApiDataByKey('einteilungskontexts'));
+  res['einteilungsstatuse'] = processData('id', await getApiDataByKey('einteilungsstatuses'));
   res['freigaben'] = processData(
     'id',
     await getApiDataByKey('dienstfreigabes', {
@@ -398,14 +335,8 @@ async function getAllApiData(userId: number) {
       }
     })
   );
-  res['freigabestatuse'] = processData(
-    'id',
-    await getApiDataByKey('freigabestatuses')
-  );
-  res['freigabetypen'] = processData(
-    'id',
-    await getApiDataByKey('freigabetyps')
-  );
+  res['freigabestatuse'] = processData('id', await getApiDataByKey('freigabestatuses'));
+  res['freigabetypen'] = processData('id', await getApiDataByKey('freigabetyps'));
   res['funktionen'] = processData('id', await getApiDataByKey('funktions'));
   res['kontingente'] = processData(
     'id',
@@ -415,10 +346,7 @@ async function getAllApiData(userId: number) {
       }
     })
   );
-  res['kostenstellen'] = processData(
-    'id',
-    await getApiDataByKey('kostenstelles')
-  );
+  res['kostenstellen'] = processData('id', await getApiDataByKey('kostenstelles'));
   res['mitarbeiters'] = await processAsyncData(
     'id',
     await getApiDataByKey('mitarbeiters', {
@@ -436,7 +364,7 @@ async function getAllApiData(userId: number) {
     [transformMitarbeiter]
   );
   res['monatsplan_ansichten'] = MONATSPLAN_ANSICHTEN;
-  res['monatsplanung_settings'] = await getMonatsplanungSettings(user);
+  res['monatsplanung_settings'] = await getMonatsplanungSettings(user, isAdmin, canAcces);
   res['nicht_einteilen_absprachen'] = processData(
     'mitarbeiter_id',
     await getApiDataByKey('nicht_einteilen_absprachens', {
@@ -455,7 +383,7 @@ async function getAllApiData(userId: number) {
   );
   // res['nicht_einteilen_absprachen'] = {};
   res['po_dienste'] = poDienste;
-  res['publicvorlagen'] = await getPublicVorlagen(user);
+  res['publicvorlagen'] = isAdmin ? {} : await getPublicVorlagen(user);
   res['ratings'] = processData('id', await getApiDataByKey('dienstratings'));
 
   res['standorte'] = processData('id', await getApiDataByKey('standorts'));
@@ -473,40 +401,22 @@ async function getAllApiData(userId: number) {
   );
   res['themen'] = processData('id', await getApiDataByKey('themas'));
   res['vertraege'] = processData('id', await getApiDataByKey('vertrags'));
-  res['vertragsphasen'] = processData(
-    'id',
-    await getApiDataByKey('vertrags_phases')
-  );
-  res['vertrags_arbeitszeiten'] = processData(
-    'id',
-    await getApiDataByKey('vertrags_arbeitszeits')
-  );
-  res['vertragsstufen'] = processData(
-    'id',
-    await getApiDataByKey('vertragsstuves')
-  );
+  res['vertragsphasen'] = processData('id', await getApiDataByKey('vertrags_phases'));
+  res['vertrags_arbeitszeiten'] = processData('id', await getApiDataByKey('vertrags_arbeitszeits'));
+  res['vertragsstufen'] = processData('id', await getApiDataByKey('vertragsstuves'));
   const vertragsvarianten = await getApiDataByKey('vertrags_variantes');
-  res['vertragstyp_varianten'] = vertragsvarianten.reduce(
-    (hashObj: any, vertragsvariante: any) => {
-      const key = vertragsvariante.vertragstyp_id;
-      if (
-        key !== undefined &&
-        (typeof key === 'string' || typeof key === 'number')
-      ) {
-        if (!hashObj[key]) {
-          hashObj[key] = [];
-        }
-        hashObj[key].push(key);
+  res['vertragstyp_varianten'] = vertragsvarianten.reduce((hashObj: any, vertragsvariante: any) => {
+    const key = vertragsvariante.vertragstyp_id;
+    if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
+      if (!hashObj[key]) {
+        hashObj[key] = [];
       }
-      return hashObj;
-    },
-    {}
-  );
+      hashObj[key].push(key);
+    }
+    return hashObj;
+  }, {});
   res['vertragsvarianten'] = processData('id', vertragsvarianten);
-  res['zeitraumkategorien'] = processData(
-    'id',
-    await getApiDataByKey('zeitraumkategories')
-  );
+  res['zeitraumkategorien'] = processData('id', await getApiDataByKey('zeitraumkategories'));
 
   return res;
 }
