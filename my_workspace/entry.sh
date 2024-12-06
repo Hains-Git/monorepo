@@ -12,7 +12,7 @@ npm install --force
 npx prisma generate --watch &
 # npx prisma generate
 
-rm /tmp/f53b52ad6d21cceb72df/fp184.sock
+# rm /tmp/f53b52ad6d21cceb72df/fp184.sock
 
 # Development
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose
