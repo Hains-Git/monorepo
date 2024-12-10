@@ -356,7 +356,8 @@ async function getAllApiData(userId: number) {
         dienstratings: true,
         vertrags: {
           include: {
-            vertrags_phases: true
+            vertrags_phases: true,
+            vertrags_arbeitszeits: true
           }
         }
       }
