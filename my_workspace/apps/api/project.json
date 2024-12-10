@@ -36,7 +36,7 @@
       "options": {
         "buildTarget": "api:build",
         "runBuildTargetDependencies": false,
-        "port": 3001
+        "port": 3005
       },
       "configurations": {
         "development": {
