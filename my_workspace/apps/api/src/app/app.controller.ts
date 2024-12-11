@@ -8,10 +8,11 @@ export class AppController {
 
   @Get('dienstplanung')
   getData(@Query() query: any) {
-    return this.appService.getDienstplanung(query.dienstplan_id);
+    console.log('App;Controller:Dienstplanung');
+    return this.appService.getDienstplanung(query.dienstplan_id || 65);
   }
   @Get('apidata')
   getApiData(@Query() query: any) {
-    return this.appService.getApiData(query?.user_id);
+    return this.appService.getApiData(query?.user_id || 5);
   }
 }
