@@ -5,10 +5,10 @@ apt-get update
 apt-get install -y lsof
 echo "Show open Ports"
 lsof -i -P -n
-export NX_DAEMON=true
 
 npm install --force
 # npx prisma format
+npx prisma format
 npx prisma generate
 
 rm /tmp/f53b52ad6d21cceb72df/fp184.sock

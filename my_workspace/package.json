@@ -2,7 +2,11 @@
   "name": "@my-workspace/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "migration:create": "npx prisma migrate dev --create-only",
+    "migrate": "npx prisma migrate dev",
+    "migrate:prod": "npx prisma migrate deploy"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^10.0.2",

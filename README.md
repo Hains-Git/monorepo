@@ -32,6 +32,7 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
+
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
@@ -75,3 +76,8 @@ Innerhalb des hains_monorepo Containers ausführen!
 --to-schema-datamodel prisma/schema.prisma \
 --script > prisma/migrations/0_init/migration.sql`
 - Im docker container run `npx prisma migrate resolve --applied 0_init`
+
+
+## Mastering Prisma Migrations
+
+- https://www.youtube.com/watch?v=_-YCDwm9M7M

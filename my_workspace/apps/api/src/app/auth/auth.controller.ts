@@ -32,6 +32,11 @@ export class AuthController {
 
     const isAuthenticated = authorization === test;
 
+    const url = new URL(req?.url, 'http://localhost:3020');
+    const searchParams = url.searchParams;
+    const originalRedirectPath = searchParams.get('original_redirect_uri');
+    const originalRedirectUrl = `http://localhost:3020${originalRedirectPath}`;
+
     if (!isAuthenticated) {
       // Implement your authentication check
       // return res.redirect(`/login?redirect_uri=${encodeURIComponent(redirectUri)}&client_id=${clientId}`);
@@ -44,6 +49,7 @@ export class AuthController {
     const code = await this.authService.generateAuthorizationCode(userId, Number(clientId));
 
     // Redirect back to the client with the authorization code
+    // return res.redirect(`${originalRedirectUrl}?code=${code}`);
     return res.redirect(`${redirectUri}?code=${code}`);
   }
 

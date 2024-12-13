@@ -2,13 +2,20 @@ import { Module } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { StandaloneDataController } from './standalone-data/standalone-data.controller';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { GlobalAuthGuard } from './guards/auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [AuthModule, PrismaModule],
-  controllers: [AppController, StandaloneDataController],
-  providers: [AppService]
+  controllers: [AppController],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: GlobalAuthGuard
+    }
+  ]
 })
 export class AppModule {}

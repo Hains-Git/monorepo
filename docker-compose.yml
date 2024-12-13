@@ -14,3 +14,5 @@ services:
       - ./my_workspace/.env
     entrypoint:
       - /app/entry.sh
+    environment:
+      - TZ=Europe/Berlin

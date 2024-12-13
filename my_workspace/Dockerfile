@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Abhängigkeiten installieren
 COPY package*.json ./
+
 RUN npm install --force
 
 # Kopieren Sie den gesamten Code

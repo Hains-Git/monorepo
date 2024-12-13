@@ -87,9 +87,21 @@ export class AuthService {
 
   async validateUser(accessToken: string): Promise<any> {
     console.log('service:validate', accessToken);
-    // validate user, check for accessToken in the database
-    //
-    // return { user: 'USer', accessToken };
+    const decoded = this.jwtService.decode(accessToken);
+    const exp = decoded?.exp;
+    const iat = decoded?.iat;
+    console.log('decoded', decoded);
+    console.log({
+      iat: new Date(iat * 1000),
+      exp: new Date(exp * 1000),
+      now: new Date(),
+      now_: new Date().getTimezoneOffset(),
+      now__: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      nowH: new Date().getHours(),
+      nowH2: new Date().getUTCHours(),
+      now2: new Date().toUTCString(),
+      now3: new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' })
+    });
     return true;
   }
 

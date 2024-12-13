@@ -8,7 +8,7 @@ datasource db {
 }
 
 model abwesentheiten_spaltens {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   planname     String?  @db.VarChar
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
@@ -18,7 +18,7 @@ model abwesentheiten_spaltens {
 }
 
 model abwesentheitenueberblick_counters {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   po_dienst_id   Int?
   planname       String?       @db.VarChar
@@ -35,7 +35,7 @@ model abwesentheitenueberblick_counters {
 }
 
 model abwesentheitenueberblick_settings {
-  id               Int        @id @default(autoincrement())
+  id               Int           @id @default(autoincrement())
   mitarbeiter_id   Int?
   visible_columns  String[]      @default([]) @db.VarChar
   visible_team_ids Int[]         @default([])
@@ -47,7 +47,7 @@ model abwesentheitenueberblick_settings {
 }
 
 model abwesentheitenueberblicks {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   jahr           Int?
   ug             Int?          @default(30)
@@ -70,7 +70,7 @@ model abwesentheitenueberblicks {
 }
 
 model account_infos {
-  id                  Int        @id @default(autoincrement())
+  id                  Int           @id @default(autoincrement())
   old_user_id         Int?
   comments            String?
   nameKurz            String?       @default("") @db.VarChar(255)
@@ -95,7 +95,7 @@ model account_infos {
   aktivAb             DateTime?     @db.Timestamp(6)
   aktivBis            DateTime?     @db.Timestamp(6)
   mitarbeiter_id      Int?
-  user_id             Int?          @unique
+  user_id             Int?
   geburtsdatum        DateTime?     @db.Date
   teilzeit            String?       @db.VarChar
   funktion            String?       @db.VarChar
@@ -104,13 +104,12 @@ model account_infos {
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
   mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
-  user                users?
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
 }
 
 model active_admin_comments {
-  id            Int   @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   namespace     String?  @db.VarChar
   body          String?
   resource_type String?  @db.VarChar
@@ -126,7 +125,7 @@ model active_admin_comments {
 }
 
 model active_storage_attachments {
-  id          Int   @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String   @db.VarChar
   record_type String   @db.VarChar
   record_id   Int
@@ -138,7 +137,7 @@ model active_storage_attachments {
 }
 
 model active_storage_blobs {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   key          String   @unique(map: "index_active_storage_blobs_on_key") @db.VarChar
   filename     String   @db.VarChar
   content_type String?  @db.VarChar
@@ -149,7 +148,7 @@ model active_storage_blobs {
 }
 
 model admin_users {
-  id                     Int    @id @default(autoincrement())
+  id                     Int       @id @default(autoincrement())
   email                  String    @unique(map: "index_admin_users_on_email") @default("") @db.VarChar(50)
   encrypted_password     String    @default("") @db.VarChar
   reset_password_token   String?   @unique(map: "index_admin_users_on_reset_password_token") @db.VarChar(160)
@@ -160,7 +159,7 @@ model admin_users {
 }
 
 model allgemeine_vorlages {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   vorlage_id         Int?
   dienstplan_path_id Int?
   publishable        Boolean?          @default(false)
@@ -168,7 +167,7 @@ model allgemeine_vorlages {
   order              Int?              @default(0)
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
-  pdf_zusatz_dienste Int[]          @default([])
+  pdf_zusatz_dienste Int[]             @default([])
   freitext           String            @default("")
   dienstplan_paths   dienstplan_paths? @relation(fields: [dienstplan_path_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_01e0e49755")
   vorlages           vorlages?         @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c44f45c22")
@@ -178,7 +177,7 @@ model allgemeine_vorlages {
 }
 
 model antraege_histories {
-  id               Int           @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   mitarbeiter_id   Int?
   antraege_id      Int?
   antragsstatus_id Int?
@@ -196,7 +195,7 @@ model antraege_histories {
 }
 
 model antraeges {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   mitarbeiter_id     Int?
   antragstyp_id      Int?
   antragsstatus_id   Int?
@@ -217,7 +216,7 @@ model antraeges {
 }
 
 model antragsstatuses {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar
   color              String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
@@ -227,7 +226,7 @@ model antragsstatuses {
 }
 
 model antragstyps {
-  id                                                                Int      @id @default(autoincrement())
+  id                                                                Int         @id @default(autoincrement())
   name                                                              String?     @db.VarChar
   created_at                                                        DateTime    @db.Timestamp(6)
   updated_at                                                        DateTime    @db.Timestamp(6)
@@ -255,7 +254,7 @@ model ar_internal_metadata {
 }
 
 model arbeitsplatzs {
-  id          Int     @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String?    @default("") @db.VarChar
   bereich_id  Int?
   created_at  DateTime   @db.Timestamp(6)
@@ -269,7 +268,7 @@ model arbeitsplatzs {
 }
 
 model arbeitszeit_absprachens {
-  id                   Int             @id @default(autoincrement())
+  id                   Int                @id @default(autoincrement())
   mitarbeiter_id       Int?
   zeitraumkategorie_id Int
   von                  DateTime?          @db.Date
@@ -289,7 +288,7 @@ model arbeitszeit_absprachens {
 }
 
 model arbeitszeittyps {
-  id              Int     @id @default(autoincrement())
+  id              Int        @id @default(autoincrement())
   name            String?    @db.VarChar
   beschreibung    String?    @db.VarChar
   sys             Boolean?   @default(false)
@@ -304,7 +303,7 @@ model arbeitszeittyps {
 }
 
 model arbeitszeitverteilungs {
-  id                                                                      Int           @id @default(autoincrement())
+  id                                                                      Int              @id @default(autoincrement())
   name                                                                    String?          @db.VarChar
   dauer                                                                   Int?
   verteilung                                                              DateTime[]       @db.Time
@@ -325,7 +324,7 @@ model arbeitszeitverteilungs {
 }
 
 model automatische_einteilungens {
-  id                   Int              @id @default(autoincrement())
+  id                   Int                 @id @default(autoincrement())
   mitarbeiter_id       Int?
   po_dienst_id         Int?
   vertrags_phase_id    Int?
@@ -345,7 +344,7 @@ model automatische_einteilungens {
 }
 
 model bedarfs_eintrags {
-  id                      Int                 @id @default(autoincrement())
+  id                      Int                    @id @default(autoincrement())
   tag                     DateTime?              @db.Date
   dienstplanbedarf_id     Int?
   po_dienst_id            Int?
@@ -360,7 +359,7 @@ model bedarfs_eintrags {
   created_at              DateTime               @db.Timestamp(6)
   updated_at              DateTime               @db.Timestamp(6)
   ausgleich_tage          Int?                   @default(0)
-  kostenstelle_id         Int?                @default(2)
+  kostenstelle_id         Int?                   @default(2)
   dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_00545eb639")
   po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c867c460")
   dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0f89581c7b")
@@ -378,7 +377,7 @@ model bedarfs_eintrags {
 }
 
 model benachrichtigungs {
-  id                          Int                      @id @default(autoincrement())
+  id                          Int                         @id @default(autoincrement())
   mitarbeiter_id              Int?
   mitarbeiter_kommentar       String?                     @db.VarChar
   hains_task_id               Int?
@@ -394,7 +393,7 @@ model benachrichtigungs {
 }
 
 model benachrichtigungs_statuses {
-  id                Int              @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar
   color             String?             @db.VarChar
   created_at        DateTime            @db.Timestamp(6)
@@ -403,7 +402,7 @@ model benachrichtigungs_statuses {
 }
 
 model benachrichtigungs_typs {
-  id              Int   @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   name            String?  @db.VarChar
   respond         Boolean? @default(false)
   status_optionen Int[]
@@ -416,7 +415,7 @@ model benachrichtigungs_typs {
 }
 
 model bereich_tagesverteilers {
-  id                Int           @id @default(autoincrement())
+  id                Int              @id @default(autoincrement())
   tagesverteiler_id Int?
   bereich_id        Int?
   po_dienst_id      Int?
@@ -434,7 +433,7 @@ model bereich_tagesverteilers {
 }
 
 model bereich_wochenverteilers {
-  id             Int      @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   bereich_id     Int?
   po_dienst_id   Int?
   color_bg       String?     @default("#ffffff") @db.VarChar
@@ -451,7 +450,7 @@ model bereich_wochenverteilers {
 }
 
 model bereiches {
-  id                       Int                     @id @default(autoincrement())
+  id                       Int                        @id @default(autoincrement())
   name                     String?                    @db.VarChar(255)
   name_url                 String?                    @db.VarChar(255)
   info                     String?
@@ -472,7 +471,7 @@ model bereiches {
 }
 
 model channel_room_users {
-  id              Int         @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   channel_room_id Int?
   user_id         Int?
   created_at      DateTime       @db.Timestamp(6)
@@ -487,7 +486,7 @@ model channel_room_users {
 }
 
 model channel_rooms {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   name               String               @default("") @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
@@ -495,14 +494,14 @@ model channel_rooms {
 }
 
 model datei_typs {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   name       String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
 }
 
 model dateis {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
   ersteller_id Int?
@@ -517,7 +516,7 @@ model dateis {
 }
 
 model dienstbedarves {
-  id                       Int                  @id @default(autoincrement())
+  id                       Int                     @id @default(autoincrement())
   min                      Int?
   po_dienst_id             Int?
   bereich_id               Int?
@@ -529,7 +528,7 @@ model dienstbedarves {
   opt                      Int?
   arbeitszeitverteilung_id Int?
   zeitraumkategories_id    Int?
-  kostenstelle_id          Int?                 @default(2)
+  kostenstelle_id          Int?                    @default(2)
   ignore_in_urlaubssaldo   Boolean?                @default(false)
   bedarfs_eintrags         bedarfs_eintrags[]
   dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_05b1cdbc7e")
@@ -556,7 +555,7 @@ model dienstbedarveshistory {
 }
 
 model diensteinteilungs {
-  id                    Int               @id @default(autoincrement())
+  id                    Int                  @id @default(autoincrement())
   mitarbeiter_id        Int?
   created_at            DateTime             @db.Timestamp(6)
   updated_at            DateTime             @db.Timestamp(6)
@@ -588,7 +587,7 @@ model diensteinteilungs {
 }
 
 model diensteinteilungs_versions {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -600,7 +599,7 @@ model diensteinteilungs_versions {
 }
 
 model dienstfreigabe_versions {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -613,7 +612,7 @@ model dienstfreigabe_versions {
 }
 
 model dienstfreigabes {
-  id                Int            @id @default(autoincrement())
+  id                Int               @id @default(autoincrement())
   freigabetyp_id    Int?
   mitarbeiter_id    Int?
   freigabestatus_id Int?
@@ -631,9 +630,9 @@ model dienstfreigabes {
 }
 
 model dienstgruppes {
-  id                                                                               Int                   @id @default(autoincrement())
+  id                                                                               Int                      @id @default(autoincrement())
   name                                                                             String?                  @db.VarChar
-  dienste                                                                          Int[]                 @default([])
+  dienste                                                                          Int[]                    @default([])
   created_at                                                                       DateTime                 @db.Timestamp(6)
   updated_at                                                                       DateTime                 @db.Timestamp(6)
   use_in_publish                                                                   Boolean                  @default(false)
@@ -646,7 +645,7 @@ model dienstgruppes {
 }
 
 model dienstkategorie_teams {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   dienstkategorie_id Int?
   team_id            Int?
   created_at         DateTime          @db.Timestamp(6)
@@ -659,7 +658,7 @@ model dienstkategorie_teams {
 }
 
 model dienstkategories {
-  id                    Int                  @id @default(autoincrement())
+  id                    Int                     @id @default(autoincrement())
   name                  String?                 @db.VarChar
   beschreibung          String?                 @db.VarChar
   color                 String?                 @db.VarChar
@@ -675,7 +674,7 @@ model dienstkategories {
 }
 
 model dienstkategoriethemas {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   dienstkategorie_id Int?
   thema_id           Int?
   created_at         DateTime          @db.Timestamp(6)
@@ -688,10 +687,10 @@ model dienstkategoriethemas {
 }
 
 model dienstplan_custom_counters {
-  id                        Int                   @id @default(autoincrement())
+  id                        Int                      @id @default(autoincrement())
   name                      String?                  @default("Zähler") @db.VarChar
   dienste_ids               Int[]                    @default([])
-  mitarbeiter_ids           Int[]                 @default([])
+  mitarbeiter_ids           Int[]                    @default([])
   dienstplan_custom_feld_id Int?
   beschreibung              String?                  @default("")
   cell_id                   String?                  @default("") @db.VarChar
@@ -711,10 +710,10 @@ model dienstplan_custom_counters {
   count                     String?                  @default("Einteilungen") @db.VarChar
   funktion                  String?                  @default("") @db.VarChar
   feiertage                 String?                  @default("auch") @db.VarChar
-  mitarbeiterteam_ids       Int[]                 @default([])
-  mitarbeiterfunktionen_ids Int[]                 @default([])
-  diensteteam_ids           Int[]                 @default([])
-  wochentage                Int[]                 @default([])
+  mitarbeiterteam_ids       Int[]                    @default([])
+  mitarbeiterfunktionen_ids Int[]                    @default([])
+  diensteteam_ids           Int[]                    @default([])
+  wochentage                Int[]                    @default([])
   empty_as_regeldienst      Boolean?                 @default(false)
   dienstplan_custom_felds   dienstplan_custom_felds? @relation(fields: [dienstplan_custom_feld_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cc48ac5d4f")
 
@@ -722,16 +721,16 @@ model dienstplan_custom_counters {
 }
 
 model dienstplan_custom_felds {
-  id                         Int                       @id @default(autoincrement())
+  id                         Int                          @id @default(autoincrement())
   ansicht_id                 Int?                         @default(0)
   vorlage_id                 Int?
   row                        Boolean?                     @default(true)
-  index                      Int?                      @default(0)
+  index                      Int?                         @default(0)
   name                       String?                      @default("Neue Zeile") @db.VarChar
-  count_all_typ              Int?                      @default(0)
+  count_all_typ              Int?                         @default(0)
   created_at                 DateTime                     @db.Timestamp(6)
   updated_at                 DateTime                     @db.Timestamp(6)
-  custom_counter_ids         Int[]                     @default([])
+  custom_counter_ids         Int[]                        @default([])
   dienstplan_custom_counters dienstplan_custom_counters[]
   vorlages                   vorlages?                    @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3b768fab84")
 
@@ -739,7 +738,7 @@ model dienstplan_custom_felds {
 }
 
 model dienstplan_paths {
-  id                  Int                @id @default(autoincrement())
+  id                  Int                   @id @default(autoincrement())
   path                String?               @db.VarChar
   created_at          DateTime              @db.Timestamp(6)
   updated_at          DateTime              @db.Timestamp(6)
@@ -752,6 +751,7 @@ model dienstplan_paths {
   name                String                @default("") @db.VarChar
   position            Int                   @default(0)
   begin_on_monday     Boolean?              @default(false)
+  kalender_name       String?               @default("") @db.VarChar
   allgemeine_vorlages allgemeine_vorlages[]
   planintervals       planintervals?        @relation(fields: [planinterval_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1ef594e615")
   plan_tabs           plan_tabs?            @relation(fields: [plan_tab_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5a0e779422")
@@ -762,23 +762,23 @@ model dienstplan_paths {
 }
 
 model dienstplanbedarves {
-  id               Int             @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   created_at       DateTime           @db.Timestamp(6)
   updated_at       DateTime           @db.Timestamp(6)
   anfang           DateTime?          @db.Date
   ende             DateTime?          @db.Date
-  dienste          Int[]           @default([])
+  dienste          Int[]              @default([])
   bedarfs_eintrags bedarfs_eintrags[]
   dienstplans      dienstplans[]
 }
 
 model dienstplaner_user_farbgruppens {
-  id                   Int   @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
   user_id              Int?
   color                String?  @default("#000000") @db.VarChar
-  pos                  Int?  @default(1)
-  dienste_ids          Int[] @default([])
-  dienstkategorien_ids Int[] @default([])
+  pos                  Int?     @default(1)
+  dienste_ids          Int[]    @default([])
+  dienstkategorien_ids Int[]    @default([])
   created_at           DateTime @db.Timestamp(6)
   updated_at           DateTime @db.Timestamp(6)
   show                 Boolean? @default(true)
@@ -788,7 +788,7 @@ model dienstplaner_user_farbgruppens {
 }
 
 model dienstplaner_user_settings {
-  id                     Int   @id @default(autoincrement())
+  id                     Int      @id @default(autoincrement())
   user_id                Int?
   abwesend               Boolean? @default(true)
   mehrfacheinteilung     Boolean? @default(true)
@@ -818,7 +818,7 @@ model dienstplaner_user_settings {
 }
 
 model dienstplaners_teams {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int?
   team_id    Int?
   created_at DateTime @db.Timestamp(6)
@@ -831,7 +831,7 @@ model dienstplaners_teams {
 }
 
 model dienstplaners_verteiler_vorlagens {
-  id                  Int               @id @default(autoincrement())
+  id                  Int                  @id @default(autoincrement())
   user_id             Int?
   vorlage_id          Int?
   created_at          DateTime             @db.Timestamp(6)
@@ -844,7 +844,7 @@ model dienstplaners_verteiler_vorlagens {
 }
 
 model dienstplans {
-  id                  Int              @id @default(autoincrement())
+  id                  Int                 @id @default(autoincrement())
   name                String?             @db.VarChar
   parameterset_id     Int?
   anfang              DateTime?           @db.Date
@@ -865,7 +865,7 @@ model dienstplans {
 }
 
 model dienstplanstatuses {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   name         String?       @db.VarChar
   beschreibung String?       @db.VarChar
   color        String?       @db.VarChar
@@ -876,7 +876,7 @@ model dienstplanstatuses {
 }
 
 model dienstratings {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   po_dienst_id   Int?
   mitarbeiter_id Int?
   rating         Int?
@@ -891,7 +891,7 @@ model dienstratings {
 }
 
 model diensts {
-  id          Int    @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   datum       DateTime? @db.Timestamp(6)
   dienstname  String?   @db.VarChar(255)
   kommentar   String?
@@ -902,7 +902,7 @@ model diensts {
 }
 
 model dienstverteilungstyps {
-  id                   Int                 @id @default(autoincrement())
+  id                   Int                    @id @default(autoincrement())
   name                 String?                @db.VarChar
   beschreibung         String?                @db.VarChar
   created_at           DateTime               @db.Timestamp(6)
@@ -914,7 +914,7 @@ model dienstverteilungstyps {
 }
 
 model dienstwunsches {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   mitarbeiter_id     Int?
   tag                DateTime?         @db.Date
   dienstkategorie_id Int?
@@ -929,7 +929,7 @@ model dienstwunsches {
 }
 
 model einteilung_rotations {
-  id                   Int        @id @default(autoincrement())
+  id                   Int           @id @default(autoincrement())
   kontingent_id        Int?
   mitarbeiter_id       Int?
   mitarbeiter_planname String?       @db.VarChar
@@ -948,7 +948,7 @@ model einteilung_rotations {
 }
 
 model einteilung_versions {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -966,7 +966,7 @@ model einteilung_versions {
 }
 
 model einteilungskontexts {
-  id             Int   @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   name           String?  @db.VarChar
   beschreibung   String?  @db.VarChar
   color          String?  @db.VarChar
@@ -977,7 +977,7 @@ model einteilungskontexts {
 }
 
 model einteilungsstatuses {
-  id                Int              @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar
   color             String?             @db.VarChar
   public            Boolean?            @default(false)
@@ -992,7 +992,7 @@ model einteilungsstatuses {
 }
 
 model feiertages {
-  id                Int    @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   name              String?   @db.VarChar
   key               String?   @db.VarChar
   datum             DateTime? @db.Date
@@ -1005,7 +1005,7 @@ model feiertages {
 }
 
 model freigabestatuses {
-  id              Int            @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   name            String?           @db.VarChar
   created_at      DateTime          @db.Timestamp(6)
   updated_at      DateTime          @db.Timestamp(6)
@@ -1018,7 +1018,7 @@ model freigabestatuses {
 }
 
 model freigabetyps {
-  id              Int            @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   name            String?           @db.VarChar
   planname        String?           @db.VarChar
   beschreibung    String?
@@ -1029,7 +1029,7 @@ model freigabetyps {
 }
 
 model freistellungs {
-  id                   Int        @id @default(autoincrement())
+  id                   Int           @id @default(autoincrement())
   mitarbeiter_id       Int?
   mitarbeiter_planname String?       @db.VarChar(255)
   plandatum            DateTime?     @db.Timestamp(6)
@@ -1042,7 +1042,7 @@ model freistellungs {
 }
 
 model funktions {
-  id             Int           @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   planname       String?          @db.VarChar
   name           String?          @db.VarChar
   beschreibung   String?          @db.VarChar
@@ -1059,7 +1059,7 @@ model funktions {
 }
 
 model geraetebereiches {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   name       String?  @db.VarChar
   color      String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
@@ -1067,7 +1067,7 @@ model geraetebereiches {
 }
 
 model geraeteklasses {
-  id           Int    @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   name         String?   @db.VarChar
   color        String?   @db.VarChar
   beschreibung String?   @db.VarChar
@@ -1077,7 +1077,7 @@ model geraeteklasses {
 }
 
 model geraetepasses {
-  id                   Int        @id @default(autoincrement())
+  id                   Int           @id @default(autoincrement())
   mitarbeiter_id       Int?
   einweiser            String?       @db.VarChar
   einweisungsdatum     DateTime?     @db.Date
@@ -1094,7 +1094,7 @@ model geraetepasses {
 }
 
 model geraets {
-  id                 Int          @id @default(autoincrement())
+  id                 Int             @id @default(autoincrement())
   name               String?         @db.VarChar
   hersteller         String?         @db.VarChar
   typ                String?         @db.VarChar
@@ -1110,7 +1110,7 @@ model geraets {
 }
 
 model gruppes {
-  id            Int          @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   name          String?         @db.VarChar(255)
   resource_id   Int?
   resource_type String?         @db.VarChar(255)
@@ -1123,7 +1123,7 @@ model gruppes {
 }
 
 model hains_tasks {
-  id                       Int    @id @default(autoincrement())
+  id                       Int       @id @default(autoincrement())
   name                     String?   @db.VarChar
   beschreibung             String?
   created_at               DateTime  @db.Timestamp(6)
@@ -1152,7 +1152,7 @@ model hains_tasks {
 }
 
 model jahresbilanzs {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   plusstunden    Decimal?      @default(0) @db.Decimal(6, 2)
   ueberstunden   Decimal?      @default(0) @db.Decimal(6, 2)
@@ -1167,7 +1167,7 @@ model jahresbilanzs {
 }
 
 model kalendermarkierungs {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   category   String?   @db.VarChar
   name       String?   @db.VarChar
   color      String?   @db.VarChar
@@ -1180,7 +1180,7 @@ model kalendermarkierungs {
 }
 
 model kalenderwoches {
-  id            Int          @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   jahr          Int
   kw            Int
   montag        DateTime        @db.Date
@@ -1194,7 +1194,7 @@ model kalenderwoches {
 }
 
 model kontingent_po_diensts {
-  id                      Int       @id @default(autoincrement())
+  id                      Int          @id @default(autoincrement())
   kontingent_id           Int?
   po_dienst_id            Int?
   eingeteilt_count_factor Int          @default(1)
@@ -1209,7 +1209,7 @@ model kontingent_po_diensts {
 }
 
 model kontingents {
-  id                    Int                  @id @default(autoincrement())
+  id                    Int                     @id @default(autoincrement())
   name                  String?                 @db.VarChar
   kommentar             String?
   created_at            DateTime?               @db.Timestamp(6)
@@ -1217,19 +1217,19 @@ model kontingents {
   position              Int?
   kurzname              String?                 @db.VarChar
   thema_ids             Int[]
-  team_id               Int?                 @default(8)
+  team_id               Int?                    @default(8)
   default               Boolean?                @default(false)
   sonderrotation        Boolean?                @default(false)
+  show_all_rotations    Boolean?                @default(false)
   einteilung_rotations  einteilung_rotations[]
   kontingent_po_diensts kontingent_po_diensts[]
   teams                 teams?                  @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_99108947ac")
-  show_all_rotations    Boolean?                @default(false)
 
   @@index([team_id], map: "index_kontingents_on_team_id")
 }
 
 model kostenstelles {
-  id               Int             @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   name             String?            @db.VarChar
   nummer           String?            @db.VarChar
   created_at       DateTime           @db.Timestamp(6)
@@ -1242,7 +1242,7 @@ model kostenstelles {
 }
 
 model links {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
   url          String?  @db.VarChar
@@ -1251,7 +1251,7 @@ model links {
 }
 
 model mailer_addresses {
-  id                                                            Int            @id @default(autoincrement())
+  id                                                            Int               @id @default(autoincrement())
   name                                                          String?           @db.VarChar
   addresse                                                      String?           @db.VarChar
   created_at                                                    DateTime          @db.Timestamp(6)
@@ -1263,7 +1263,7 @@ model mailer_addresses {
 }
 
 model mailer_ccs {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   mailer_context_id  Int?
   mailer_addresse_id Int?
   created_at         DateTime          @db.Timestamp(6)
@@ -1276,7 +1276,7 @@ model mailer_ccs {
 }
 
 model mailer_contexts {
-  id                                                             Int            @id @default(autoincrement())
+  id                                                             Int               @id @default(autoincrement())
   context                                                        String            @default("") @db.VarChar
   subject                                                        String            @default("") @db.VarChar
   body                                                           String            @default("")
@@ -1294,7 +1294,7 @@ model mailer_contexts {
 }
 
 model mailer_tos {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   mailer_context_id  Int?
   mailer_addresse_id Int?
   created_at         DateTime          @db.Timestamp(6)
@@ -1307,7 +1307,7 @@ model mailer_tos {
 }
 
 model merkmal_options {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   merkmal_id Int?
   wert       String?   @db.VarChar
   created_at DateTime  @db.Timestamp(6)
@@ -1318,7 +1318,7 @@ model merkmal_options {
 }
 
 model merkmals {
-  id                  Int                @id @default(autoincrement())
+  id                  Int                   @id @default(autoincrement())
   name                String?               @db.VarChar
   beschreibung        String?               @db.VarChar
   can_edit            Boolean?
@@ -1330,7 +1330,7 @@ model merkmals {
 }
 
 model mitarbeiter_default_eingeteilts {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   po_dienst_id   Int?
   year           Int
@@ -1345,7 +1345,7 @@ model mitarbeiter_default_eingeteilts {
 }
 
 model mitarbeitermerkmals {
-  id             Int        @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   merkmal_id     Int?
   created_at     DateTime      @db.Timestamp(6)
@@ -1360,7 +1360,7 @@ model mitarbeitermerkmals {
 }
 
 model mitarbeiters {
-  id                                                           Int                              @id @default(autoincrement())
+  id                                                           Int                                 @id @default(autoincrement())
   name                                                         String?                             @default("") @db.VarChar(255)
   created_at                                                   DateTime?                           @db.Timestamp(6)
   updated_at                                                   DateTime?                           @db.Timestamp(6)
@@ -1374,7 +1374,7 @@ model mitarbeiters {
   zeit_kommentar                                               String?                             @db.VarChar
   abwesend                                                     Boolean?                            @default(false)
   pass_count                                                   Int?                                @default(0)
-  funktion_id                                                  Int?                             @default(6)
+  funktion_id                                                  Int?                                @default(6)
   personalnummer                                               String?                             @default("") @db.VarChar
   abwesentheitenueberblick_counters                            abwesentheitenueberblick_counters[]
   abwesentheitenueberblick_settings                            abwesentheitenueberblick_settings[]
@@ -1410,7 +1410,7 @@ model mitarbeiters {
 }
 
 model nef_fahrts {
-  id                         Int                    @id @default(autoincrement())
+  id                         Int                       @id @default(autoincrement())
   notfallmedizin_register_id Int?
   fahrtnummer                Int?
   datum                      DateTime?                 @db.Date
@@ -1426,7 +1426,7 @@ model nef_fahrts {
 }
 
 model nicht_einteilen_absprachens {
-  id                              Int                            @id @default(autoincrement())
+  id                              Int                               @id @default(autoincrement())
   mitarbeiter_id                  Int
   zeitraumkategorie_id            Int
   von                             DateTime?                         @db.Date
@@ -1443,7 +1443,7 @@ model nicht_einteilen_absprachens {
 }
 
 model nicht_einteilen_standort_themen {
-  id                          Int                      @id @default(autoincrement())
+  id                          Int                         @id @default(autoincrement())
   absprache_id                Int
   standort_id                 Int
   thema_id                    Int
@@ -1457,7 +1457,7 @@ model nicht_einteilen_standort_themen {
 }
 
 model note_categories {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   category   String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
@@ -1465,7 +1465,7 @@ model note_categories {
 }
 
 model notes {
-  id               Int            @id @default(autoincrement())
+  id               Int               @id @default(autoincrement())
   notiz            String?           @db.VarChar
   created_at       DateTime          @db.Timestamp(6)
   updated_at       DateTime          @db.Timestamp(6)
@@ -1484,7 +1484,7 @@ model notes {
 }
 
 model notes_histories {
-  id                                                        Int        @id @default(autoincrement())
+  id                                                        Int           @id @default(autoincrement())
   note_id                                                   Int?
   mitarbeiter_id                                            Int?
   ersteller_id                                              Int?
@@ -1502,7 +1502,7 @@ model notes_histories {
 }
 
 model notfallmedizin_registers {
-  id                       Int                   @id @default(autoincrement())
+  id                       Int                      @id @default(autoincrement())
   mitarbeiter_id           Int?
   titel                    String?                  @default("") @db.VarChar
   anrede                   String?                  @default("") @db.VarChar
@@ -1533,7 +1533,7 @@ model notfallmedizin_registers {
 }
 
 model notfallmedizin_statuses {
-  id                        Int                     @id @default(autoincrement())
+  id                        Int                        @id @default(autoincrement())
   name                      String?                    @db.VarChar
   color                     String?                    @db.VarChar
   created_at                DateTime                   @db.Timestamp(6)
@@ -1551,7 +1551,7 @@ model notfallmedizin_statuses {
 }
 
 model oauth_access_grants {
-  id                Int    @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   resource_owner_id Int
   application_id    Int
   token             String    @unique(map: "index_oauth_access_grants_on_token") @db.VarChar(255)
@@ -1563,21 +1563,21 @@ model oauth_access_grants {
 }
 
 model oauth_access_tokens {
-  id                Int    @id @default(autoincrement())
-  resource_owner_id Int?
-  application_id    Int?
-  token             String    @unique(map: "index_oauth_access_tokens_on_token") @db.VarChar(255)
-  refresh_token     String?   @unique(map: "index_oauth_access_tokens_on_refresh_token") @db.VarChar(255)
-  expires_in        Int?
-  revoked_at        DateTime? @db.Timestamp(6)
-  created_at        DateTime  @db.Timestamp(6)
-  scopes            String?   @db.VarChar(255)
+  id                     Int                   @id @default(autoincrement())
+  resource_owner_id      Int?
+  application_id         Int?
+  token                  String                @unique(map: "index_oauth_access_tokens_on_token") @db.VarChar(255)
+  refresh_token          String?               @unique(map: "index_oauth_access_tokens_on_refresh_token") @db.VarChar(255)
+  expires_in             Int?
+  revoked_at             DateTime?             @db.Timestamp(6)
+  created_at             DateTime              @db.Timestamp(6)
+  scopes                 String?               @db.VarChar(255)
 
   @@index([resource_owner_id], map: "index_oauth_access_tokens_on_resource_owner_id")
 }
 
 model oauth_applications {
-  id           Int    @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   name         String    @db.VarChar(255)
   uid          String    @unique(map: "index_oauth_applications_on_uid") @db.VarChar(255)
   secret       String    @db.VarChar(255)
@@ -1588,8 +1588,47 @@ model oauth_applications {
   confidential Boolean   @default(true)
 }
 
+model oauth_clients {
+  id                      Int                       @id @default(autoincrement())
+  name                    String
+  client_id               String
+  secret_id               String
+  scopes                  String[]
+  created_at              DateTime                  @db.Timestamp(6)
+  updated_at              DateTime                  @db.Timestamp(6)
+  oauth_access_tokens_new oauth_access_tokens_new[]
+  oauth_refresh_tokens    oauth_refresh_tokens[]
+}
+
+model oauth_access_tokens_new {
+  id               Int                  @id @default(autoincrement())
+  user_id          Int
+  client_id        Int
+  refresh_token_id Int
+  token            String               @unique() @db.VarChar(255)
+  scopes           String[]
+  user             users                @relation(fields: [user_id], references: [id])
+  client           oauth_clients        @relation(fields: [client_id], references: [id])
+  refresh_token    oauth_refresh_tokens @relation(fields: [refresh_token_id], references: [id])
+  created_at       DateTime             @db.Timestamp(6)
+  updated_at       DateTime             @db.Timestamp(6)
+}
+
+model oauth_refresh_tokens {
+  id                      Int                       @id @default(autoincrement())
+  user_id                 Int
+  client_id               Int
+  token                   String                    @unique() @db.VarChar(255)
+  scopes                  String[]
+  user                    users                     @relation(fields: [user_id], references: [id])
+  client                  oauth_clients             @relation(fields: [client_id], references: [id])
+  created_at              DateTime                  @db.Timestamp(6)
+  updated_at              DateTime                  @db.Timestamp(6)
+  oauth_access_tokens_new oauth_access_tokens_new[]
+}
+
 model parametersets {
-  id                     Int                 @id @default(autoincrement())
+  id                     Int                    @id @default(autoincrement())
   name                   String?                @db.VarChar
   beschreibung           String?                @db.VarChar
   sys                    Boolean?               @default(false)
@@ -1606,20 +1645,20 @@ model parametersets {
 }
 
 model plan_tabs {
-  id               Int             @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   name             String?            @default("") @db.VarChar
   position         Int                @default(0)
   dienstplan_paths dienstplan_paths[]
 }
 
 model planintervals {
-  id               Int             @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   typ              String?            @default("") @db.VarChar
   dienstplan_paths dienstplan_paths[]
 }
 
 model planparameters {
-  id                      Int               @id @default(autoincrement())
+  id                      Int                  @id @default(autoincrement())
   parameterset_id         Int?
   num_threads             Int?
   relevant_timeframe_size Int?
@@ -1642,7 +1681,7 @@ model planparameters {
 }
 
 model po_diensts {
-  id                                                                 Int                              @id @default(autoincrement())
+  id                                                                 Int                                 @id @default(autoincrement())
   name                                                               String?                             @db.VarChar
   beschreibung                                                       String?
   created_at                                                         DateTime                            @db.Timestamp(6)
@@ -1657,8 +1696,8 @@ model po_diensts {
   aneasy_name                                                        String?                             @default("") @db.VarChar
   order                                                              Int?                                @default(0)
   priorisiere_wunsch                                                 Boolean?                            @default(false)
-  team_id                                                            Int?                             @default(8)
-  kostenstelle_id                                                    Int?                             @default(1)
+  team_id                                                            Int?                                @default(8)
+  kostenstelle_id                                                    Int?                                @default(1)
   stundennachweis_urlaub                                             Boolean?                            @default(false)
   stundennachweis_krank                                              Boolean?                            @default(false)
   stundennachweis_sonstig                                            Boolean?                            @default(false)
@@ -1701,7 +1740,7 @@ model schema_migrations {
 }
 
 model schichts {
-  id                 Int            @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   bedarfs_eintrag_id Int?
   anfang             DateTime?         @db.Timestamp(6)
   ende               DateTime?         @db.Timestamp(6)
@@ -1718,7 +1757,7 @@ model schichts {
 }
 
 model standorts {
-  id                              Int                            @id @default(autoincrement())
+  id                              Int                               @id @default(autoincrement())
   name                            String?                           @db.VarChar(255)
   name_url                        String?                           @db.VarChar(255)
   adresse                         String?
@@ -1736,7 +1775,7 @@ model standorts {
 }
 
 model stundennachweis {
-  id                        Int                    @id @default(autoincrement())
+  id                        Int                       @id @default(autoincrement())
   mitarbeiter_id            Int?
   kostenstelle_id           Int?
   tag                       DateTime?                 @db.Date
@@ -1752,7 +1791,7 @@ model stundennachweis {
   created_at                DateTime                  @db.Timestamp(6)
   updated_at                DateTime                  @db.Timestamp(6)
   von_einteilung            Int?                      @default(-1)
-  stundennachweis_status_id Int?                   @default(1)
+  stundennachweis_status_id Int?                      @default(1)
   vollarbeit                Boolean?                  @default(true)
   pause                     DateTime?                 @default(dbgenerated("'00:00:00'::time without time zone")) @db.Time(6)
   rufbereitschaft_von       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
@@ -1768,7 +1807,7 @@ model stundennachweis {
 }
 
 model stundennachweis_statuses {
-  id              Int            @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   name            String?           @db.VarChar
   confirmed       Boolean?
   submitted       Boolean?
@@ -1778,7 +1817,7 @@ model stundennachweis_statuses {
 }
 
 model tagesverteiler_layouts {
-  id                    Int               @id @default(autoincrement())
+  id                    Int                  @id @default(autoincrement())
   device                String?              @db.VarChar
   rows                  Int?
   cols                  Int?
@@ -1792,7 +1831,7 @@ model tagesverteiler_layouts {
 }
 
 model tagesverteiler_user_settings {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   user_id      Int?
   funktion_ids Int[]    @default([])
   funktion_box String?  @db.VarChar
@@ -1805,7 +1844,7 @@ model tagesverteiler_user_settings {
 }
 
 model tagesverteilers {
-  id                      Int                    @id @default(autoincrement())
+  id                      Int                       @id @default(autoincrement())
   name                    String?                   @db.VarChar
   color                   String?                   @db.VarChar
   planname                String?                   @db.VarChar
@@ -1815,14 +1854,14 @@ model tagesverteilers {
 }
 
 model tagkategories {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   name       String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
 }
 
 model team_funktions {
-  id          Int     @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   team_id     Int?
   funktion_id Int?
   created_at  DateTime   @db.Timestamp(6)
@@ -1835,7 +1874,7 @@ model team_funktions {
 }
 
 model team_kw_krankpuffer_versions {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -1847,7 +1886,7 @@ model team_kw_krankpuffer_versions {
 }
 
 model team_kw_krankpuffers {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   kw         Int      @default(0)
   team_id    Int?
   created_at DateTime @db.Timestamp(6)
@@ -1859,11 +1898,11 @@ model team_kw_krankpuffers {
 }
 
 model teams {
-  id                    Int                  @id @default(autoincrement())
+  id                    Int                     @id @default(autoincrement())
   name                  String?                 @db.VarChar
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
-  kostenstelle_id       Int?                 @default(2)
+  kostenstelle_id       Int?                    @default(2)
   default               Boolean?                @default(false)
   krank_puffer          Int                     @default(0)
   verteiler_default     Boolean?                @default(false)
@@ -1881,7 +1920,7 @@ model teams {
 }
 
 model telefonlistes {
-  id           Int   @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String?  @db.VarChar
   beschreibung String?
   mitarbeiter  String?  @db.VarChar
@@ -1891,7 +1930,7 @@ model telefonlistes {
 }
 
 model themas {
-  id                              Int                            @id @default(autoincrement())
+  id                              Int                               @id @default(autoincrement())
   name                            String?                           @db.VarChar
   beschreibung                    String?                           @db.VarChar
   color                           String?                           @db.VarChar
@@ -1902,7 +1941,7 @@ model themas {
 }
 
 model user_versions {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -1920,7 +1959,7 @@ model user_versions {
 }
 
 model users {
-  id                                Int                              @id @default(autoincrement())
+  id                                Int                                 @id @default(autoincrement())
   name                              String?                             @db.VarChar(255)
   uid                               Int?
   login                             String?                             @db.VarChar(255)
@@ -1945,8 +1984,7 @@ model users {
   locked_at                         DateTime?                           @db.Timestamp(6)
   admin                             Boolean?                            @default(false)
   deactivated                       Boolean?
-  account_info_id                   Int                                 @unique
-  account_info                      account_infos                       @relation(fields: [account_info_id], references: [id])
+  account_info_id                   Int?
   otp_secret_key                    String?                             @db.VarChar
   otp_enabled                       Boolean?                            @default(false)
   otp_counter                       Int?                                @default(0)
@@ -1956,7 +1994,9 @@ model users {
   dienstplaner_user_settings        dienstplaner_user_settings[]
   dienstplaners_teams               dienstplaners_teams[]
   dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
-  user_gruppes                      users_gruppes[]
+  users_gruppes                     users_gruppes[]
+  oauth_access_tokens_new           oauth_access_tokens_new[]
+  oauth_refresh_tokens              oauth_refresh_tokens[]
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }
@@ -1973,7 +2013,7 @@ model users_gruppes {
 }
 
 model version_associations {
-  id               Int  @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   version_id       Int?
   foreign_key_name String  @db.VarChar
   foreign_key_id   Int?
@@ -1984,7 +2024,7 @@ model version_associations {
 }
 
 model versions {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   item_type      String    @db.VarChar
   item_id        Int
   event          String    @db.VarChar
@@ -1999,7 +2039,7 @@ model versions {
 }
 
 model verteiler_tagesverteilers {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   raw_json   String?
   datum      DateTime? @db.Timestamp(6)
   version    String?   @db.VarChar
@@ -2008,7 +2048,7 @@ model verteiler_tagesverteilers {
 }
 
 model verteiler_vorlagens {
-  id                                Int                              @id @default(autoincrement())
+  id                                Int                                 @id @default(autoincrement())
   name                              String                              @default("Vorlage") @db.VarChar
   beschreibung                      String                              @default("") @db.VarChar
   typ                               String                              @default("wochenverteiler") @db.VarChar
@@ -2027,7 +2067,7 @@ model verteiler_vorlagens {
 }
 
 model verteilungsoverrides {
-  id                      Int                 @id @default(autoincrement())
+  id                      Int                    @id @default(autoincrement())
   parameterset_id         Int?
   dienstbedarf_id         Int?
   dienstverteilungstyp_id Int?
@@ -2044,7 +2084,7 @@ model verteilungsoverrides {
 }
 
 model vertrags {
-  id                Int            @id @default(autoincrement())
+  id                Int               @id @default(autoincrement())
   mitarbeiter_id    Int?
   created_at        DateTime          @db.Timestamp(6)
   updated_at        DateTime          @db.Timestamp(6)
@@ -2062,7 +2102,7 @@ model vertrags {
 }
 
 model vertrags_aenderungs {
-  id             Int    @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   von            DateTime? @db.Timestamp(6)
   bis            DateTime? @db.Timestamp(6)
   teilzeitAnteil Int?
@@ -2076,7 +2116,7 @@ model vertrags_aenderungs {
 }
 
 model vertrags_phases {
-  id                          Int                        @id @default(autoincrement())
+  id                          Int                           @id @default(autoincrement())
   vertrag_id                  Int?
   vk                          Decimal?                      @db.Decimal(3, 2)
   stufe                       Int?
@@ -2094,7 +2134,7 @@ model vertrags_phases {
 }
 
 model vertrags_variantes {
-  id             Int           @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   von            DateTime?        @db.Date
   bis            DateTime?        @db.Date
   vertragstyp_id Int?
@@ -2109,7 +2149,7 @@ model vertrags_variantes {
 }
 
 model vertragsgruppes {
-  id             Int           @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   name           String?          @db.VarChar
   vertragstyp_id Int?
   created_at     DateTime         @db.Timestamp(6)
@@ -2122,7 +2162,7 @@ model vertragsgruppes {
 }
 
 model vertragsstuves {
-  id                   Int              @id @default(autoincrement())
+  id                   Int                 @id @default(autoincrement())
   name                 String?             @db.VarChar
   stufe                Int?
   nach_jahren          Int?
@@ -2139,7 +2179,7 @@ model vertragsstuves {
 }
 
 model vertragstyps {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
@@ -2150,7 +2190,7 @@ model vertragstyps {
 }
 
 model vorlages {
-  id                      Int                    @id @default(autoincrement())
+  id                      Int                       @id @default(autoincrement())
   mitarbeiter_id          Int?
   name                    String?                   @db.VarChar
   dienste                 Int[]
@@ -2170,7 +2210,7 @@ model vorlages {
 }
 
 model wochenbilanzs {
-  id                            Int          @id @default(autoincrement())
+  id                            Int             @id @default(autoincrement())
   kalenderwoche_id              Int?
   mitarbeiter_id                Int?
   geplante_arbeitszeit          Decimal?        @default(0) @db.Decimal(6, 2)
@@ -2191,7 +2231,7 @@ model wochenbilanzs {
 }
 
 model zeitraumkategories {
-  id                          Int                        @id @default(autoincrement())
+  id                          Int                           @id @default(autoincrement())
   name                        String?                       @db.VarChar
   beschreibung                String?                       @db.VarChar
   zeitraumregel_id            Int?
@@ -2213,7 +2253,7 @@ model zeitraumkategories {
 }
 
 model zeitraumregels {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)

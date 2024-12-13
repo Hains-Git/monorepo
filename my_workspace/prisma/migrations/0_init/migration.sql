@@ -682,6 +682,7 @@ CREATE TABLE "dienstplan_paths" (
     "name" VARCHAR NOT NULL DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
     "begin_on_monday" BOOLEAN DEFAULT false,
+    "kalender_name" VARCHAR DEFAULT '',
 
     CONSTRAINT "dienstplan_paths_pkey" PRIMARY KEY ("id")
 );
@@ -1152,6 +1153,7 @@ CREATE TABLE "kontingents" (
     "team_id" INTEGER DEFAULT 8,
     "default" BOOLEAN DEFAULT false,
     "sonderrotation" BOOLEAN DEFAULT false,
+    "show_all_rotations" BOOLEAN DEFAULT false,
 
     CONSTRAINT "kontingents_pkey" PRIMARY KEY ("id")
 );
@@ -1821,8 +1823,10 @@ CREATE TABLE "users" (
 
 -- CreateTable
 CREATE TABLE "users_gruppes" (
-    "user_id" INTEGER,
-    "gruppe_id" INTEGER
+    "user_id" INTEGER NOT NULL,
+    "gruppe_id" INTEGER NOT NULL,
+
+    CONSTRAINT "users_gruppes_pkey" PRIMARY KEY ("user_id","gruppe_id")
 );
 
 -- CreateTable

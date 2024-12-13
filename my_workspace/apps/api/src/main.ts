@@ -18,7 +18,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.API_PORT || 3020;
-  app.useGlobalGuards(new GlobalAuthGuard());
+  // app.useGlobalGuards(new GlobalAuthGuard());
   app.use(compression());
 
   await app.listen(port);
