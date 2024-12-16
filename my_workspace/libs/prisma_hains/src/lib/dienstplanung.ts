@@ -1,6 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-
-import { prismaHains } from './prisma-hains';
+import { prismaDb } from './prisma-hains';
 import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYear, subDays } from 'date-fns';
 
 import { format, lastDayOfMonth } from 'date-fns';
@@ -8,8 +6,6 @@ import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';
-
-let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
 function getDataByHash(data: any, key = 'id') {
   return data.reduce((hash: any, value: any) => {
@@ -691,9 +687,6 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
 }
 
 export async function getDienstplanung(dpl_id: number) {
-  const db = prismaHains();
-  prismaDb = db;
-
   const dienstplan = await prismaDb.dienstplans.findFirst({
     where: {
       id: Number(dpl_id) || 0

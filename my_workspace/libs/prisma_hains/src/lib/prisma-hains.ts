@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
-const db: PrismaClient<Prisma.PrismaClientOptions, 'query'> = new PrismaClient({
+export const prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'> = new PrismaClient({
   // log: ['query', 'info', 'warn', 'error'],
 });
 
@@ -15,10 +15,7 @@ export function addBigIntToJSON() {
   };
 }
 
-export function prismaHains(): PrismaClient<
-  Prisma.PrismaClientOptions,
-  'query'
-> {
+export function prismaHains(): PrismaClient<Prisma.PrismaClientOptions, 'query'> {
   addBigIntToJSON();
-  return db;
+  return prismaDb;
 }

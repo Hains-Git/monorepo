@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { addMinutes, addDays, isAfter } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 
+import { checkUserCredentials, createRefreshToken, createAccessToken } from '@my-workspace/prisma_hains';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -10,8 +12,7 @@ export class AuthService {
     private prisma: PrismaService
   ) {}
 
-  // Generate authorization code using JwtService
-  async generateAuthorizationCode(userId: number, clientId: number): Promise<string> {
+  async generateAuthorizationCode(userId: number, clientId: string): Promise<string> {
     const payload = { userId, clientId };
     const expiresAt = addMinutes(new Date(), 10); // Set expiration to 10 minutes from now
 
@@ -19,68 +20,83 @@ export class AuthService {
       expiresIn: '10m' // Token valid for 10 minutes
     });
 
-    // await this.prisma.authorizationCode.create({
-    //   data: {
-    //     code,
-    //     expiresAt,
-    //     userId,
-    //     clientId
-    //   }
-    // });
+    await this.prisma.oauth_authorization_codes.create({
+      data: {
+        code,
+        expires_at: expiresAt,
+        user_id: userId,
+        client_id: clientId
+      }
+    });
 
     return code;
   }
-  //
-  // // Exchange authorization code for access token
-  async exchangeAuthorizationCode(
-    code: string,
-    clientId: number
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    // const authCode = await this.prisma.authorizationCode.findUnique({
-    //   where: { code },
-    //   include: { user: true }
-    // });
 
-    // if (!authCode || isAfter(new Date(), authCode.expiresAt)) {
-    //   throw new UnauthorizedException('Invalid or expired authorization code.');
-    // }
+  async exchangeAuthorizationCode(code: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const authCode = await this.prisma.oauth_authorization_codes.findFirst({
+      where: {
+        code
+      }
+    });
 
-    // Create an access token
-    const testUserId = 548;
-    const testClientId = 'clientId';
-    // const accessToken = await this.generateAccessToken(authCode.userId, authCode.clientId);
-    const accessToken = await this.generateAccessToken(testUserId, testClientId);
+    if (!authCode || isAfter(new Date(), authCode.expires_at)) {
+      throw new UnauthorizedException('Invalid or expired authorization code.');
+    }
 
-    // Create a refresh token
-    // const refreshToken = await this.generateRefreshToken(authCode.userId, authCode.clientId);
-    const refreshToken = await this.generateRefreshToken(testUserId, testClientId);
+    const userId = authCode.user_id;
+    const clientId = authCode.client_id;
+
+    const accessToken = await this.generateAccessToken(userId, clientId);
+    const refreshToken = await this.generateRefreshToken(userId, clientId);
 
     // Clean up: delete the authorization code
-    // await this.prisma.authorizationCode.delete({ where: { id: authCode.id } });
+    await this.prisma.oauth_authorization_codes.delete({
+      where: {
+        id: authCode.id
+      }
+    });
+
+    // Save the refresh token
+    const decodedRefreshToken = this.jwtService.decode(refreshToken);
+    const refreshExpiresAt = new Date(decodedRefreshToken.exp * 1000);
+    const decodedAccessToken = this.jwtService.decode(accessToken);
+    const accessExpiresAt = new Date(decodedAccessToken.exp * 1000);
+
+    const refreshTokenItem = await createRefreshToken(
+      userId,
+      clientId,
+      refreshToken,
+      decodedRefreshToken?.scopes,
+      refreshExpiresAt
+    );
+    await createAccessToken(
+      userId,
+      clientId,
+      refreshTokenItem.id,
+      accessToken,
+      decodedRefreshToken?.scopes,
+      accessExpiresAt
+    );
 
     return { accessToken, refreshToken };
   }
-  //
-  //
-  // // Refresh access token using a valid refresh token
+
   async refreshAccessToken(refreshToken: string): Promise<string> {
     try {
-      // const { userId, clientId } = this.jwtService.verify(refreshToken);
+      const { userId, clientId } = this.jwtService.verify(refreshToken);
 
-      // const tokenRecord = await this.prisma.refreshToken.findUnique({
-      //   where: { token: refreshToken }
-      // });
+      const tokenRecord = await this.prisma.oauth_refresh_tokens.findUnique({
+        where: { token: refreshToken }
+      });
 
-      // if (!tokenRecord || isAfter(new Date(), tokenRecord.expiresAt)) {
+      // if (!tokenRecord || isAfter(new Date(), tokenRecord.expires_at)) {
       //   throw new UnauthorizedException('Invalid or expired refresh token.');
       // }
 
       // Generate new access token
-      const testUserId = 548;
-      const testClientId = 'clientId';
-      return await this.generateAccessToken(testUserId, testClientId);
-      // return await this.generateAccessToken(userId, clientId);
+      return await this.generateAccessToken(userId, clientId);
     } catch (error) {
+      console.log('refreshAccessToken', error);
       throw new UnauthorizedException('Invalid or expired refresh token.');
     }
   }
@@ -105,15 +121,17 @@ export class AuthService {
     return true;
   }
 
-  //
-  // Generate refresh token using JwtService
   async generateRefreshToken(userId: number, clientId: number | string): Promise<string> {
     const payload = { userId, clientId };
-    return this.jwtService.sign(payload, { expiresIn: '30d' }); // Set expiration to 30 days
+    return this.jwtService.sign(payload, { expiresIn: '7d' }); // Set expiration to 30 days
   }
-  // Generate access token using JwtService
+
   async generateAccessToken(userId: number, clientId: number | string): Promise<string> {
     const payload = { userId, clientId };
     return this.jwtService.sign(payload, { expiresIn: '1h' }); // Token valid for 1 hour
+  }
+
+  async checkCredentials(username: string, password: string) {
+    return await checkUserCredentials(username, password);
   }
 }

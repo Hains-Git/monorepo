@@ -3,6 +3,7 @@ import { Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('oauth')
 export class AuthController {
@@ -21,7 +22,6 @@ export class AuthController {
     @Res() res: Response
   ) {
     console.log('authorize', clientId, redirectUri, responseType, accessToken);
-    // const client = await this.prisma.client.findUnique({ where: { clientId } });
     const client = await this.prisma.oauth_applications.findUnique({ where: { uid: clientId } });
     if (!client) {
       return res.status(400).send('Client not found');
@@ -32,10 +32,10 @@ export class AuthController {
 
     const isAuthenticated = authorization === test;
 
-    const url = new URL(req?.url, 'http://localhost:3020');
-    const searchParams = url.searchParams;
-    const originalRedirectPath = searchParams.get('original_redirect_uri');
-    const originalRedirectUrl = `http://localhost:3020${originalRedirectPath}`;
+    // const url = new URL(req?.url, 'http://localhost:3020');
+    // const searchParams = url.searchParams;
+    // const originalRedirectPath = searchParams.get('original_redirect_uri');
+    // const originalRedirectUrl = `http://localhost:3020${originalRedirectPath}`;
 
     if (!isAuthenticated) {
       // Implement your authentication check
@@ -46,7 +46,7 @@ export class AuthController {
 
     // User is authenticated, generate authorization code
     const userId = 548;
-    const code = await this.authService.generateAuthorizationCode(userId, Number(clientId));
+    const code = await this.authService.generateAuthorizationCode(userId, clientId);
 
     // Redirect back to the client with the authorization code
     // return res.redirect(`${originalRedirectUrl}?code=${code}`);
@@ -54,10 +54,10 @@ export class AuthController {
   }
 
   @Post('token')
-  async token(@Body() body: { grant_type: string; code?: string; refresh_token?: string; client_id: number }) {
+  async token(@Body() body: { grant_type: string; code?: string; refresh_token?: string; client_id: string }) {
     console.log('controller:token', body);
     if (body.grant_type === 'authorization_code' && body.code) {
-      const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(body.code, body.client_id);
+      const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(body.code);
       return { access_token: accessToken, refresh_token: refreshToken, token_type: 'Bearer' };
     }
 
@@ -70,9 +70,21 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDto: any) {
+  async login(@Body() loginCredentials: LoginDto) {
     // Handle login logic
-    return { message: 'Login successful' };
+    const username = loginCredentials.username;
+    const password = loginCredentials.password;
+
+    const [isValidCredentials, user] = await this.authService.checkCredentials(username, password);
+
+    if (!isValidCredentials || !user) {
+      throw new UnauthorizedException('Invalid login credentials');
+    }
+
+    const code = await this.authService.generateAuthorizationCode(user.id, process.env.DIENSTPLANER_CLIENT_ID);
+    const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(code);
+
+    return { message: 'Login successful', accessToken, refreshToken, user };
   }
 
   @Post('register')

@@ -15,7 +15,7 @@ import { OAuth2Strategy } from './strategies/oauth';
       }
     })
   ],
-  providers: [AuthService, OAuth2Strategy],
+  providers: [AuthService],
   controllers: [AuthController],
   exports: [AuthService]
 })

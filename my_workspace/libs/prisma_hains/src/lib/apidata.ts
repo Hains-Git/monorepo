@@ -1,11 +1,9 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-import { prismaHains } from './prisma-hains';
+import { PrismaClient } from '@prisma/client';
+import { prismaDb } from './prisma-hains';
 import { getUserById } from './crud/user';
 import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
-
-let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
 
 const MONATSPLAN_ANSICHTEN = ['Datum-Dienste', 'Mitarbeiter-Datum', 'Mitarbeiter-Dienste'];
 
@@ -262,11 +260,10 @@ function transformArbeitszeitAbsprachen(absprache: any) {
 }
 
 async function getAllApiData(userId: number) {
-  prismaDb = prismaHains();
   const res: any = {};
 
   const user = await getUserById(userId, {
-    account_info: true,
+    account_infos: true,
     dienstplaners_teams: true,
     dienstplaner_user_settings: true,
     dienstplaner_user_farbgruppens: true,

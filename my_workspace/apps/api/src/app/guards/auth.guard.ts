@@ -2,13 +2,9 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
 
-// let rec_uril = '';
-
 @Injectable()
-export class GlobalAuthGuard extends AuthGuard('oauth2') implements CanActivate {
-  constructor(private authService: AuthService) {
-    super();
-  }
+export class GlobalAuthGuard implements CanActivate {
+  constructor(private authService: AuthService) {}
 
   canActivate(context: ExecutionContext) {
     console.log('GlobalAuthGuard:canActivate');
@@ -42,6 +38,6 @@ export class GlobalAuthGuard extends AuthGuard('oauth2') implements CanActivate 
       return true;
     }
 
-    return super.canActivate(context) as boolean;
+    return false;
   }
 }
