@@ -2011,6 +2011,7 @@ model verteiler_vorlagens {
   team_ids                          Int[]                               @default([])
   created_at                        DateTime                            @db.Timestamp(6)
   updated_at                        DateTime                            @db.Timestamp(6)
+  kommentar                         String                              @default("") @db.VarChar
   dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
   tagesverteiler_layouts            tagesverteiler_layouts[]
   dienstplan_paths                  dienstplan_paths?                   @relation(fields: [dienstplan_path_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_02b7f85cbd")
