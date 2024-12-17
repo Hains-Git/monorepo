@@ -49,3 +49,25 @@ export async function createAccessToken(
 
   return accessToken;
 }
+
+export async function isAccessTokenInDb(token: string) {
+  const accessToken = await prismaDb.oauth_access_tokens_new.findFirst({
+    where: {
+      token
+    }
+  });
+
+  return !!accessToken;
+}
+
+export async function isValidClient(clientId: string, clientSecret: string) {
+  const client = await prismaDb.oauth_clients.findUnique({
+    where: {
+      client_id: clientId,
+      client_secret: clientSecret
+    }
+  });
+  console.log('client', client, clientId, clientSecret);
+
+  return !!client;
+}

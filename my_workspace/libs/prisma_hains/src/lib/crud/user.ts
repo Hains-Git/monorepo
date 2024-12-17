@@ -2,6 +2,8 @@ import { Prisma, users } from '@prisma/client';
 import { prismaDb } from '../prisma-hains';
 import * as bcrypt from 'bcrypt';
 
+type TUserWithAccountInfo = users & { account_info: any };
+
 export async function getUserById(id: number, include: Prisma.usersInclude = {}) {
   return await prismaDb.users.findUnique({
     where: {
@@ -28,7 +30,8 @@ export async function checkUserCredentials(username: string, password: string): 
       current_sign_in_at: true,
       last_sign_in_at: true,
       failed_attempts: true,
-      encrypted_password: true
+      encrypted_password: true,
+      account_info: true
     }
   });
 
@@ -38,5 +41,5 @@ export async function checkUserCredentials(username: string, password: string): 
     delete (user as any)?.encrypted_password;
   }
 
-  return [isValid, user as users];
+  return [isValid, user as TUserWithAccountInfo];
 }

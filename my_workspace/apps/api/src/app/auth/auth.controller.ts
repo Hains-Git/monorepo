@@ -5,6 +5,8 @@ import { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 
+import { isValidClient } from '@my-workspace/prisma_hains';
+
 @Controller('oauth')
 export class AuthController {
   constructor(
@@ -14,56 +16,53 @@ export class AuthController {
 
   @Get('authorize')
   async authorize(
-    @Query('client_id') clientId: string,
-    @Query('redirect_uri') redirectUri: string,
-    @Query('response_type') responseType: string,
-    @Query('access_token') accessToken: string,
+    @Query()
+    query: { client_id: string; redirect_uri: string; response_type: string; user_id: string },
     @Req() req: Request,
     @Res() res: Response
   ) {
-    console.log('authorize', clientId, redirectUri, responseType, accessToken);
-    const client = await this.prisma.oauth_applications.findUnique({ where: { uid: clientId } });
+    console.log('query', query);
+
+    const { client_id: clientId, redirect_uri: redirectUri, user_id: userId } = query;
+
+    const client = await this.prisma.oauth_clients.findUnique({ where: { client_id: clientId } });
+
     if (!client) {
       return res.status(400).send('Client not found');
     }
 
-    const test = 'Bearer b983becd485deff0dbbce91b8a2b650571087b7e5210fdebf3378d4886379996';
-    const authorization = req.headers.authorization;
+    const code = await this.authService.generateAuthorizationCode(Number(userId), clientId);
 
-    const isAuthenticated = authorization === test;
-
-    // const url = new URL(req?.url, 'http://localhost:3020');
-    // const searchParams = url.searchParams;
-    // const originalRedirectPath = searchParams.get('original_redirect_uri');
-    // const originalRedirectUrl = `http://localhost:3020${originalRedirectPath}`;
-
-    if (!isAuthenticated) {
-      // Implement your authentication check
-      // return res.redirect(`/login?redirect_uri=${encodeURIComponent(redirectUri)}&client_id=${clientId}`);
-      console.log('ggdg');
-      return res.redirect(`http://localhost:3010/login`);
-    }
-
-    // User is authenticated, generate authorization code
-    const userId = 548;
-    const code = await this.authService.generateAuthorizationCode(userId, clientId);
-
-    // Redirect back to the client with the authorization code
-    // return res.redirect(`${originalRedirectUrl}?code=${code}`);
     return res.redirect(`${redirectUri}?code=${code}`);
   }
 
   @Post('token')
-  async token(@Body() body: { grant_type: string; code?: string; refresh_token?: string; client_id: string }) {
+  async token(
+    @Body()
+    body: {
+      grant_type: string;
+      code?: string;
+      refresh_token?: string;
+      client_id: string;
+      client_secret: string;
+    }
+  ) {
     console.log('controller:token', body);
+
+    const isValid = await isValidClient(body.client_id, body.client_secret);
+    console.log('isValid', isValid);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid client credentials');
+    }
+
     if (body.grant_type === 'authorization_code' && body.code) {
-      const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(body.code);
-      return { access_token: accessToken, refresh_token: refreshToken, token_type: 'Bearer' };
+      const { accessToken, refreshToken, user } = await this.authService.exchangeAuthorizationCode(body.code);
+      return { access_token: accessToken, refresh_token: refreshToken, user };
     }
 
     if (body.grant_type === 'refresh_token' && body.refresh_token) {
       const accessToken = await this.authService.refreshAccessToken(body.refresh_token);
-      return { access_token: accessToken, token_type: 'Bearer' };
+      return { access_token: accessToken };
     }
 
     throw new UnauthorizedException('Invalid grant type or missing parameters.');
@@ -81,8 +80,22 @@ export class AuthController {
       throw new UnauthorizedException('Invalid login credentials');
     }
 
+    // const authroizeUrl = new URL('http://localhost:3020/api/oauth/authorize');
+    // authroizeUrl.searchParams.append('client_id', process.env.DIENSTPLANER_CLIENT_ID);
+    // authroizeUrl.searchParams.append('redirect_uri', 'http://localhost:3020/api/oauth/token');
+    // authroizeUrl.searchParams.append('response_type', 'code');
+    // authroizeUrl.searchParams.append('user_id', String(user.id));
+    // return res.redirect(authroizeUrl.toString());
+
     const code = await this.authService.generateAuthorizationCode(user.id, process.env.DIENSTPLANER_CLIENT_ID);
     const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(code);
+
+    console.log({
+      now: new Date(),
+      accessToken,
+      refreshToken,
+      user
+    });
 
     return { message: 'Login successful', accessToken, refreshToken, user };
   }

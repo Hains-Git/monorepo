@@ -1,25 +1,28 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class GlobalAuthGuard implements CanActivate {
   constructor(private authService: AuthService) {}
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext) {
     console.log('GlobalAuthGuard:canActivate');
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest() as Request;
     const url = request.url;
     const authorization = request.headers.authorization;
-    const [type, token] = authorization?.split(' ') || [];
+    const [type, bearerToken] = authorization?.split(' ') || [];
+    const { accessToken } = request.body;
+    const { access_token } = request.query;
 
-    if (type === 'Bearer' && token) {
-      this.authService.validateUser(
-        // 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjU0OCwiY2xpZW50SWQiOiJjbGllbnRJZCIsImlhdCI6MTczMzkyNzUyNCwiZXhwIjoxNzMzOTMxMTI0fQ.T-Fxa3VLQetsLhqQV43I1RWQqMaK5kwK2jn4FBNBKV4'
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjU0OCwiY2xpZW50SWQiOiJjbGllbnRJZCIsImlhdCI6MTczMzkyODQwNCwiZXhwIjoxNzMzOTMyMDA0fQ.YIkQsyWuMW5y7FQu3VKZT5q6E6x86A4o500gsFDAhQ8'
-      );
-      // this.authService.validateUser(token);
-      // return true;
+    const token = bearerToken || accessToken || access_token;
+
+    if ((type === 'Bearer' && token) || accessToken || access_token) {
+      const haveAccess = await this.authService.validateUser(token);
+      if (!haveAccess) {
+        return false;
+      }
+      return true;
     }
 
     // if (!url.startsWith('/api/oauth/')) {

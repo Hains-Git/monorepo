@@ -3,7 +3,14 @@ import { JwtService } from '@nestjs/jwt';
 import { addMinutes, addDays, isAfter } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 
-import { checkUserCredentials, createRefreshToken, createAccessToken } from '@my-workspace/prisma_hains';
+import {
+  checkUserCredentials,
+  createRefreshToken,
+  createAccessToken,
+  isAccessTokenInDb,
+  getUserById
+} from '@my-workspace/prisma_hains';
+import { users } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +39,15 @@ export class AuthService {
     return code;
   }
 
-  async exchangeAuthorizationCode(code: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async deleteAuthorizationCode(id: number) {
+    await this.prisma.oauth_authorization_codes.delete({
+      where: {
+        id
+      }
+    });
+  }
+
+  async exchangeAuthorizationCode(code: string): Promise<{ accessToken: string; refreshToken: string; user: users }> {
     const authCode = await this.prisma.oauth_authorization_codes.findFirst({
       where: {
         code
@@ -45,16 +60,13 @@ export class AuthService {
 
     const userId = authCode.user_id;
     const clientId = authCode.client_id;
+    const user = await getUserById(userId, { account_info: true });
 
     const accessToken = await this.generateAccessToken(userId, clientId);
     const refreshToken = await this.generateRefreshToken(userId, clientId);
 
     // Clean up: delete the authorization code
-    await this.prisma.oauth_authorization_codes.delete({
-      where: {
-        id: authCode.id
-      }
-    });
+    await this.deleteAuthorizationCode(authCode.id);
 
     // Save the refresh token
     const decodedRefreshToken = this.jwtService.decode(refreshToken);
@@ -78,7 +90,7 @@ export class AuthService {
       accessExpiresAt
     );
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, user };
   }
 
   async refreshAccessToken(refreshToken: string): Promise<string> {
@@ -89,35 +101,58 @@ export class AuthService {
         where: { token: refreshToken }
       });
 
-      // if (!tokenRecord || isAfter(new Date(), tokenRecord.expires_at)) {
-      //   throw new UnauthorizedException('Invalid or expired refresh token.');
-      // }
+      if (!tokenRecord || isAfter(new Date(), tokenRecord.expires_at)) {
+        throw new UnauthorizedException('expired refresh token.');
+      }
 
-      // Generate new access token
-      return await this.generateAccessToken(userId, clientId);
+      const accessToken = await this.generateAccessToken(userId, clientId);
+
+      await createAccessToken(
+        userId,
+        clientId,
+        tokenRecord.id,
+        accessToken,
+        tokenRecord.scopes,
+        tokenRecord.expires_at
+      );
+
+      return accessToken;
     } catch (error) {
       console.log('refreshAccessToken', error);
-      throw new UnauthorizedException('Invalid or expired refresh token.');
+      throw new UnauthorizedException('Something went wrong.');
     }
   }
 
   async validateUser(accessToken: string): Promise<any> {
-    console.log('service:validate', accessToken);
-    const decoded = this.jwtService.decode(accessToken);
-    const exp = decoded?.exp;
-    const iat = decoded?.iat;
-    console.log('decoded', decoded);
-    console.log({
-      iat: new Date(iat * 1000),
-      exp: new Date(exp * 1000),
-      now: new Date(),
-      now_: new Date().getTimezoneOffset(),
-      now__: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      nowH: new Date().getHours(),
-      nowH2: new Date().getUTCHours(),
-      now2: new Date().toUTCString(),
-      now3: new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' })
-    });
+    try {
+      const { exp } = this.jwtService.verify(accessToken);
+      // const currentTimestamp = Math.floor(Date.now() / 1000);
+      // const isExpired = exp < currentTimestamp;
+
+      // if (isExpired) {
+      //   throw new UnauthorizedException('access token expired');
+      // }
+    } catch (error) {
+      // import { inspect } from 'util';
+      //       console.log('Error instance:', inspect(error, { depth: null, colors: true }));
+
+      console.log('Error instance:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      console.error('validateUser', {
+        error,
+        msg: error?.message,
+        errMsg: error?.TokenExpiredError,
+        type: typeof error,
+        expiredAt: error?.expiredAt
+      });
+      throw new UnauthorizedException('access token expired');
+    }
+
+    const accessTokenInDb = await isAccessTokenInDb(accessToken);
+
+    if (!accessTokenInDb) {
+      throw new UnauthorizedException();
+    }
+
     return true;
   }
 
@@ -128,7 +163,7 @@ export class AuthService {
 
   async generateAccessToken(userId: number, clientId: number | string): Promise<string> {
     const payload = { userId, clientId };
-    return this.jwtService.sign(payload, { expiresIn: '1h' }); // Token valid for 1 hour
+    return this.jwtService.sign(payload, { expiresIn: '4h' }); // Token valid for 4 hour
   }
 
   async checkCredentials(username: string, password: string) {

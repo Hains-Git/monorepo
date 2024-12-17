@@ -12,7 +12,6 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
       tokenURL: 'http://localhost:3020/api/oauth/token',
       clientID: process.env.DIENSTPLANER_CLIENT_ID,
       clientSecret: 'client_secrect',
-      // callbackURL: 'http://localhost:3020/api/dienstplanung'
       callbackURL: 'http://localhost:3020/api/oauth/callback'
     });
   }

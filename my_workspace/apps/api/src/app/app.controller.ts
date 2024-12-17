@@ -13,6 +13,6 @@ export class AppController {
   }
   @Get('apidata')
   getApiData(@Query() query: any) {
-    return this.appService.getApiData(query?.user_id || 5);
+    return this.appService.getApiData(query?.user_id || 3);
   }
 }

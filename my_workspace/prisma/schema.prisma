@@ -97,7 +97,7 @@ model account_infos {
   aktivAb             DateTime?     @db.Timestamp(6)
   aktivBis            DateTime?     @db.Timestamp(6)
   mitarbeiter_id      Int?
-  user_id             Int?
+  user_id             Int?          @unique
   geburtsdatum        DateTime?     @db.Date
   teilzeit            String?       @db.VarChar
   funktion            String?       @db.VarChar
@@ -106,8 +106,7 @@ model account_infos {
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
   mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
-  user                users?        @relation(fields: [usersId], references: [id])
-  usersId             Int?
+  user                users?        @relation(fields: [user_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
 }
@@ -1594,19 +1593,19 @@ model oauth_applications {
 }
 
 model oauth_clients {
-  id         Int      @id @default(autoincrement())
-  name       String
-  client_id  String
-  secret_id  String
-  scopes     String[]
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
+  id            Int      @id @default(autoincrement())
+  name          String
+  client_id     String   @unique() @db.VarChar(255)
+  client_secret String
+  scopes        String[]
+  created_at    DateTime @db.Timestamp(6)
+  updated_at    DateTime @db.Timestamp(6)
 }
 
 model oauth_access_tokens_new {
   id               Int                  @id @default(autoincrement())
   user_id          Int
-  client_id        String
+  client_id        String               @db.VarChar(255)
   refresh_token_id Int
   token            String               @unique() @db.VarChar(255)
   expires_at       DateTime
@@ -1620,7 +1619,7 @@ model oauth_access_tokens_new {
 model oauth_refresh_tokens {
   id                      Int                       @id @default(autoincrement())
   user_id                 Int
-  client_id               String
+  client_id               String                    @db.VarChar(255)
   token                   String                    @unique() @db.VarChar(255)
   expires_at              DateTime
   scopes                  String[]
@@ -1634,7 +1633,7 @@ model oauth_authorization_codes {
   id         Int      @id @default(autoincrement())
   user_id    Int
   client_id  String
-  code       String
+  code       String   @unique()
   expires_at DateTime
 }
 
@@ -2008,7 +2007,7 @@ model users {
   user_gruppes                      users_gruppes[]
   oauth_access_tokens_new           oauth_access_tokens_new[]
   oauth_refresh_tokens              oauth_refresh_tokens[]
-  account_infos                     account_infos[]
+  account_info                      account_infos?
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }

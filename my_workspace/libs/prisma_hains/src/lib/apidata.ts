@@ -126,7 +126,9 @@ async function getMonatsplanungSettings(user: any) {
   const isAdmin = userGroupsNames.includes('HAINS Admins');
   const canAcces =
     userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
+
   const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
+
   const res = {
     vorlagen: <any[]>[],
     dienstplan_custom_felder: <any[]>[],
@@ -263,7 +265,7 @@ async function getAllApiData(userId: number) {
   const res: any = {};
 
   const user = await getUserById(userId, {
-    account_infos: true,
+    account_info: true,
     dienstplaners_teams: true,
     dienstplaner_user_settings: true,
     dienstplaner_user_farbgruppens: true,
