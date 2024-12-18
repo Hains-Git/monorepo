@@ -8,14 +8,15 @@ import { GlobalAuthGuard } from './guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 
 @Module({
-  imports: [AuthModule, PrismaModule],
+  // imports: [AuthModule, PrismaModule],
+  imports: [PrismaModule],
   controllers: [AppController],
   providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: GlobalAuthGuard
-    }
+    AppService
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: GlobalAuthGuard
+    // }
   ]
 })
 export class AppModule {}
