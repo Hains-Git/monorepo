@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { addMinutes, addDays, isAfter } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -101,10 +101,6 @@ export class AuthService {
         where: { token: refreshToken }
       });
 
-      if (!tokenRecord || isAfter(new Date(), tokenRecord.expires_at)) {
-        throw new UnauthorizedException('expired refresh token.');
-      }
-
       const accessToken = await this.generateAccessToken(userId, clientId);
 
       await createAccessToken(
@@ -118,33 +114,24 @@ export class AuthService {
 
       return accessToken;
     } catch (error) {
-      console.log('refreshAccessToken', error);
-      throw new UnauthorizedException('Something went wrong.');
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('refresh token expired');
+      } else {
+        throw new UnauthorizedException();
+      }
     }
   }
 
   async validateUser(accessToken: string): Promise<any> {
     try {
-      const { exp } = this.jwtService.verify(accessToken);
-      // const currentTimestamp = Math.floor(Date.now() / 1000);
-      // const isExpired = exp < currentTimestamp;
-
-      // if (isExpired) {
-      //   throw new UnauthorizedException('access token expired');
-      // }
+      this.jwtService.verify(accessToken);
     } catch (error) {
-      // import { inspect } from 'util';
-      //       console.log('Error instance:', inspect(error, { depth: null, colors: true }));
-
-      console.log('Error instance:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      console.error('validateUser', {
-        error,
-        msg: error?.message,
-        errMsg: error?.TokenExpiredError,
-        type: typeof error,
-        expiredAt: error?.expiredAt
-      });
-      throw new UnauthorizedException('access token expired');
+      console.error('validateUser error', error, accessToken);
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException('access token expired');
+      } else {
+        throw new UnauthorizedException();
+      }
     }
 
     const accessTokenInDb = await isAccessTokenInDb(accessToken);

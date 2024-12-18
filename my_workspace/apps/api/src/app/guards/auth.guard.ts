@@ -15,7 +15,11 @@ export class GlobalAuthGuard implements CanActivate {
     const { accessToken } = request.body;
     const { access_token } = request.query;
 
+    console.log(request.body);
+
     const token = bearerToken || accessToken || access_token;
+
+    console.log('GlobalAuthGuard', bearerToken, accessToken, access_token);
 
     if ((type === 'Bearer' && token) || accessToken || access_token) {
       const haveAccess = await this.authService.validateUser(token);
