@@ -1,0 +1,43 @@
+.faq_container{
+  display: flex;
+  flex-direction: column;
+  padding: 0.5em 0.25em;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.faq_container .faq_head{
+  padding: 2em 0em 1em;
+  position: sticky;
+  top: 0px;
+  background-color: var(--white);
+}
+
+.faq_container .faq_mail_hinweis{
+  font-size: 0.8em;
+}
+
+.faq_container .faq_mail_main{
+  padding-top: 0.5em;
+}
+
+.faq_container .faq_search{
+  padding-top: 1em;
+}
+
+.faq_container .faq_list{
+  padding: 1em 0em;
+  display: flex;
+  flex-direction: column;
+}
+
+.faq_container .faq_list .faq_element{
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em
+}
+
+.faq_container .faq_list .faq_element:not(:last-child){
+  border-bottom: 1px solid var(--bordergray);
+}

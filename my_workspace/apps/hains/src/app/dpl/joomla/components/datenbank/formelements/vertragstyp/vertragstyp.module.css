@@ -1,0 +1,58 @@
+.vertragsgruppen > div > button,
+.vertrags_varianten > div > button{
+  margin: auto;
+}
+
+.vertragsgruppe,
+.vertrags_variante,
+.vertragsstufe{
+  padding-bottom: 0.25rem;
+}
+
+.vertragsstufen_head{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 0.5rem;
+  width: 100%;
+}
+
+.vertragsstufen_head > p:first-child{
+  text-decoration: underline;
+}
+
+.vertragsstufe{
+  width: 100%;
+}
+
+.vertragsgruppe > div:first-child,
+.vertrags_variante > div:first-child,
+.vertragsstufe > div:first-of-type{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vertragsstufen_hide,
+.vertrags_variante_hide,
+.vertragsstufe_hide{
+  display: block;
+  height: 0;
+  overflow: hidden;
+}
+
+.vertragsstufen_show,
+.vertrags_variante_show,
+.vertragsstufe_show{
+  padding-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vertragsstufen_show{
+  padding-left: 1rem;
+}
+

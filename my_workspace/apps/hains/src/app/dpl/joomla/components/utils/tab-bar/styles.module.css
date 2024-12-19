@@ -1,0 +1,37 @@
+div.tab_bar {
+  margin-bottom: 30px;
+}
+
+div.tab_bar ul {
+  display: flex;
+  column-gap: 40px;
+  list-style-type: none;
+}
+div.tab_bar ul li {
+  display: flex;
+  column-gap: 7px;
+  padding: 7px;
+  position: relative;
+  cursor: pointer;
+}
+div.tab_bar ul li::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background-color: var(--primary);
+  transition: all 330ms;
+}
+div.tab_bar ul li.active::before,
+div.tab_bar ul li:hover::before {
+  width: 100%;
+}
+div.tab_bar ul li span {
+  font-size: 0.85rem;
+  color: #a9a9a9;
+}
+div.tab_bar ul li.active span {
+  color: var(--primary);
+}

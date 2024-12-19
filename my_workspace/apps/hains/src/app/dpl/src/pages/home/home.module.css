@@ -1,0 +1,28 @@
+div.home_container {
+  text-align: center;
+  padding-top: 3rem;
+}
+
+div.home_container h1,
+div.home_container h2 {
+  font-weight: 300;
+}
+
+div.lead_container .lead_container_buttons {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 50%;
+  margin: auto;
+}
+
+div.lead_container .lead_container_buttons button.lead {
+  white-space: nowrap;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}

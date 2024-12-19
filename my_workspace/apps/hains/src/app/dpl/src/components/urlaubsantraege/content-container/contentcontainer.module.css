@@ -1,0 +1,93 @@
+.urlaubssaldi {
+  width: 100%;
+  padding: 1em 0;
+}
+
+.urlaubssaldi > p:first-child {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  font-size: 1.2em;
+}
+
+.urlaubssaldi_table_container {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.urlaubssaldi_table {
+  border-collapse: collapse;
+}
+
+.urlaubssaldi_table th,
+.urlaubssaldi_table td {
+  border: 1px solid var(--bordergray);
+  padding: 0.25em;
+  white-space: nowrap;
+  position: relative;
+}
+
+.urlaubssaldi_table thead th {
+  border: none;
+  height: 7em;
+}
+
+/* Rotate header */
+/* border: 1px */
+.urlaubssaldi_table thead th > div {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: left;
+  transform: translate(calc(100% - 1px / 2), 1px) rotate(315deg);
+  transform-origin: 0% calc(100% - 1px);
+}
+
+/* make sure the bottom of the span is matched up with the bottom of the parent div */
+.urlaubssaldi_table thead th > div > span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-bottom: 1px solid var(--bordergray);
+}
+
+.urlaubssaldi_table th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background-color: var(--white);
+  z-index: 1;
+}
+
+.container_einteilung {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  column-gap: 20px;
+}
+.container_einteilung > p:first-child {
+  padding-bottom: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.einteilung_content {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+}
+.einteilung_content p {
+  min-width: 125px;
+}
+.einteilung_select {
+  width: 70px;
+  cursor: pointer;
+}
+
+.searchbox{
+  position: relative;
+}

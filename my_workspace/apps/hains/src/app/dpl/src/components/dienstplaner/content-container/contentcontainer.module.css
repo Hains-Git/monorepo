@@ -1,0 +1,46 @@
+.konfliktspan {
+  cursor: default;
+  padding: 0;
+  margin: 0;
+  min-width: 2em;
+  min-height: 10px;
+  border-radius: 3px;
+  font-weight: bold;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  background-color: var(--orange);
+  color: var(--black);
+}
+
+.possible-conflict {
+  background-color: var(--yellow);
+}
+
+.serious-conflict {
+  background-color: var(--red);
+}
+
+div.dropdown > table.dropdown_table,
+div.dropdown > table.dropdown_table > tbody,
+div.dropdown > table.dropdown_table > tbody > tr,
+div.dropdown > table.dropdown_table > tbody > tr > td{
+  border: none;
+}
+
+div.dropdown > table.dropdown_table > tbody > tr{
+  background-color: var(--white);
+  cursor: pointer;
+  border: none;
+  padding: 0 0.25em;
+}
+
+div.dropdown > table.dropdown_table > tbody > tr > td{
+  padding: 0.25em;
+  background-color: inherit;
+  min-width: fit-content;
+  height: fit-content;
+}

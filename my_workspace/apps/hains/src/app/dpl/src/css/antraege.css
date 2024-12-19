@@ -1,0 +1,219 @@
+:disabled {
+  background-color: #eee !important;
+}
+div.urlaubsantraege-wrapper {
+  --primary-color: #00427a;
+  --light-gray: #f9f9f9;
+  --border-color: #ccc;
+  --gray-color: #eee;
+  --red: firebrick;
+  --font-p: 1rem;
+  --font-h1: 1.8rem;
+  --font-h2: 1.5rem;
+  --font-h3: 1.2rem;
+  --font-h4: 1rem;
+  padding-bottom: 30px;
+}
+div.urlaubsantraege-wrapper div.my-flex-spinner {
+  position: fixed;
+  top: 4em;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  display: none;
+}
+
+div.urlaubsantraege-wrapper div.errMsg-container {
+  background-color: var(--border-color);
+  padding: 5px 10px;
+  margin-bottom:20px;
+  text-align: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+div.urlaubsantraege-wrapper div.errMsg-container.success{
+  background-color: lightgreen;
+}
+div.urlaubsantraege-wrapper div.errMsg-container.error{
+  background-color: firebrick;
+}
+div.urlaubsantraege-wrapper div.errMsg-container .errMsg{
+  flex: 2;
+}
+div.urlaubsantraege-wrapper div.errMsg-container > span {
+  cursor: pointer;
+}
+div.urlaubsantraege-wrapper div.errMsg-container.error .errMsg,
+div.urlaubsantraege-wrapper div.errMsg-container.error > span {
+  color: white;
+}
+
+div.urlaubsantraege-wrapper textarea,
+div.urlaubsantraege-wrapper select,
+div.urlaubsantraege-wrapper input {
+  outline: none;
+}
+
+div.urlaubsantraege-wrapper textarea,
+div.urlaubsantraege-wrapper label,
+div.urlaubsantraege-wrapper select,
+div.urlaubsantraege-wrapper input,
+div.urlaubsantraege-wrapper button,
+div.urlaubsantraege-wrapper p {
+  font-size: var(--font-p);
+}
+div.urlaubsantraege-wrapper a {
+  color: var(--primary-color);
+  font-size: var(--font-p);
+  text-decoration: none;
+}
+
+div.urlaubsantraege-wrapper h2 {
+  margin: 0;
+  font-weight: 400;
+  font-size: var(--font-h2);
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+div.urlaubsantraege-wrapper h3 {
+  margin: 0;
+  margin-bottom: 10px;
+  font-size: var(--font-h3);
+  font-weight: 400;
+}
+div.urlaubsantraege-wrapper {
+  overflow: hidden;
+}
+div.urlaubsantraege-wrapper button {
+  background-color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  color: #fff;
+  padding: 4px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  /* display:flex; */
+  /* justify-self:right; */
+}
+div.urlaubsantraege-wrapper button:hover {
+  background-color: transparent;
+  color: var(--primary-color);
+}
+
+div.urlaubsantraege-wrapper button.cancle {
+  color: #000;
+  background-color: #e9e9e9;
+  border: 2px solid #999;
+  background: linear-gradient(to bottom, #fff 0%, #e9e9e9 100%);
+}
+div.urlaubsantraege-wrapper button.cancle:hover {
+  background: transparent;
+}
+div.urlaubsantraege-wrapper button.del {
+  background-color: var(--red);
+  border: 2px solid var(--red);
+}
+div.urlaubsantraege-wrapper button.del:hover {
+  background-color: transparent;
+  color: var(--red);
+}
+
+div.urlaubsantraege-wrapper div.info-box {
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+div.urlaubsantraege-wrapper div.info-box div.info {
+  padding: 20px;
+  background-color: var(--light-gray);
+}
+
+div.urlaubsantraege-wrapper div.top-row,
+div.urlaubsantraege-wrapper div.top-row div.action-btns,
+div.urlaubsantraege-wrapper div.form-antrag div.header div.action-btns,
+div.urlaubsantraege-wrapper div.form-antrag div.antrag-info,
+div.urlaubsantraege-wrapper div.form-antrag div.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+div.urlaubsantraege-wrapper div.form-antrag div.header .my-loader-container{
+  padding: 0;
+  width: auto;
+  height: auto;
+}
+
+div.urlaubsantraege-wrapper div.form-antrag div.header div.action-btns button,
+div.urlaubsantraege-wrapper div.top-row div.action-btns button {
+  margin-right: 15px;
+}
+div.urlaubsantraege-wrapper div.form-antrag div.header div.action-btns button:last-child,
+div.urlaubsantraege-wrapper div.top-row div.action-btns button:last-child {
+  margin-right: 0;
+}
+
+div.urlaubsantraege-wrapper div.column2 {
+  display: flex;
+  column-gap: 3%;
+}
+div.urlaubsantraege-wrapper div.form-antrag div.column2 div.col {
+  width: 50%;
+}
+div.urlaubsantraege-wrapper form fieldset {
+  margin-bottom: 10px;
+  display: flex;
+}
+div.urlaubsantraege-wrapper form fieldset.columns {
+  justify-content: space-between;
+}
+div.urlaubsantraege-wrapper form fieldset label {
+  width: 160px;
+}
+
+div.urlaubsantraege-wrapper form fieldset input,
+div.urlaubsantraege-wrapper form fieldset select,
+div.urlaubsantraege-wrapper form fieldset textarea {
+  width: calc(100% - 160px);
+  border: 1px solid var(--border-color);
+  padding-left: 5px;
+}
+div.urlaubsantraege-wrapper form fieldset input[type='file'] {
+  border: 0;
+  padding-left: 0;
+}
+div.urlaubsantraege-wrapper form fieldset textarea {
+  resize: none;
+  height: 80px;
+}
+
+div.urlaubsantraege-wrapper div.searchbox {
+  width: calc(100% - 160px);
+}
+div.urlaubsantraege-wrapper div.searchbox input {
+  width: 100%;
+}
+
+div.urlaubsantraege-wrapper .generic-table-wrapper{
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.urlaubsantraege-wrapper .urlaubsanträge-anträge-wrapper .generic-table-wrapper {
+  width: 100%;
+}
+
+div.form-antrag div.antrag-info div.right-side {
+  display: flex;
+  column-gap: 15px;
+  align-items: center;
+}
+
+div.form-antrag div.antrag-info div.right-side:only-child{
+  justify-content: flex-end;
+  width: 100%;
+}

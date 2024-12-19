@@ -1,0 +1,18 @@
+.year_month_header{
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+div.vk_overview table thead th.head_column button{
+  margin: 0;
+}
+
+div.toggle_active, div.options{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: fit-content;
+}

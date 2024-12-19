@@ -1,0 +1,1458 @@
+.dienstplaner_page .dienstplan-page,
+.dienstplaner_page .dienstplan-vorlage-manager-page,
+.dienstplaner_page .dienstplan-statistic-page {
+  height: 100%;
+  padding-bottom: 50px;
+}
+
+.dienstplaner_page .dienstplan-statistic-page .filter-vorlage {
+  width: fit-content;
+  position: relative;
+}
+
+.dienstplaner_page .filter-vorlage-optionen-anwenden {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.dienstplaner_page .dienstplan-statistic-page .filter-vorlage .filter-vorlage-optionen {
+  position: absolute;
+  background-color: var(--white);
+  border-radius: 3px;
+  border: 1px solid var(--black);
+  white-space: nowrap;
+  z-index: var(--z11);
+  padding: 0.25em 0.5em;
+  max-height: 500px;
+  overflow: auto;
+  left: 0;
+  max-width: 500px;
+}
+
+.dienstplaner_page .dienstplan-statistic-statistic:not(:first-child) {
+  padding-top: 3em;
+}
+
+.dienstplaner_page .dienstplan-statistic-page-add-stastic {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  justify-content: center;
+  padding: 2em 0em;
+}
+
+.dienstplaner_page .dienstplan-statistic-table > p,
+.dienstplaner_page .dienstplan-statistic-graph > p {
+  cursor: pointer;
+  padding: 0.5em 0em;
+  width: fit-content;
+}
+
+.dienstplaner_page .dienstplan-statistic-settings {
+  display: flex;
+  gap: 0.25em;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5em;
+  white-space: nowrap;
+  flex-wrap: wrap;
+}
+
+.dienstplaner_page .dienstplan-statistic-graph .custom-composed-chart-legend,
+.dienstplaner_page .dienstplan-statistic-graph .custom-composed-chart-legend .statistc-legend-label,
+.dienstplaner_page .dienstplan-statistic-settings-only-main-zeitraum-label {
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+  width: fit-content;
+}
+
+.dienstplaner_page .dienstplan-statistic-graph .custom-composed-chart-legend {
+  flex-wrap: wrap;
+}
+
+.dienstplaner_page .dienstplan-statistic-graph .custom-composed-chart-legend {
+  gap: 1em;
+}
+
+.dienstplaner_page span.span-point {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dienstplaner_page .auswahl-leiste-row,
+.dienstplaner_page .dienstplan-tabellen-container-toolbar,
+.dienstplaner_page .dienstplan-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.dienstplaner_page .dienstplan-tabellen-container-toolbar {
+  display: flex;
+  justify-content: center;
+  padding-left: 0.25rem;
+}
+
+.dienstplaner_page .dienstplan-tabellen-container-toolbar .dienstplan-tabellen-container-group {
+  display: flex;
+  gap: 0.25em;
+  flex-direction: row;
+  align-items: center;
+}
+
+.dienstplaner_page .dienstplan-tabellen-container-toolbar .fuehrung-container {
+  display: flex;
+  align-items: center;
+}
+
+.dienstplaner_page .dienstplan-tabellen-container-toolbar .fuehrung-container input {
+  margin-right: 0.25em;
+}
+
+.dienstplaner_page .auswahl-leiste-col {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.dienstplaner_page .dienstplan-warning-fields {
+  position: relative;
+}
+
+.dienstplaner_page div.publish-container {
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+}
+
+.dienstplaner_page .standard-select-field {
+  position: relative;
+}
+
+.dienstplaner_page .standard-select-field .standard-select-dropdown {
+  position: absolute;
+  left: 0;
+  z-index: var(--z14);
+}
+
+.dienstplaner_page .standard-select-field .caret {
+  cursor: pointer;
+}
+
+.dienstplaner_page .standard-select-field .standard-select-field-label {
+  margin-right: 0.5em;
+  cursor: default;
+}
+
+.dienstplaner_page .standard-select-field div.custom-select-field-label input[type='text'] {
+  text-align: center;
+  border: none;
+}
+
+.dienstplaner_page .standard-select-field div.custom-select-field-label input[readonly] {
+  cursor: pointer;
+  color: var(--textgray);
+}
+
+.dienstplaner_page .standard-select-field div.custom-select-field-label input[readonly]:focus {
+  outline: none;
+}
+
+.dienstplaner_page table.calendar-table tfoot td.custom-select-button:not(.tr) {
+  padding: 0;
+}
+
+.dienstplaner_page table.calendar-table tfoot td.custom-select-button:not(.tr) > div.my-refresh-box > label,
+.dienstplaner_page table.calendar-table tfoot td.custom-select-button:not(.tr) > p {
+  padding: 0.5em;
+}
+
+.dienstplaner_page div.my-refresh-box > * {
+  cursor: pointer;
+}
+
+.dienstplaner_page div.my-refresh-box > label {
+  display: block;
+  width: 100%;
+}
+
+.dienstplaner_page div.my-refresh-box > label > input {
+  margin-right: 0.25em;
+}
+
+.dienstplaner_page .dienstplan-einteilung {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.dienstplaner_page .dienstplan-einteilung .dienstplan-einteilung-dropdown {
+  display: none;
+  position: absolute;
+  background-color: var(--white);
+  margin: 0;
+  top: 100%;
+  left: 0;
+  white-space: nowrap;
+  border: 1px solid var(--black);
+  max-height: 200px;
+  overflow: auto;
+  flex-direction: column;
+  padding: 2px;
+  z-index: var(--z2);
+}
+
+.dienstplaner_page .dienstplan-einteilung-dropdown > [data-focused='true'] > .einteilung-auswahl-btn {
+  outline: 2px solid var(--primary);
+  margin-bottom: 2px;
+}
+
+.dienstplaner_page .dienstplan-einteilung.show-extra .dienstplan-einteilung-dropdown,
+.dienstplaner_page .dienstplan-einteilung .dienstplan-einteilung-dropdown:hover {
+  display: flex;
+}
+
+.dienstplaner_page .dienstplan-einteilung .my-custom-input-container {
+  width: 100%;
+}
+
+.dienstplaner_page .dienstplan-einteilung .dienstplan-einteilung-label {
+  min-width: 25px;
+  text-align: left;
+  color: inherit;
+  padding: 0 0.5em;
+}
+
+.dienstplaner_page table.mitarbeiter-date .dienstplan-einteilung .dienstplan-einteilung-label
+{
+  font-size: 1.4em;
+}
+
+.dienstplaner_page .dienstplan-einteilung.default-einteilung input[type='text'] {
+  text-align: center;
+}
+
+.dienstplaner_page .dienstplan-einteilung input[type='text'] {
+  background: none;
+  border: none;
+}
+
+.dienstplaner_page table.mitarbeiter-date .dienstplan-einteilung input[type='text'],
+.dienstplaner_page table.mitarbeiter-dienst .dienstplan-einteilung input[type='text']{
+  caret-color: transparent;
+}
+
+.dienstplaner_page .dienstplan-einteilung.optional_input input[type='text'],
+.dienstplaner_page p.optional_input {
+  background-image: linear-gradient(
+    45deg, 
+    var(--is_optional_1) 25%, 
+    var(--is_optional_2) 25%, 
+    var(--is_optional_2) 50%, 
+    var(--is_optional_1) 50%, 
+    var(--is_optional_1) 75%, 
+    var(--is_optional_2) 75%, 
+    var(--is_optional_2) 100%
+  );
+  background-size: 1em 1em;
+}
+
+.dienstplaner_page .dienstplan-einteilung input[type='text']:focus,
+.dienstplaner_page .dienstplan-einteilung.active input[type='text'] {
+  outline: 1px solid var(--primary) !important;
+  border-radius: 2px;
+}
+
+.dienstplaner_page .dienstplan-einteilung input[readonly]:focus,
+.dienstplaner_page .dienstplan-einteilung.active input[readonly] {
+  outline: 1px solid red !important;
+  border-radius: 2px;
+}
+
+.dienstplaner_page .dienstplan-einteilung .dienstplan-einteilung-extras {
+  display: none;
+  position: absolute;
+  left: 100%;
+  z-index: var(--z1);
+  padding: 0 0.25em;
+  margin: 0;
+}
+
+.dienstplaner_page .dienstplan-einteilung.show-extra .dienstplan-einteilung-extras,
+.dienstplaner_page .dienstplan-einteilung .dienstplan-einteilung-extras:hover {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.dienstplaner_page .custom-checkbox,
+.dienstplaner_page .dienstplan-einteilung.show-extra .custom-checkbox {
+  cursor: help;
+  padding: 0;
+  margin: 0;
+  min-width: 2em;
+  min-height: 10px;
+  border-radius: 3px;
+  font-weight: bold;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.dienstplaner_page .custom-checkbox,
+.dienstplaner_page .dienstplan-einteilung.show-extra .custom-checkbox {
+  cursor: pointer;
+}
+
+.dienstplaner_page .dienstplan-einteilung.is-double{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--black);
+}
+
+.dienstplaner_page .custom-checkbox.disabled,
+.dienstplaner_page .dienstplan-einteilung.show-extra .custom-checkbox.disabled {
+  background-color: var(--gray);
+}
+
+.dienstplaner_page div.custom-select-table-container table {
+  background-color: var(--white);
+}
+
+.dienstplaner_page div.custom-select-table-container table td,
+.dienstplaner_page div.custom-select-table-container table th {
+  cursor: pointer;
+  padding: 0;
+  border: 1px solid var(--bordergray);
+}
+
+.dienstplaner_page .custom-select-button:not(.tr){
+  cursor: pointer;
+  border: none;
+  min-width: 40px;
+  padding: 0;
+  background-color: var(--white);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25em;
+  padding: 0 0.25em;
+}
+
+.dienstplaner_page div.custom-select-field {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.dienstplaner_page table thead,
+.dienstplaner_page table tbody,
+.dienstplaner_page table tfoot {
+  background-color: var(--white);
+}
+
+.dienstplaner_page table thead .table-menue {
+  padding: 1em 0.5em;
+}
+
+.dienstplaner_page table thead .table-menue * {
+  font-size: 1em;
+}
+
+.dienstplaner_page table thead .table-menue p {
+  cursor: pointer;
+  background-color: var(--white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dienstplaner_page table thead .table-menue .farbgruppen-label,
+.dienstplaner_page table thead .table-menue .konflikt-filter-label,
+.dienstplaner_page table thead .table-menue .filter-vorlage-label,
+.dienstplaner_page table thead .table-menue .custom-dienstplanfelder-label {
+  font-size: 1.15em;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown {
+  position: absolute;
+  max-width: 300px;
+  max-height: 300px;
+  background-color: var(--white);
+  border: 1px solid var(--bordergray);
+  box-shadow: 3px 3px 10px 0px var(--shadow);
+  z-index: var(--z10);
+  overflow: auto;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown > div {
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-buttons,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .custom-dienstplanfelder-optionen,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-checkbox > label,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield-head {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown > div {
+  width: 100%;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown > div:not(:last-child) {
+  border-bottom: 1px solid var(--bordergray);
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield input[type='color'] {
+  width: 3em;
+  height: 3em;
+  padding: 0px;
+  border: none;
+  background: none;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield label {
+  cursor: pointer;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield-head {
+  width: 100%;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield-head > p {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-checkbox,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield {
+  padding-bottom: 0.5em;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-checkbox > label {
+  min-width: 30px;
+  text-align: left;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown > .toggle-dienste-wuensche-container {
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+  gap: 0.25em;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-checkbox:hover,
+.dienstplaner_page table thead .table-menue .table-menue-dropdown > .toggle-dienste-wuensche-container:hover {
+  background-color: var(--bluegray);
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield-body {
+  padding-top: 0.5em;
+  width: 100%;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .farbgruppen-colorfield {
+  flex-direction: column;
+}
+
+.dienstplaner_page table thead .table-menue .table-menue-dropdown .table-menue-bodyvisible-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+}
+
+.dienstplaner_page table.dienstplan-table {
+  border-collapse: separate;
+  border-spacing: 0px;
+}
+
+.dienstplaner_page table.dienstplan-table ._cell_label{
+  font-size: 0.9em;
+  color: var(--textgray);
+  width: 100%;
+}
+
+.dienstplaner_page table.dienstplan-table tr > td,
+.dienstplaner_page table.dienstplan-table tr > th {
+  border: 0px solid var(--bordergray);
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+.dienstplaner_page table.dienstplan-table thead tr:first-child > td,
+.dienstplaner_page table.dienstplan-table thead tr:first-child > th {
+  border-top-width: 1px;
+}
+
+.dienstplaner_page table.dienstplan-table tr > th:first-child {
+  border-right-width: 3px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.dienstplaner_page table.dienstplan-table tr:last-child > td,
+.dienstplaner_page table.dienstplan-table tr:last-child > th {
+  border-right-width: 1px;
+  border-bottom-width: 3px;
+}
+
+.dienstplaner_page table.dienstplan-table tr:last-child > th:first-child {
+  border-right-width: 3px;
+  border-bottom-width: 3px;
+}
+
+.dienstplaner_page table.dienstplan-table tr th {
+  padding: 0;
+  white-space: nowrap;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr th {
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.dienstplaner_page table tr th .bedarf-counter {
+  cursor: default;
+}
+
+.dienstplaner_page table.dienstplan-table tr > td,
+.dienstplaner_page table.dienstplan-table tr > th,
+.dienstplaner_page table.dienstplan-table tr > td,
+.dienstplaner_page table.dienstplan-table tr > th {
+  background-color: var(--white);
+}
+
+.dienstplaner_page table.dienstplan-table tr.wochenende > td,
+.dienstplaner_page table.dienstplan-table tr.wochenende > th,
+.dienstplaner_page table.dienstplan-table tr > td.wochenende,
+.dienstplaner_page table.dienstplan-table tr > th.wochenende {
+  background-color: var(--weekendgray);
+}
+
+.dienstplaner_page table.dienstplan-table tr.feiertag > td,
+.dienstplaner_page table.dienstplan-table tr.feiertag > th,
+.dienstplaner_page table.dienstplan-table tr > td.feiertag,
+.dienstplaner_page table.dienstplan-table tr > th.feiertag {
+  background-color: var(--feiertag);
+}
+
+.dienstplaner_page table.dienstplan-table thead tr:not(:first-child):hover > td,
+.dienstplaner_page table.dienstplan-table thead tr:not(:first-child):hover > th,
+.dienstplaner_page table.dienstplan-table tbody tr:hover > td,
+.dienstplaner_page table.dienstplan-table tbody tr:hover > th {
+  background-color: var(--hoverblue);
+}
+
+.dienstplaner_page table.dienstplan-table tr.wochenende:hover > td,
+.dienstplaner_page table.dienstplan-table tr.wochenende:hover > th,
+.dienstplaner_page table.dienstplan-table tr:hover > td.wochenende,
+.dienstplaner_page table.dienstplan-table tr:hover > th.wochenende {
+  background-color: var(--hovergray);
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr.feiertag:hover > td,
+.dienstplaner_page table.dienstplan-table tbody tr.feiertag:hover > th,
+.dienstplaner_page table.dienstplan-table tr:hover > td.feiertag,
+.dienstplaner_page table.dienstplan-table tr:hover > th.feiertag {
+  background-color: var(--hoverfeiertag);
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr th.mitarbeiter-als-abwesend-markiert {
+  background-color: var(--yellowgray);
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr th.mitarbeiter-als-abwesend-markiert:hover {
+  background-color: var(--hoveryellow);
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr th.abwesend-eingeteilt {
+  background-color: var(--abwesend);
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr th.abwesend-eingeteilt:hover {
+  background-color: var(--darkgray);
+}
+
+.dienstplaner_page .dienstplan-content-container .dienstplan-add-einteilung,
+.dienstplaner_page table.dienstplan-table.date-dienst td .dienstplan-content-container .dienstplan-add-einteilung:only-child,
+.dienstplaner_page table.dienstplan-table td:hover .dienstplan-content-container .dienstplan-add-einteilung,
+.dienstplaner_page table.dienstplan-table td .dienstplan-content-container .dienstplan-add-einteilung:hover,
+.dienstplaner_page .dienstplan-add-einteilung:hover input:focus,
+.dienstplaner_page table.dienstplan-table .dienstplan-content-container .dienstplan-add-einteilung.show-extra,
+.dienstplaner_page table.dienstplan-table.date-dienst .dienstplan-content-container .dienstplan-add-einteilung.show-extra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  border-radius: 3px;
+  font-weight: bold;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.dienstplaner_page table.dienstplan-table td .dienstplan-content-container .dienstplan-add-einteilung:not(:only-child) > input{
+  border: 1px solid var(--black);
+  border-radius: 3px;
+  background-color: var(--white);
+  width: fit-content;
+  min-width: 20px;
+  padding-left: 0.35em;
+  padding-right: 0.35em;
+}
+
+.dienstplaner_page .dienstplan-content-container .dienstplan-add-einteilung input {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dienstplaner_page table.dienstplan-table .dienstplan-content-container {
+  position: relative;
+  height: 100%;
+}
+
+.dienstplaner_page table.dienstplan-table .dienstplan-content-container .dienstplan-einteilung:not(:only-child):not(:first-child) {
+  border-top: 1px dashed var(--bordergray);
+}
+
+.dienstplaner_page table.dienstplan-table .dienstplan-content-container .dienstplan-add-einteilung:not(:only-child) {
+  position: absolute;
+  z-index: var(--z1);
+  top: 100%;
+  width: 100%;
+}
+
+.dienstplaner_page table.dienstplan-table td .dienstplan-content-container .dienstplan-add-einteilung:not(:only-child){
+  width: fit-content;
+  border: none;
+  background: none;
+  right: 0;
+}
+
+.dienstplaner_page table.dienstplan-table .dienstplan-content-container .dienstplan-add-einteilung {
+  height: 0;
+  overflow: hidden;
+  border: none;
+}
+
+.dienstplaner_page table.dienstplan-table.date-dienst .dienstplan-content-container .dienstplan-add-einteilung {
+  display: none;
+}
+
+.dienstplaner_page table.calendar-table {
+  position: absolute;
+  z-index: var(--z7);
+}
+
+.dienstplaner_page .dienstplan-page table.calendar-table {
+  right: 0;
+}
+
+.dienstplaner_page table.calendar-table td {
+  text-align: center;
+}
+
+.dienstplaner_page table.calendar-table td.custom-select-button,
+.dienstplaner_page table.calendar-table th.custom-select-button {
+  padding: 0.5em;
+  width: fit-content;
+  display: table-cell;
+}
+
+.dienstplaner_page table.calendar-table table p.custom-select-table-year {
+  padding-bottom: 0.5em;
+}
+
+.dienstplaner_page table.calendar-table .custom-select-button.active,
+.dienstplaner_page .custom-select-button:hover {
+  background-color: var(--bluegray);
+  color: var(--blackisch);
+}
+
+.dienstplaner_page div.dienstplan-page .warning-class,
+.dienstplaner_page div.farben-legende-container-farben > p.warning-class {
+  background-color: var(--orange);
+}
+
+.dienstplaner_page div.dienstplan-page .mitarbeiter-als-abwesend-markiert,
+.dienstplaner_page div.farben-legende-container-farben > p.mitarbeiter-als-abwesend-markiert {
+  background-color: var(--yellowgray);
+}
+
+.dienstplaner_page div.dienstplan-page .abwesend-eingeteilt,
+.dienstplaner_page div.farben-legende-container-farben > p.abwesend-eingeteilt{
+  background-color: var(--abwesend);
+}
+
+.dienstplaner_page div.dienstplan-page .wochenende,
+.dienstplaner_page div.farben-legende-container-farben > p.wochenende{
+  background-color: var(--weekendgray);
+}
+
+.dienstplaner_page div.dienstplan-page .feiertag,
+.dienstplaner_page div.farben-legende-container-farben > p.feiertag{
+  background-color: var(--feiertag);
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.different-wunschday,
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.different-wunschday{
+  background-color: var(--blue);
+}
+
+.dienstplaner_page div.dienstplan-page .possible-conflict.different-wunschday,
+.dienstplaner_page div.farben-legende-container-farben > p.possible-conflict.different-wunschday{
+  background-color: var(--gray);
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt:not(.different-wunschday),
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt:not(.different-wunschday){
+  background-color: var(--green);
+}
+
+.dienstplaner_page div.dienstplan-page .possible-conflict:not(.different-wunschday),
+.dienstplaner_page div.farben-legende-container-farben > p.possible-conflict:not(.different-wunschday){
+  background-color: var(--yellow);
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.different-wunschday.current-wunschday,
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.different-wunschday.current-wunschday{
+  background-image: linear-gradient(to right, var(--green), var(--blue));
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.possible-conflict:not(.different-wunschday),
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.possible-conflict:not(.different-wunschday){
+  background-image: linear-gradient(to right, var(--green), var(--yellow) 70%);
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.possible-conflict.different-wunschday,
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.possible-conflict.different-wunschday{
+  background-image: linear-gradient(to right, var(--blue), var(--gray));
+}
+
+.dienstplaner_page div.dienstplan-page .serious-conflict,
+.dienstplaner_page div.dienstplan-page .serious-conflict.possible-conflict:not(.different-wunschday),
+.dienstplaner_page div.farben-legende-container-farben > p.serious-conflict,
+.dienstplaner_page div.farben-legende-container-farben > p.serious-conflict.possible-conflict:not(.different-wunschday){
+  background-color: var(--red);
+}
+
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.serious-conflict,
+.dienstplaner_page div.dienstplan-page .wunsch-erfuellt.serious-conflict.possible-conflict:not(.different-wunschday),
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.serious-conflict,
+.dienstplaner_page div.farben-legende-container-farben > p.wunsch-erfuellt.serious-conflict.possible-conflict:not(.different-wunschday){
+  background-image: linear-gradient(to right, var(--green), var(--red) 70%);
+}
+
+.dienstplaner_page .table-head-element,
+.dienstplaner_page .table-body-element,
+.dienstplaner_page .table-foot-element {
+  text-align: center;
+}
+
+.dienstplaner_page div.statistik-tooltip {
+  padding: 0.5em;
+  background-color: var(--white);
+  border: 1px solid var(--bordergray);
+  margin: 0;
+  font-size: 1em;
+}
+
+.dienstplaner_page div.statistik-tooltip > * {
+  padding: 0;
+  margin: 0;
+  color: var(--black);
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-label {
+  font-size: 0.8em;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-value {
+  font-size: 0.7em;
+  padding-bottom: 0.25em;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-description {
+  font-size: 0.6em;
+  padding-bottom: 0.25em;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra {
+  font-size: 0.6em;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra > div.statistik-col,
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra > div.statistik-col div.statistik-dates-col {
+  padding-right: 1em;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra > div.statistik-col > div.statistik-dienst-col {
+  padding-right: 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra > div.statistik-col > p.statistik-col-label {
+  font-weight: bold;
+}
+
+.dienstplaner_page div.statistik-tooltip > .statistik-tooltip-extra > div.statistik-col .statistik-feiertag {
+  padding-bottom: 0.5em;
+}
+
+.dienstplaner_page .custom-select-field-label .caret {
+  min-width: 1em;
+  height: 100%;
+  padding: 0 0.2em;
+  text-align: left;
+  cursor: pointer;
+  display: inline-block;
+  color: var(--bordergray);
+}
+
+.dienstplaner_page table .custom-label-text {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dienstplaner_page .custom-label-text > .custom-label-text-extras {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 100%;
+  background-color: inherit;
+  z-index: var(--z1);
+}
+
+.dienstplaner_page .custom-label-text > .custom-label-text-p {
+  display: inline-block;
+  white-space: nowrap;
+  padding-right: 0.25em;
+}
+
+.dienstplaner_page table.mitarbeiter-date tbody tr th .custom-label-text > .custom-label-text-p {
+  font-size: 1.4em;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr > td > div.custom-label-text,
+.dienstplaner_page table.dienstplan-table tbody tr > th > div.custom-label-text,
+.dienstplaner_page table.dienstplan-table tbody tr > td > div.custom-select-field,
+.dienstplaner_page table.dienstplan-table tbody tr > th > div.custom-select-field {
+  padding: 0.15em 0.25em;
+  position: relative;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr td div.custom-label-text,
+.dienstplaner_page table.dienstplan-table tbody tr th div.custom-label-text {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr td div.wunsch-label-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  height: fit-content;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr td div.wunsch-label{
+  /* border-top: 1px solid var(--bordergray); */
+  padding: 0em 0.25em;
+  width: 100%;
+}
+
+.dienstplaner_page table.dienstplan-table tbody tr td div.wunsch-label > p{
+  padding: 0px 5px;
+}
+
+.dienstplaner_page table.dienstplan-table thead tr > th > div.custom-label-text {
+  padding: 1em 0.25em 0.25em;
+  padding: 0 0.25em 0.25em;
+  position: relative;
+}
+
+.dienstplaner_page table.mitarbeiter-date thead tr:first-child th:not(:first-child) p.custom-label-text-p {
+  font-size: 1.3em;
+}
+
+.dienstplaner_page table.dienstplan-table thead tr > th > div.custom-label-text:only-child {
+  padding: 1em 0.25em;
+}
+
+.dienstplaner_page table tr > td .custom-info-button,
+.dienstplaner_page table tr > th .custom-info-button,
+.dienstplaner_page table tr > td .dienstplan-einteilung .custom-checkbox {
+  display: none;
+}
+
+.dienstplaner_page table tr > th .custom-info-button {
+  position: absolute;
+  left: 100%;
+  z-index: var(--z1);
+}
+
+.dienstplaner_page table tr > td .custom-label-text:hover .custom-info-button,
+.dienstplaner_page table tr > td .custom-label-text .custom-info-button:hover,
+.dienstplaner_page table tr > td:hover .dienstplan-einteilung-extras .custom-checkbox,
+.dienstplaner_page table tr > td .dienstplan-einteilung:hover .custom-checkbox,
+.dienstplaner_page table tr > td .dienstplan-einteilung .custom-checkbox:hover,
+.dienstplaner_page table tr > td .dienstplan-einteilung.show-extra .custom-checkbox,
+.dienstplaner_page table tr > th:hover .custom-info-button {
+  display: flex;
+}
+
+.dienstplaner_page table tr > th,
+.dienstplaner_page table tr > td {
+  min-width: 40px;
+  height: 10px;
+}
+
+.dienstplaner_page table.dienstplan-table:not(.mitarbeiter-date) tr > td {
+  height: fit-content;
+}
+
+.dienstplaner_page .dienstplan-statistic-table-table {
+  width: 100%;
+  overflow: auto;
+}
+
+.dienstplaner_page .dienstplan-statistic-table-table table th,
+.dienstplaner_page .dienstplan-statistic-table-table table td {
+  border: 1px solid var(--bordergray);
+  white-space: nowrap;
+  text-align: center;
+  padding: 0.25em;
+  font-weight: normal;
+}
+
+.dienstplaner_page .dienstplan-statistic-table-table table .statistic-table-names > p {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  padding: 0.25em;
+}
+
+.dienstplaner_page .dienstplan-statistic-table-table table th:first-child,
+.dienstplaner_page .dienstplan-statistic-table-table table td:first-child {
+  text-align: left;
+}
+
+.dienstplaner_page table.dienstplan-table > tbody > tr > td.lead-cell {
+  border: 3px solid var(--primary);
+}
+
+.dienstplaner_page table.dienstplan-table > tbody > tr > th.highlight_by_table_search,
+.dienstplaner_page table.dienstplan-table > tbody > tr > td.highlight_by_table_search{
+  border: 3px solid red;
+}
+
+.dienstplaner_page div.custom-select-field div.custom-select-field-dropdown {
+  background-color: var(--white);
+  border: 1px solid var(--bordergray);
+  box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+  border-radius: 3px;
+}
+
+.dienstplaner_page div.custom-select-field div.custom-select-field-dropdown.standard-select-dropdown {
+  max-height: 320px;
+  overflow: auto;
+  min-width: 100px;
+  width: max-content;
+  width: 100%;
+  display: block;
+  z-index: var(--z7);
+}
+
+.dienstplaner_page div.custom-select-field div.custom-select-field-dropdown.standard-select-dropdown .standard-select-dropdown-items {
+  z-index: var(--z7);
+}
+
+.dienstplaner_page div.custom-select-field-dropdown .custom-select-button:not(.tr) {
+  display: block;
+  padding: 0px;
+  width: 100%;
+  color: var(--textgray);
+}
+
+.dienstplaner_page div.custom-select-field-label {
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: fit-content;
+  min-width: 40px;
+  padding: 0.15em 0.25em;
+  cursor: pointer;
+}
+
+.dienstplaner_page div.custom-select-field-label > * {
+  display: inline-block;
+}
+
+.dienstplaner_page .custom-select-emphasize,
+.dienstplaner_page .custom-select-button.custom-select-buttons-text {
+  position: relative;
+}
+
+.dienstplaner_page .custom-select-field .custom-select-field-dropdown .custom-select-button.mitarbeiter-als-abwesend-markiert {
+  background-color: var(--yellowgray);
+}
+
+.dienstplaner_page .custom-select-field .custom-select-field-dropdown .custom-select-button.abwesend-eingeteilt {
+  background-color: var(--abwesend);
+}
+
+.dienstplaner_page .custom-select-item-info-container {
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  background-color: inherit;
+}
+
+.dienstplaner_page .custom-select-item-info-container > span {
+  padding-left: 0.6em;
+  padding-right: 0.6em;
+  border-radius: 3px;
+  border: 1px solid;
+  margin-right: 0.25em;
+  background-color: inherit;
+}
+
+.dienstplaner_page .custom-select-buttons-text {
+  padding: 0.6em 1em;
+  margin: 0px;
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+}
+
+.dienstplaner_page .custom-select-field-dropdown button.custom-select-buttons-text:not(.tr) {
+  padding: 0.6em 1em;
+}
+
+.dienstplaner_page td.custom-select-buttons-text{
+  display: table-cell;
+  padding: 0.6em 1em;
+}
+
+.dienstplaner_page .custom-select-vorlagen > .custom-select-field-label,
+.dienstplaner_page .custom-select-table-container > .custom-select-field-label {
+  padding: 0.6em 0;
+  width: fit-content;
+  font-size: large;
+}
+
+.dienstplaner_page .custom-select-table-container > .custom-select-field-label {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.dienstplaner_page .custom-select-table-container > .custom-select-field-label > p {
+  padding: 0 0.5em;
+}
+
+.dienstplaner_page .custom-popup {
+  display: block;
+  background-color: var(--white);
+  padding: 1em;
+  min-width: 100%;
+  text-align: left;
+  white-space: normal;
+  color: var(--black);
+}
+
+.dienstplaner_page .custom-popup .popup-main-info,
+.dienstplaner_page .custom-popup .popup-more-infos {
+  font-weight: normal;
+}
+
+.dienstplaner_page .custom-popup .popup-more-infos-label {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dienstplaner_page .custom-popup .popup-more-infos-label .popup-more-infos-label-caret {
+  padding-left: 0.5em;
+  color: var(--bordergray);
+}
+
+.dienstplaner_page .custom-popup .popup-more-infos-label {
+  padding: 0 5px;
+}
+
+.dienstplaner_page .custom-popup .popup-more-infos-label:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.dienstplaner_page .custom-popup .popup-more-infos .popup-dropdown-container {
+  padding: 0;
+}
+
+.dienstplaner_page .fuehrung-container > div {
+  display: inline-block;
+}
+
+.dienstplaner_page .fuehrung-container .fuehrung-buttons {
+  margin-left: 1em;
+}
+
+.dienstplaner_page .fuehrung-container .fuehrung-buttons button {
+  margin-right: 0.5em;
+}
+
+.dienstplaner_page div.vorlage-formular {
+  text-align: center;
+}
+
+.dienstplaner_page div.vorlage-formular label {
+  padding-right: 0.3em;
+}
+
+.dienstplaner_page .vorlage-dienste-container-container div.save-cancel {
+  position: sticky;
+  width: 100%;
+  bottom: 0;
+  background-color: var(--white);
+}
+
+.dienstplaner_page .vorlage-dienste-container-container div.save-cancel hr {
+  padding: 0;
+  margin: 0;
+}
+
+.dienstplaner_page p.vorlage-funktionen-hinweis {
+  margin-top: 2em;
+}
+
+.dienstplaner_page div.vorlage-default-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 1em 0;
+}
+
+.dienstplaner_page div.vorlage-default-container input[type='checkbox'] {
+  margin-right: 0.25em;
+}
+
+.dienstplaner_page div.vorlage-team-auswahl,
+.dienstplaner_page div.vorlage-ansicht-auswahl {
+  margin-top: 2em;
+}
+
+.dienstplaner_page div.vorlage-ansicht-auswahl > div {
+  margin-bottom: 1em;
+}
+
+.dienstplaner_page div.vorlage-team-auswahl .standard-select-field,
+.dienstplaner_page div.vorlage-ansicht-auswahl .standard-select-field,
+.dienstplaner_page div.vorlage-dienstplanpfade .standard-select-field {
+  display: inline-block;
+}
+
+.dienstplaner_page div.vorlage-dienste-container {
+  text-align: center;
+}
+
+.dienstplaner_page div.vorlage-weitere-dienste {
+  cursor: pointer;
+  padding: 2em 0.2em 0em;
+  display: inline-block;
+}
+
+.dienstplaner_page div.vorlage-weitere-dienste .caret {
+  cursor: pointer;
+  margin-left: 0.5em;
+}
+
+.dienstplaner_page div.vorlage-dienste-row {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  column-gap: 0.5rem;
+}
+
+.dienstplaner_page div.vorlage-dienste-row label{
+  display: flex;
+  column-gap: 0.25rem;
+}
+
+.dienstplaner_page div.my-container {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.dienstplaner_page div.dienstplan-table-and-auswahl-container {
+  display: flex;
+}
+
+.dienstplaner_page div.drop-einteilung-auswahl-horizontal > div.my-tab-container {
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  height: 300px;
+  max-height: 80%;
+  box-shadow: none;
+  border: none;
+  z-index: var(--z0);
+}
+
+.dienstplaner_page div.drop-einteilung-auswahl-vertical > div.my-tab-container {
+  min-width: 100px;
+  width: 100%;
+  position: static;
+  height: 100%;
+  box-shadow: none;
+  border: none;
+  z-index: var(--z0);
+  max-width: 50vw;
+}
+
+.dienstplaner_page div.drop-einteilung-auswahl-vertical div.custom-select-field-label {
+  flex-wrap: wrap;
+}
+
+.dienstplaner_page div.filter-vorlage,
+.dienstplaner_page div.konflikt-filter {
+  position: relative;
+}
+
+.dienstplaner_page div.filter-vorlage-head,
+.dienstplaner_page div.konflikt-filter-head {
+  display: flex;
+  flex-direction: column;
+}
+
+.dienstplaner_page div.filter-vorlage-label,
+.dienstplaner_page div.filter-vorlage-save,
+.dienstplaner_page div.konflikt-filter-label {
+  margin-top: 0.5em;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.dienstplaner_page div.filter-vorlage-label > .caret,
+.dienstplaner_page div.konflikt-filter-label > .caret {
+  padding-left: 0.25em;
+}
+
+.dienstplaner_page .einteilung-auswahl-head div.filter-vorlage-optionen {
+  position: absolute;
+  padding: 0 0.25em;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  max-height: 400px;
+  overflow: auto;
+  z-index: var(--z11);
+}
+
+.dienstplaner_page div.filter-vorlage-group,
+.dienstplaner_page div.konflikt-filter-konflikt,
+.dienstplaner_page div.filter-vorlage-group-label {
+  cursor: pointer;
+  text-align: left;
+}
+
+.dienstplaner_page div.filter-vorlage-group-label:hover,
+.dienstplaner_page div.konflikte-filter-konflikt-head:hover {
+  background-color: var(--bluegray);
+}
+
+.dienstplaner_page div.filter-vorlage-group:not(:first-child),
+.dienstplaner_page div.konflikte-filter-konflikt:not(:first-child) {
+  padding-top: 0.5em;
+}
+
+.dienstplaner_page div.filter-vorlage-option,
+.dienstplaner_page div.filter-vorlage-group-hinweis {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+}
+
+.dienstplaner_page div.filter-vorlage-group-hinweis {
+  font-size: 0.8em;
+}
+
+.dienstplaner_page div.filter-vorlage-option > button {
+  margin: 0.25em 0;
+}
+
+.dienstplaner_page div.filter-vorlage-option > label,
+.dienstplaner_page div.konflikte-filter-konflikt-head > label {
+  padding-left: 0.5em;
+}
+
+.dienstplaner_page div.filter-vorlage-option:hover {
+  background-color: var(--bluegray);
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl button {
+  width: fit-content;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl .table-custom-feld-auswahl-label,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring .table-custom-feld-auswahl-coloring-label {
+  cursor: pointer;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring {
+  padding-top: 0.5em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring .table-custom-feld-auswahl-coloring-color-chooser,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring .table-custom-feld-auswahl-coloring-add {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  padding-bottom: 0.25em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring .table-custom-feld-auswahl-coloring-color-chooser {
+  justify-content: space-between;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-vorschlage {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-optionen-container,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-optionen,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form-radio-container,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-head > div,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-name,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-name > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-head > div.table-custom-feld-auswahl-counter-head-arbeistzeiten,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form-radio,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form-checkbox,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form-number {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-optionen,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-show-counter,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-coloring-dropdown {
+  padding-left: 0.75em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form {
+  padding-bottom: 1em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form div.standard-select-field.custom-select-field,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form div.standard-select-field.custom-select-field > div.custom-select-field-label {
+  padding-left: 0;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-name > div {
+  gap: 0.25em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-optionen > button {
+  margin-bottom: 0.25em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-option,
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-form-buttons {
+  display: flex;
+  gap: 0.25em;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-option {
+  width: 100%;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-option:hover {
+  background-color: var(--bluegray);
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-option.inaktiv {
+  background-color: var(--abwesend);
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-option.inaktiv:hover {
+  background-color: var(--darkgray);
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-funktion > * {
+  width: 100%;
+}
+
+.dienstplaner_page div.table-custom-feld-auswahl div.table-custom-feld-auswahl-counter-funktion-warn-container {
+  font-size: 0.65em;
+  background-color: var(--gray);
+  border-radius: 3px;
+  padding: 0.25em;
+}
+
+@media (max-width: 650px) {
+  .dienstplaner_page .custom-popup {
+    width: 400px;
+  }
+}
+
+@media (max-width: 400px) {
+  .dienstplaner_page .custom-popup {
+    width: 300px;
+  }
+}

@@ -1,0 +1,438 @@
+div.calendar-timeline-wrapper {
+  overflow:hidden;
+  transform:translateZ(0);
+}
+div.calendar-timeline {
+  overflow:hidden;
+  display:flex;
+  /* border:2px solid #ddd; */
+}
+div.calendar-timeline div.cct-sidebar {
+  width:300px;
+  /* border:1px solid green; */
+  flex:0 0 auto;
+  overflow:hidden;
+  height:calc(100vh - 100px);
+  border-right:1px solid #ccc;
+}
+div.cct-sidebar div.header-block {
+  width:300px;
+  position:fixed;
+  background-color:#e3e3e3;
+  transition:height 330ms;
+  overflow:hidden;
+}
+div.cct-sidebar div.header-block.open {
+  height:calc(100vh - 100px)!important;
+}
+div.cct-sidebar div.filter {
+  padding:5px 10px 0px 10px;
+  border-right:1px solid #ececec;
+}
+
+div.cct-sidebar div.filter-headline {
+  position:relative;
+  cursor:pointer;
+}
+div.cct-sidebar div.filter-headline p {
+  margin-bottom:7px;
+}
+div.cct-sidebar div.filter-headline span {
+  background-color:#00427a;
+  width:15px;
+  height:5px;
+  display:block;
+  position:absolute;
+  right:0;
+  top:10px;
+  transition:all 350ms;
+}
+div.cct-sidebar div.filter-headline span:nth-of-type(1){
+  transform:rotate(45deg);
+  right:8px;
+}
+div.cct-sidebar div.filter-headline span:nth-of-type(2){
+  transform:rotate(-45deg);
+}
+div.cct-sidebar div.filter-headline.close span:nth-of-type(1){
+  transform:rotate(-45deg);
+}
+div.cct-sidebar div.filter-headline.close span:nth-of-type(2){
+  transform:rotate(45deg);
+}
+div.cct-sidebar div.filter-content {
+  overflow:hidden;
+}
+div.filter div.fieldset p.errMsg {
+  color:firebrick;
+}
+div.filter div.fieldset.space-after {
+  margin-bottom:10px;
+}
+div.filter div.fieldset.column2,
+div.filter div.fieldset.column.inline {
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+}
+div.filter div.fieldset.column2.contingents {
+  flex-wrap:wrap;
+}
+div.filter div.fieldset.column2.contingents p {
+  margin-bottom:5px;
+  font-weight:500;
+}
+div.filter div.fieldset.column2 div.contingents-item{
+  overflow-y:auto;
+  height:calc(100vh - 340px);
+}
+div.filter div.fieldset label {
+  margin-right:10px;
+  font-size:15px;
+  width:150px;
+}
+div.filter div.fieldset.column2 label {
+  width:auto;
+  margin-right:10px;
+  align-self:center;
+}
+div.filter div.fieldset input[type="checkbox"] {
+  margin-right:5px;
+  outline:none;
+}
+div.filter div.fieldset select,
+div.filter div.fieldset input[type="date"],
+div.filter div.fieldset input[type="text"] {
+  font-size:14px;
+  width:100%;
+  outline:none;
+  background-color:#ececec;
+  border:1px solid #ccc;
+}
+div.filter div.fieldset input[type="date"] {
+  outline:none;
+  border-radius:3px;
+}
+div.filter div.fieldset input.search-name {
+  outline:none;
+  border:1px solid #ccc;
+  border-radius:3px;
+  padding:2px 5px;
+  background-color:#ececec;
+  line-height:inherit;
+}
+div.cct-sidebar div.employees div.cct-row,
+div.cct-sidebar div.contingents div.cct-row {
+  /* border-bottom:1px solid #c4c4c4; */
+  border-bottom:1px solid #00427ab5;
+  padding:0 10px;
+}
+div.cct-sidebar div.employees,
+div.cct-sidebar div.contingents {
+  background-color:#ececec;
+}
+div.cct-sidebar div.employees p,
+div.cct-sidebar div.contingents p {
+  display: flex;
+  justify-content: space-between;
+  padding-top:3px;
+  color:#777;
+}
+div.cct-sidebar div.employees div.cct-row.inaktiv{
+  background-color: var(--abwesend);
+}
+div.calendar-timeline div.cct-scroll {
+  overflow:hidden;
+  box-sizing:border-box;
+  width:100%;
+  position:relative;
+}
+div.calendar-timeline div.cct-column{
+  border-left:1px solid #c4c4c4;
+  flex:0 0 auto;
+  text-align:center;
+}
+div.cct-scroll div.cct-header-root {
+  position:fixed;
+  overflow:hidden;
+  height:90px;
+  z-index:1;
+  width:100%;
+}
+div.cct-header-root div.cct-header {
+  position:absolute;
+}
+div.cct-header-top {
+  display:flex;
+  overflow:hidden;
+  position:relative;
+  height:25px;
+  background-color:#00427a;
+  color:#ececec;
+}
+div.cct-header-bottom {
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  background-color:#ececec;
+}
+div.cct-header-top div.cct-column,
+div.cct-header-bottom div.cct-column {
+  display:flex;
+  justify-content:center;
+}
+div.cct-header-bottom > div.cct-column {
+  /* border-left:2px solid pink; */
+}
+div.cct-header-bottom div.cct-column {
+  flex-direction:column;
+  align-items:center;
+}
+div.cct-header-bottom div.cct-column span.month {
+  font-size:14px;
+}
+div.cct-header-bottom div.cct-column span.year {
+  font-size:12px;
+}
+div.cct-header-bottom div.cct-column div.month-days {
+  display:flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+div.cct-header-bottom div.cct-column div.month-days div.cct-column{
+  padding:5px;
+  font-size:10px;
+  color:#777;
+  flex:1;
+  /* border-top:1px solid pink; */
+}
+div.cct-column div.month-days div.cct-column:first-child {
+  border-left:0;
+}
+div.cct-body-root {
+  /* border:1px solid black; */
+  width:calc(100%);
+  overflow-y:auto;
+  overflow-x:scroll;
+  height:calc(100vh - 100px);
+  cursor:pointer;
+}
+div.cct-body-root div.cct-body {
+  position:relative;
+}
+div.cct-body div.cct-row {
+  display:flex;
+  position:relative;
+}
+div.cct-body div.cct-row div.cct-column {
+  border-bottom:1px solid #00427ab5;
+}
+div.cct-body div.cct-row div.cct-rotation {
+  position:absolute;
+  background-color:#f4f4f4;
+  font-size:14px;
+  border-right:1px solid #aaa;
+  border-left:1px solid #aaa;
+  border:1px solid #aaa;
+  height:23px;
+  overflow:hidden;
+}
+div.cct-body div.cct-row div.cct-rotation.first {
+  background-color:hsl(156,100%,35%);
+}
+div.cct-body div.cct-row div.cct-rotation.first span {
+  color:#fff;
+}
+div.cct-body div.cct-row div.cct-rotation.second {
+  background-color:hsl(156,100%,40%);
+}
+div.cct-body div.cct-row div.cct-rotation.third {
+  background-color:hsl(156,100%,50%);
+}
+div.cct-body div.cct-row div.cct-rotation.fourth {
+  background-color:hsl(156,100%,60%);
+}
+div.cct-body div.cct-row div.cct-rotation span {
+  margin-left:5px;
+  user-select:none;
+  color:#777;
+}
+div.cct-body div.cct-row div.cct-rotation:hover {
+  background-color:#00427a;
+}
+div.cct-body div.cct-row div.cct-rotation:hover span {
+  color:#fff;
+}
+div.cct-body div.cct-row div.cct-rotation.collision {
+  color:firebrick;
+  font-weight:500;
+}
+div.cct-body div.cct-row > div.cct-column:hover {
+  border:1px dashed #00427a;
+  /* border-left:2px solid pink; */
+  /* position:absolute; */
+  /* padding:20px; */
+}
+div.cct-body div.cct-row div.month-days {
+  display:flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height:100%;
+}
+div.cct-body div.cct-row div.month-days div.cct-column{
+  padding:5px;
+  font-size:12px;
+  color:#777;
+  flex:1;
+  border-bottom:0;
+}
+
+p.errMsg {color:firebrick;}
+div.calendar-timeline-form {
+  position:fixed;
+  top:0;
+  width:100%;
+  height:100%;
+  overflow-y:auto;
+}
+div.calendar-timeline-form div.wrap {
+  width: fit-content;
+  max-width: 80%;
+  min-width:320px;
+  margin:0 auto;
+  margin-top:100px;
+  background-color:#f9f9f9;
+  box-shadow:0 0 7px rgba(0,0,0,0.3);
+  border:2px solid #ddd;
+  padding:10px;
+}
+form.add-edit-rotation > fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  margin-top: 0px;
+  border: 0;
+  display:block;
+  margin-top:10px;
+}
+form.add-edit-rotation fieldset p.fake-input{
+  padding-left:5px;
+}
+form.add-edit-rotation fieldset p.fake-input,
+form.add-edit-rotation fieldset textarea,
+form.add-edit-rotation fieldset input {
+  border:2px solid #ececec;
+  background-color:#fff;
+}
+form.add-edit-rotation > fieldset.inline {
+  display:flex;
+  justify-content:space-between;
+  column-gap:20px;
+}
+form.add-edit-rotation > fieldset.inline label{
+  margin-right:5px;
+}
+form.add-edit-rotation fieldset input[type="checkbox"] {
+  margin-right:5px;
+}
+form.add-edit-rotation > fieldset textarea{
+  width:100%;
+  height:80px;
+}
+form.add-edit-rotation > fieldset input[type="date"],
+form.add-edit-rotation > fieldset input[type="text"] {
+  width:100%;
+}
+form.add-edit-rotation > fieldset.inline input[type="number"] {
+  width:55px;
+}
+form.add-edit-rotation fieldset.buttons {
+  display:flex;
+  justify-content:space-between;
+  column-gap:20px;
+}
+form.add-edit-rotation fieldset button {
+  background-color:transparent;
+  border:0;
+  width:100%;
+  margin-top:10px;
+  cursor:pointer;
+}
+form.add-edit-rotation fieldset button.save {
+  background-color:#00427a;
+  color:#fff;
+  border:2px solid #00427a;
+}
+form.add-edit-rotation fieldset button.save:hover {
+  color:#00427a;
+}
+form.add-edit-rotation fieldset button.cancel {
+  background-color:#ececec;
+  border:2px solid #ececec;
+}
+form.add-edit-rotation fieldset button:hover {
+  background-color:transparent;
+}
+form.add-edit-rotation fieldset button.delete {
+  border:2px solid firebrick;
+  background-color:firebrick;
+  color:#fff;
+  margin-top:0;
+}
+form.add-edit-rotation fieldset button.delete:hover {
+  background-color:transparent;
+  color:firebrick
+}
+form.add-edit-rotation div.employee-searchbox {
+  position:relative;
+}
+div.employee-searchbox p.close {
+  position:absolute;
+  right:0px;
+  top:13px;
+  cursor:pointer;
+}
+div.employee-searchbox p.close span {
+  background-color:#ddd;
+  width:15px;
+  height:5px;
+  display:block;
+  position:absolute;
+  right:10px;
+  transition:all 350ms;
+}
+div.employee-searchbox p.close span:nth-child(1) {
+  transform:rotate(-45deg);
+  right:18px;
+}
+div.employee-searchbox p.close span:nth-child(2) {
+  transform:rotate(45deg);
+}
+div.employee-searchbox p.close.hide span:nth-child(1) {
+  transform:rotate(45deg);
+}
+div.employee-searchbox p.close.hide span:nth-child(2) {
+  transform:rotate(-45deg);
+}
+form.add-edit-rotation div.employee-searchbox-list {
+  max-height:200px;
+  overflow-y:scroll;
+  background-color:#fff;
+  margin-top:5px;
+  box-shadow:0 0 3px #00427a;
+  position:absolute;
+  width:100%;
+}
+div.employee-searchbox ul {
+  list-style-type: none;
+  padding-left:0;
+  margin-top:0;
+}
+div.employee-searchbox ul li {
+  background-color: #00427a;
+  color: #ccc;
+  margin-bottom: 3px;
+  padding: 3px;
+  cursor: pointer;
+}

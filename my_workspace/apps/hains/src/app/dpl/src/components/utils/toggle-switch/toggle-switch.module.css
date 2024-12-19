@@ -1,0 +1,36 @@
+div.toogle_switch_wrapper {
+  display: grid;
+  justify-items: center;
+}
+div.toggle_switch {
+  width: 2em;
+  height: 1em;
+  background-color: rgba(0, 0, 0, 0.4);
+  position: relative;
+  border-radius: 1em;
+  cursor: pointer;
+  transition: background-color 350ms;
+}
+div.toggle_switch::before {
+  content: '';
+  width: calc(1em - 0.4em);
+  height: calc(1em - 0.4em);
+  position: absolute;
+  left: 0.2em;
+  top: 0.2em;
+  background: white;
+  border-radius: 50%;
+  transition: left 350ms;
+}
+div.active {
+  background-color: #00427a;
+}
+div.active::before {
+  left: calc(100% - 0.8em);
+}
+.number {
+  font-size: 1.8em;
+  display: block;
+  text-align: center;
+  min-width: 30px;
+}

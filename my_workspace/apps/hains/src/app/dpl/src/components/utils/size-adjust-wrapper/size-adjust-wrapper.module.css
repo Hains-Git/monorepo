@@ -1,0 +1,66 @@
+.row{
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between
+}
+
+.top,
+.topleft,
+.topright,
+.bottom,
+.bottomleft,
+.bottomright{
+  height: 0.5rem;
+}
+
+.topleft,
+.topright,
+.bottomleft,
+.bottomright,
+.left,
+.right{
+  width: 0.5rem;
+}
+
+.topleft:hover,
+.topright:hover,
+.bottomleft:hover,
+.bottomright:hover,
+.left:hover,
+.right:hover,
+.top:hover,
+.bottom:hover{
+  background-color: var(--bordergray);
+}
+
+.top,
+.bottom{
+  cursor: row-resize;
+  width: 100%;
+}
+
+.left,
+.right{
+  cursor: col-resize;
+}
+
+.topleft{
+  cursor: nwse-resize;
+}
+
+.topright{
+  cursor: nesw-resize;
+}
+
+.bottomleft{
+  cursor: nesw-resize;
+}
+
+.bottomright{
+  cursor: nwse-resize;
+}
+
+.center{
+  padding: 0 0.25rem;
+}

@@ -1,0 +1,56 @@
+.react_root * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.react_root {
+  padding: 15px;
+  font-family: var(--bs-body-font-family);
+  font-size: calc(var(--bs-body-font-size) * 0.9);
+  font-weight: var(--bs-body-font-weight);
+  line-height: calc(var(--bs-body-line-height) * 0.9);
+}
+
+.react_root a,
+.react_root a:hover {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.react_root input[type='submit'] {
+  background-color: var(--bordergray);
+  border-color: var(--bordergray);
+  color: var(--textgray);
+  padding: 0px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.react_root h1 {
+  font-weight: 400;
+  font-size: var(--font-h1);
+  margin-bottom: 20px;
+  color: var(--primary);
+}
+
+.react_root input:not([type='file']):not([type='checkbox']):not([type='button']):not([type='submit']):not([type='color']):not([type='radio']),
+.react_root select {
+  height: 28px;
+  border: 1px solid var(--bordergray);
+  background-color: var(--white);
+  padding-left: 5px;
+  width: fit-content;
+}
+
+.react_root textarea {
+  border: 1px solid var(--bordergray);
+  background-color: var(--white);
+  padding-left: 5px;
+}
+
+.react_root table tr td {
+  /* padding: 5px; */
+  min-width: 0px;
+  height: fit-content;
+}

@@ -1,0 +1,37 @@
+table td .table_custom_counter {
+  padding: 0em 0.25em;
+  font-size: 1.1em;
+}
+
+table td .table_custom_counter > div {
+  width: 100%;
+}
+
+table td .table_custom_counter p {
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0px 5px;
+}
+
+table td .table_custom_counter p.empty_table_custom_counter:not(:only-child) {
+  display: none;
+}
+
+table tr th:first-child .table_custom_counter_title {
+  padding: 0.15em 0.25em;
+  text-align: left;
+}
+
+table thead tr:first-child th .table_custom_counter_title {
+  padding: 1em 0.25em 0.25em;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+table th .table_custom_counter_title input {
+  text-align: center;
+  border: none;
+  font-weight: bold;
+}

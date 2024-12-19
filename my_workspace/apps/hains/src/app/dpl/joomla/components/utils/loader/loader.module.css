@@ -1,0 +1,26 @@
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader_container {
+  padding: 0.5em;
+  width: 2em;
+  height: 2em;
+}
+
+.loader {
+  border: 0.5em solid var(--bordergray);
+  border-top: 0.5em solid var(--primary);
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}

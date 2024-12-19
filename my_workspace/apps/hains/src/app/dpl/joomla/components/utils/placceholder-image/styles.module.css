@@ -1,0 +1,28 @@
+div.wrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #e4e6e7;
+  overflow: hidden;
+  position: relative;
+}
+
+div.head {
+  height: 60px;
+  width: 60px;
+  left: calc(50% - 30px);
+  top: 10%;
+  background-color: #aeb4b7;
+  border-radius: 50%;
+  position: absolute;
+}
+
+div.body {
+  height: 120px;
+  width: 120px;
+  bottom: -80px;
+  left: calc(50% - 60px);
+  background-color: #aeb4b7;
+  border-radius: 50%;
+  position: absolute;
+}

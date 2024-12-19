@@ -1,0 +1,91 @@
+form.form {
+  position: fixed;
+  width: fit-content;
+  left: 50%;
+  top: 50%;
+  background-color: var(--white);
+  padding: 0.25rem;
+  border: 1px solid var(--black);
+  border-radius: 3px;
+  box-shadow: 0 0 5px 0 var(--shadow);
+  z-index: 100;
+  white-space: nowrap;
+}
+
+form.form > div {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+form.form > div:first-child > button {
+  padding: 0px 5px;
+}
+
+form.form select {
+  width: fit-content;
+}
+
+div.freigabestatuse,
+div.freigabetypen,
+div.funktionen {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: fit-content;
+  flex-direction: column;
+  width: 100%;
+}
+
+div.freigabestatuse > p,
+div.freigabetypen > p,
+div.funktionen > p {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+div.freigabetypen > p,
+div.funktionen > p {
+  cursor: pointer;
+}
+
+div.freigabetypen > p > span > svg,
+div.funktionen > p > span > svg {
+  fill: var(--primary);
+}
+
+div.freigabestatuse > ul,
+div.freigabetypen > div,
+div.funktionen > div {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+div.freigabestatuse > ul {
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+div.freigabestatuse > ul > li {
+  padding: 0.25rem;
+  border-radius: 5px;
+  list-style: none;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  div.freigabestatuse > ul {
+    flex-wrap: wrap;
+  }
+  td .abwesend_loader {
+    width: 1em;
+    height: 1em;
+  }
+}

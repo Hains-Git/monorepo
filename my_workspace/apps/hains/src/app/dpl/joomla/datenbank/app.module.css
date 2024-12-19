@@ -1,0 +1,125 @@
+.table {
+  min-width: 100%
+}
+
+.table tbody{
+  white-space: nowrap;
+  text-align: center;
+}
+
+.head{
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+div.head > div:first-child{
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+div.head > div > select{
+  width: fit-content;
+}
+
+.table tr > td .editButton{
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  width: 100%;
+}
+
+.table tr > td svg{
+  fill: var(--primary);
+}
+
+.table tr > th.right_sticky,
+.table tr > td.right_sticky{
+  position: sticky;
+  right: 0;
+  border-left-width: 1px;
+  z-index: 1;
+}
+
+.table tr > td.break_white_space{
+  white-space: normal;
+}
+
+.table tr > td.vertrags_phases > div > p{
+  padding-left: 0.5rem;
+  text-align: left;
+}
+
+.table tr > td.vertrags_phases > div > p > span{
+  display: block;
+}
+
+div > div > .showFormButton{
+  cursor: pointer;
+  font-size: 0.9rem;
+  background-color: var(--white);
+  color: var(--black);
+  border: 1px solid var(--black);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+div > div > .showFormButton:hover{
+  background-color: var(--bordergray);
+  border: 1px solid var(--black);
+}
+
+div.options{
+  padding: 0.25rem 0rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.options > .preview_toggle{
+  padding: 0.1rem 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.options > .preview_toggle > svg{
+  fill: var(--white);
+  width: 1rem;
+  height: 1rem;
+}
+
+div.preview_container > div:first-child{
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+}
+
+table.preview_table .feiertag *:not(button),
+table.preview_table > thead > tr > th.feiertag > p {
+  color: var(--firebrick);
+}
+
+table.preview_table tbody td.feiertag svg{
+  fill: var(--firebrick);
+}
+
+table.preview_table .feiertag > input:checked{
+  background-color: var(--firebrick);
+}
+
+div table.preview_table > thead,
+table.preview_table > thead > tr > th{
+  background-color: var(--white);
+  vertical-align: baseline;
+}
+
+table.preview_table tr > td,
+table.preview_table tr > th{
+  white-space: normal;
+}

@@ -1,0 +1,144 @@
+.err_msg {
+  color: firebrick;
+  margin-top: 10px;
+}
+div.popup_rotation_wrapper {
+  position: fixed;
+  width: 100%;
+  top: 5%;
+  z-index: 100;
+  left: calc(50% - 225px);
+  max-width: 450px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  background-clip: padding-box;
+}
+div.popup_rotation_wrapper div.popup_rotation {
+  padding: 20px;
+}
+div.popup_rotation h2 {
+  color: var(--primary);
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+div.popup_rotation fieldset {
+  border: 0;
+  margin-bottom: 10px;
+}
+div.popup_rotation fieldset label {
+  display: flex;
+}
+div.popup_rotation fieldset label span {
+  flex: 1;
+}
+div.popup_rotation fieldset label select,
+div.popup_rotation fieldset label input[type='date'],
+div.popup_rotation fieldset label input[type='number'],
+div.popup_rotation fieldset label input[type='text'] {
+  flex: 3;
+}
+div.popup_rotation fieldset:last-child label span {
+  flex: initial;
+  width: 100px;
+}
+
+div.action_btns {
+  display: flex;
+  justify-content: flex-end;
+  column-gap: 15px;
+}
+
+div.popup_dienstwunsch {
+  z-index: 100;
+  background-color: #fff;
+  position: absolute;
+  left: 40%;
+  top: 50%;
+  box-shadow: 0px 0px 5px rgb(0 66 122 / 40%);
+  /* transition: all 440ms; */
+  min-width: 300px;
+}
+div.popup_dienstwunsch p.overview {
+  color: black;
+}
+div.popup_dienstwunsch p {
+  color: gray;
+}
+div.popup_dienstwunsch p.popup_dw_title {
+  background-color: #eee;
+  padding: 5px;
+  text-align: center;
+}
+div.popup_dienstwunsch div.open_select_btn {
+  display: flex;
+  justify-content: center;
+}
+div.popup_dienstwunsch .select_btn {
+  margin-top: 5px;
+  padding: 5px 20px;
+  z-index: 10;
+  font-size: 0.9rem;
+}
+div.popup_dienstwunsch .select_btn span:last-child {
+  margin-left: 10px;
+}
+div.popup_dienstwunsch p.open_select {
+  background-color: #eee;
+  padding: 7px;
+  cursor: pointer;
+  text-align: center;
+}
+div.popup_dienstwunsch p.open_select span {
+  margin-left: 5px;
+}
+div.popup_dienstwunsch div.info {
+  padding: 10px;
+}
+
+div.team_wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+div.team_content {
+  margin-top: 10px;
+}
+div.team_content h4 {
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+div.popup_dienstwunsch div.dienstkategorie_wrapper {
+  max-height: 100%;
+  min-height: 140px;
+  overflow-y: auto;
+  position: absolute;
+  top: 70px;
+  width: calc(100%);
+  padding: 10px;
+  background: white;
+  border: 1px solid #eee;
+}
+div.dienstkategorie_wrapper h3 {
+  font-size: 0.85rem;
+  padding-top: 0.25em;
+  color: #a9a9a9;
+  font-weight: bold;
+  cursor: pointer;
+}
+div.dienstkategorie_wrapper p {
+  cursor: pointer;
+}
+
+div.popup_dienstwunsch div.dienstkategorie p span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}

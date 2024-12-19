@@ -1,0 +1,11 @@
+.caret {
+  cursor: pointer;
+  padding: 0 0.5em;
+  text-align: center;
+  color: var(--bordergray);
+}
+
+.field_label {
+  display: flex;
+  align-items: center;
+}

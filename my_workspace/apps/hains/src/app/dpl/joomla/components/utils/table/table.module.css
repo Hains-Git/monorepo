@@ -1,0 +1,107 @@
+div .table_container,
+.table_container {
+  /* max-height: 95vh; */
+  max-height: 600px;
+  max-width: 100%;
+  overflow: auto;
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.table_container table {
+  max-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0px;
+}
+
+.table_container table thead {
+  position: sticky;
+  top: 0px;
+  background-color: var(--bordergray);
+  z-index: 2;
+}
+
+.table_container table thead th,
+.table_container table tbody th {
+  background-color: var(--bordergray);
+}
+
+.table_container table tbody,
+.table_container table tbody td {
+  background-color: var(--white);
+}
+
+.table_container table thead th,
+.table_container table thead td {
+  white-space: nowrap;
+}
+
+.table_container table td,
+.table_container table th {
+  border: 0px solid var(--bordergray);
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+  padding: 0.15rem 0.25rem;
+}
+
+.table_container table td:first-child,
+.table_container table th:first-child {
+  border-left-width: 1px;
+}
+
+.table_container table thead tr:first-child th,
+.table_container table tbody tr:first-child th,
+.table_container table tbody tr:first-child th {
+  border-top-width: 1px;
+}
+
+.table_container table thead > tr > th > button.column_sort_button,
+.table_container table thead > tr > th > button.column_sort_button:hover {
+  margin-left: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--black);
+  padding: 0px;
+  cursor: pointer;
+}
+
+.table_container table tbody tr:hover > td,
+.table_container table tbody tr:hover > th {
+  background-color: var(--hoverblue);
+}
+
+.paging_container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paging {
+  display: flex;
+  align-items: center;
+}
+
+.table_container + div.paging_container > div.paging > button {
+  padding: 0.25rem;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  color: var(--black);
+}
+
+.table_container + div.paging_container > div.paging > button.active_page {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.table_container + div.paging_container > select {
+  width: fit-content;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  color: var(--black);
+  cursor: pointer;
+}

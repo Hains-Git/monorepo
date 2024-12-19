@@ -1,0 +1,83 @@
+.content {
+  padding: 15px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.header .right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 15px;
+}
+
+.block {
+  display: block;
+  margin-bottom: 20px;
+  background-color: #eee;
+  padding: 10px;
+}
+.grid {
+  overflow-y: auto;
+  padding-bottom: 120px;
+}
+.template {
+  margin-top: 20px;
+}
+
+.grid_table {
+  position: relative;
+}
+.grid_table table {
+  width: 100%;
+}
+.selectDiv {
+  display: flex;
+}
+.selectDiv select {
+  background-color: transparent;
+  border: 0;
+  text-align: center;
+  margin-right: 10px;
+  width: 100%;
+}
+.settings_btn {
+  width: 30px;
+  border: 0;
+  cursor: pointer;
+}
+.menu {
+  background-color: var(--white);
+  position: absolute;
+  left: 0;
+  display: none;
+  box-shadow: 0 0 5px #0006;
+  width: 260px;
+  z-index: 100;
+}
+.menu_close {
+  display: flex;
+  padding-right: 5px;
+  justify-content: right;
+  background-color: #f7f4f4;
+}
+.menu_show {
+  display: block;
+}
+.menu_close span {
+  cursor: pointer;
+}
+.menu_item {
+  padding: 3px 5px;
+  cursor: pointer;
+  list-style-type: none;
+  width: 130px;
+  display: inline-block;
+}
+.menu_item:hover {
+  background-color: #00427a;
+  color: var(--white);
+}

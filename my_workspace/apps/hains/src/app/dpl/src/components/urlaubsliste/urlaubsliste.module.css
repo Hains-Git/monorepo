@@ -1,0 +1,246 @@
+div.table_content {
+  --top-content: 85px;
+  overflow: hidden;
+  height: calc(100vh - var(--top-content));
+  width: 100%;
+  position: relative;
+  --mult-size: 0.75;
+  --color-holiday: #ff7575;
+}
+div.table_top_content {
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+div.teams_checkbox_filter label {
+  margin-left: 5px;
+  cursor: pointer;
+}
+.close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.table_div {
+  overflow: auto;
+  overflow-x: scroll;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+.row {
+  display: table-row;
+}
+.row:nth-child(-n + 3) {
+  background-color: var(--white-hover);
+  position: sticky;
+  z-index: 1;
+}
+.row:nth-child(1) {
+  top: 0px;
+}
+.row:nth-child(2) {
+  top: 29px;
+}
+.row:nth-child(3) {
+  top: 58px;
+}
+.td_cell,
+.th_cell {
+  display: table-cell;
+  width: 1%;
+  padding: 2px 3px;
+  text-align: center;
+  border: 1px solid #ccc;
+  white-space: nowrap;
+}
+
+/* START STYLE REAL TABLE */
+
+table.table {
+  overflow: auto;
+  border-collapse: separate;
+  display: block;
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+  border-spacing: 0;
+  font-size: calc(1em * var(--mult-size));
+  border-bottom: 1px solid #ccc;
+}
+table.table thead {
+  position: sticky;
+  top: 0px;
+  background-color: var(--white-hover);
+  z-index: 1;
+}
+table.table thead tr:nth-child(n + 4) th,
+table.table thead tr:first-child th {
+  border-top: 1px solid #ccc;
+}
+table.table thead tr:nth-child(3) th,
+table.table thead tr:last-child th {
+  border-bottom: 2px solid var(--darkgray);
+}
+table.table tr td:first-child {
+  text-align: left;
+  padding-right: 10px;
+}
+table.table tr th {
+  font-weight: normal;
+}
+table.table tr th,
+table.table tr td {
+  padding: 2px 3px;
+  text-align: center;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  white-space: nowrap;
+  background-clip: padding-box;
+  min-width: 30px;
+}
+table.table thead tr th {
+  border-bottom: 0;
+  z-index: 1000 !important;
+}
+
+table.table tr th:nth-child(1),
+table.table tr td:nth-child(1) {
+  left: var(--column0, initial);
+}
+
+.arrow {
+  font-size: 2.3em;
+  display: block;
+  height: 23px;
+  line-height: 23px;
+  cursor: pointer;
+}
+
+.border {
+  border-right: 2px solid var(--darkgray);
+}
+table.table tr th.weekend,
+table.table tr td.weekend {
+  background-color: var(--weekendgray);
+  border-bottom: 1px solid var(--weekendgray);
+}
+table.table tr th.feiertag,
+table.table tr td.feiertag {
+  background-color: var(--color-holiday) !important;
+  border-color: var(--color-holiday);
+  border-top-color: var(--color-holiday) !important;
+  border-bottom: none;
+}
+
+table.table thead tr:nth-child(n + 4) th.weekend,
+table.table thead tr:first-child th.weekend {
+  border-color: var(--weekendgray);
+}
+table.table thead tr:nth-child(n + 4) th.feiertag,
+table.table thead tr:first-child th.feiertag {
+  border-color: var(--color-holiday) !important;
+}
+
+table.table thead tr:nth-child(3) th,
+table.table thead tr:last-child th {
+  border-bottom: 2px solid var(--darkgray) !important;
+}
+
+table.table tr td.inaktiv {
+  background-color: var(--abwesend) !important;
+}
+
+div.overlay {
+  padding: 15px;
+}
+
+div.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 20px;
+  justify-content: flex-end;
+}
+
+div.setting_block_item {
+  background-color: var(--settings-block-bg);
+  padding: 15px;
+  margin-bottom: 20px;
+}
+div.setting_block_item fieldset {
+  position: relative;
+}
+
+div.counter_wrapper div.fields {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 20px;
+  row-gap: 20px;
+  align-items: end;
+}
+div.counter_wrapper fieldset {
+  width: 180px;
+}
+div.counter_wrapper fieldset input {
+  width: 100%;
+  background-color: #fff;
+}
+
+div.counter_list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin-top: 20px;
+}
+div.counter_item {
+  background-color: #f9f9f9;
+  padding: 10px 20px;
+  padding-top: 20px;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.45);
+}
+p.remove_counter {
+  margin-top: 5px;
+  color: firebrick;
+  cursor: pointer;
+  position: absolute;
+  top: 1px;
+  right: 5px;
+}
+
+div.checkbox_filter {
+  display: flex;
+  flex-wrap: wrap;
+}
+div.checkbox_filter fieldset {
+  min-width: 250px;
+}
+div.checkbox_filter fieldset label {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+table.table tr:hover td {
+  background-color: var(--row-hover-color) !important;
+  border-top-color: #ccc !important;
+  border-left-color: #ccc !important;
+}
+
+div.table_content :global(table tbody tr:hover .visible-column-body) {
+  background-color: var(--row-hover-color) !important;
+  border-left-color: #ccc !important;
+  font-weight: 500;
+}
+div.table_content :global(table tbody tr.selected .visible-column-body) {
+  background-color: var(--row-active-color) !important;
+  border-left-color: #ccc !important;
+  font-weight: 500;
+}
+div.table_content :global(table tbody tr.selected td) {
+  background-color: var(--row-active-color) !important;
+  border-left-color: #ccc !important;
+  font-weight: 500;
+}

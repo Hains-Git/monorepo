@@ -1,0 +1,217 @@
+div.calendar {
+  position: relative;
+}
+div.calendar div.preview-wrapper {
+  overflow: hidden;
+}
+div.calendar div.preview {
+  display: flex;
+  justify-content: space-between;
+}
+div.calendar div.preview p {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 700;
+}
+div.calendar div.preview p:nth-child(2) {
+  margin: 0 5px;
+  font-size: 1rem;
+}
+div.calendar div.calendar-popup {
+  border: 2px solid rgb(200 181 181 / 20%);
+  position: absolute;
+  background: #fff;
+  box-shadow: 0px 0px 5px var(--shadow);
+  z-index: var(--zTop);
+  margin-left: calc(50% - 160px);
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+div.calendar div.calendar-popup * {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+div.calendar-popup div.header {
+  padding: 10px 10px;
+}
+div.calendar-popup div.header p {
+  cursor: pointer;
+}
+div.calendar-popup div.header div.view {
+  display: flex;
+  justify-content: right;
+  column-gap: 10px;
+}
+div.calendar-popup div.header div.view p {
+  font-weight: bold;
+}
+div.calendar-popup div.header div.view p:hover,
+div.calendar-popup div.header div.view p.active {
+  color: var(--primary);
+}
+div.calendar-popup div.header div.current-date {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+div.calendar-popup div.header div.current-date p {
+  display: flex;
+  justify-content: center;
+  font-size: 1rem;
+}
+div.calendar-popup div.header div.current-date p:nth-child(2) {
+  margin: 0 5px;
+}
+div.calendar-popup div.header div.current-date select {
+  border: 0;
+}
+div.calendar-popup table {
+  text-align: center;
+}
+div.calendar-popup table span {
+  display: block;
+}
+div.calendar-popup table span.not-in-month {
+  color: #5f5f5f;
+}
+div.calendar-popup table span.today {
+  color: #00ca00;
+  font-weight: bold;
+}
+
+div.calendar-popup table thead tr th {
+  padding: 10px;
+}
+div.calendar-popup table tbody tr td {
+  padding: 10px;
+  cursor: pointer;
+}
+div.calendar-popup table.week tbody tr {
+  cursor: pointer;
+}
+
+div.calendar-popup table.week tbody tr.active th,
+div.calendar-popup table.week tbody tr.active td,
+div.calendar-popup table.week tbody tr:hover th,
+div.calendar-popup table.week tbody tr:hover td {
+  background-color: var(--primary);
+  color: #fff;
+}
+div.calendar-popup table tbody tr td.active,
+div.calendar-popup table.day tbody tr td:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+div.calendar-popup table tbody tr.active th span.active {
+  color: #00ca00;
+}
+div.calendar-popup table tbody tr th span.active {
+  color: #008000;
+}
+
+div.calendar-popup div.view-month {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+div.calendar-popup div.view-month div {
+  width: 100px;
+  padding: 5px 10px;
+}
+div.calendar-popup div.view-month div.active,
+div.calendar-popup div.view-month div:hover {
+  background-color: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+div.calendar-popup div.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px 10px;
+}
+div.calendar-popup div.footer p {
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 14px;
+}
+div.calendar-popup div.footer div.buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+div.calendar-popup div.footer div.buttons p{
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+  color: var(--white);
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  border-radius: 0.375rem;
+  min-width: 60px;
+  text-align: center;
+}
+div.calendar-popup div.footer div.buttons p:first-child {
+  background-color: var(--bordergray);
+  border: 1px solid var(--bordergray);
+  color: var(--textgray);
+  margin-right: 10px;
+}
+div.calendar-popup div.footer div.buttons p:hover{
+  background-color: var(--white);
+  color: var(--primary);
+}
+div.calendar-popup div.footer div.buttons p:first-child:hover {
+  color: var(--textgray);
+}
+div.calendar div.extend-component {
+  padding: 0 10px 10px;
+}
+div.calendar div.extend-component div.choose > div.columns.einstellungen {
+  justify-content: space-between;
+}
+
+div.calendar div.extend-component div.choose > div.columns.einstellungen > p{
+ width: 100%;
+ cursor: pointer;
+ font-size: 1rem;
+}
+
+div.calendar div.extend-component div.columns {
+  display: flex;
+  column-gap: 10px;
+  flex-wrap: wrap;
+}
+div.calendar div.extend-component div.columns fieldset {
+  display: flex;
+}
+
+div.calendar div.extend-component div.dienstplaene fieldset {
+  min-width: 140px;
+  display: flex;
+  gap: 0.5em;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  max-height: 200px;
+  overflow: auto;
+}
+div.calendar div.extend-component div.dienstplaene fieldset:only-child > legend{
+  display: none;
+}
+div.calendar div.extend-component label {
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+  cursor: pointer;
+}
+div.calendar button.api-auto-einteilen-btn{
+  white-space: nowrap;
+}

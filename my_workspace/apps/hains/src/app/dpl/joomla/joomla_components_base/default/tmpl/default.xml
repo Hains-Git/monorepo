@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Change Default to Component Name -->
+<metadata>
+	<layout title="DefaultTitle">
+		<message>DefaultDescription</message>
+	</layout>
+	<fields>
+		<fieldset name="request">
+		</fieldset>
+	</fields>
+</metadata>

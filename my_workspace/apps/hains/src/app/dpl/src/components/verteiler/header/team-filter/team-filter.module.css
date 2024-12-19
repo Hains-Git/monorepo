@@ -1,0 +1,45 @@
+.team_filter,
+.filter_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 10px;
+  flex-wrap: wrap;
+}
+.filter_header {
+  cursor: pointer;
+}
+.team_filter {
+  margin-bottom: 20px;
+}
+.team_filter label {
+  margin-left: 7px;
+  cursor: pointer;
+  color: var(--textgray);
+}
+.all_none{
+  display: flex;
+  gap: 0.25em
+}
+
+p.legend {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--textgray);
+}
+p.legend span {
+  margin-right: 5px;
+}
+p.legend span:last-child {
+  margin-right: 0;
+}
+p.legend span:after {
+  content: ',';
+}
+p.legend span:last-child:after {
+  content: '';
+}

@@ -1,0 +1,23 @@
+div.wrapper {
+  position: fixed;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: var(--white);
+  width: 100%;
+  overflow: auto;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  height: var(--settings-open);
+  z-index: var(--z10);
+  padding: 0 0.25em;
+}
+
+div.bar {
+  height: 0.5em;
+  width: 100%;
+  cursor: row-resize;
+  position: sticky;
+  top: 0;
+  background-color: var(--white);
+  z-index: var(--z14);
+}

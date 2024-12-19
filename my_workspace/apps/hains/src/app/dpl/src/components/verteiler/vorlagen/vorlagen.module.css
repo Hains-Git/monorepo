@@ -1,0 +1,108 @@
+.vorlage {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.content {
+  padding: 15px;
+}
+
+.vorlage label{
+  display: flex;
+  gap: 0.25em;
+}
+
+.vorlage input[type="number"] {
+  padding-left: 5px;
+}
+
+.head{
+  padding-bottom: 10px;
+}
+
+.head > div:first-child{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vorlage textarea{
+  width: 100%;
+}
+
+.vorlage_auswahl_btn{
+  display: flex;
+  align-items: center;
+}
+
+.vorlage > div{
+  width: 25%;
+}
+
+.vorlage > div > div:not(:first-child){
+  display: flex;
+  gap: 0.25em;
+  flex-direction: column;
+}
+
+.vorlage > div > div:first-child{
+  display: flex;
+  gap: 0.25em;
+}
+
+.vorlagen_auswahl_btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 5px;
+  padding: 0 5px;
+}
+
+.vorlagen_auswahl_btn  button {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0;
+}
+
+.vorlagen_auswahl_btn  button:hover{
+  color: var(--primary);
+}
+
+.dropdown_container {
+  background-color: var(--white);
+  box-shadow: 0 0 5px var(--shadow);
+  position: absolute;
+  z-index: 10000;
+  border: 0;
+  transform: translateY(5px);
+}
+
+.dropdown_item {
+  display: block;
+  background-color: transparent;
+  padding: 2px 10px;
+  text-align: left;
+  color: var(--textgray);
+  cursor: pointer;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.dropdown_item:hover {
+  background-color: var(--bluegray);
+}
+
+@media (max-width: 1200px) {
+  .vorlage > div{
+    width: 50%;
+  }
+}
+
+@media (max-width: 450px) {
+  .vorlage > div{
+    width: 100%;
+  }
+}

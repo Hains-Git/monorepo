@@ -1,0 +1,49 @@
+
+.export {
+  background-color: var(--white);
+  border: 2px solid var(--black);
+  position: fixed;
+  box-shadow: 3px 3px 10px 0px var(--shadow);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  gap: 0.25em;
+  max-width: 100%;
+  z-index: var(--z9);
+  white-space: nowrap;
+  color: var(--black);
+}
+
+.export_container{
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+}
+
+.export .export_checkbox_container {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+.export .export_checkbox_container .export_checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+}
+
+.export .export_title {
+  font-size: 1.2em;
+  width: 100%;
+  text-align: center;
+  white-space: normal;
+}
+
+.checkmark{
+  cursor: default;
+}
+
+div > span > div.publish_container > button.all_einteilungen_public{
+  color: var(--textgray);
+}

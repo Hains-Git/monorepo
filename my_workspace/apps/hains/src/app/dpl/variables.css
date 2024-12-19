@@ -1,0 +1,127 @@
+:root {
+  /* Font */
+  --bs-font-sans-serif: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-size: 1rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.5;
+  --font-p: 0.85rem;
+  --font-h1: 1.8rem;
+  --font-h2: 1.5rem;
+  --font-h3: 1.2rem;
+  --font-h4: 1rem;
+
+  /* Colors */
+  --red: #ffd7d6;
+  --conflict-strong: #ffaaa8;
+  --readonlyfocus: #eb6958;
+  --firebrick: #b22222;
+  --firebrick-hover: #961d1d;
+  --firebrick-hover-border: #7d1717;
+  --menue-bg: #ddf1ff;
+
+  --wunsch-erfuellt: #c6ffa0;
+  --green: #76e376;
+  --green-btn: #5ec65e;
+  --green-hover: #4ba54b;
+
+  --orange: #ffad17;
+  --yellow: #ffee9a;
+  --yellowgray: #dad8af;
+  --hoveryellow: #cac678;
+  --conflict-weak: #ffee9a;
+  --conflict-weak-letters: #dbbc23;
+
+  --blue: #aceaff;
+  --primary: #00427a;
+  --primary-hover: #0b5ed7;
+  --primary-hover-border: #0a58ca;
+  --darkblue: #0275d8;
+  --bluegray: #b6cff0;
+  --hoverblue: #b6cff0;
+
+  --white: #fff;
+  --white-hover: #f9f9f9;
+  --settings-block-bg: #f2f2f2;
+  --row-hover-color: #f2f2f2;
+  --row-active-color: #ced8ff;
+
+  --gray: #cecece;
+  --darkgray: #adadad;
+  --bordergray: #dedede;
+  --abwesend: #b5b5b5;
+  --weekendgray: #d4d4d4;
+  --hovergray: #b1b1b1;
+  --textgray: #777777;
+  --lightgray: #eeeeee;
+
+  --is_optional_1: #dededea6;
+  --is_optional_2: #f2f2f2a6;
+
+  --disabled: #6c757d;
+  --shadow: #00000071;
+  --blackisch: #1f1f1f;
+  --black: #212529;
+
+  --feiertag: #e9cdff;
+  --hoverfeiertag: #dcaeff;
+
+  --icon-color: #333333;
+
+  /* Pixel-Sizes */
+  --mult-size: 1;
+  --3px: calc(3px * var(--mult-size));
+  --5px: calc(5px * var(--mult-size));
+  --10px: calc(10px * var(--mult-size));
+  --11px: calc(11px * var(--mult-size));
+  --15px: calc(15px * var(--mult-size));
+  --20px: calc(20px * var(--mult-size));
+  --25px: calc(25px * var(--mult-size));
+  --30px: calc(30px * var(--mult-size));
+
+  /* Calculations */
+  /* Verteiler */
+  --headline-h: calc(40px * var(--mult-size));
+  --subheadline-h: calc(25px * var(--mult-size));
+  --li-w: min(50%, calc(100px * var(--mult-size)));
+  --bg-layer-sm: calc(55px * var(--mult-size));
+  --bg-layer-m: calc(115px * var(--mult-size));
+  --grid-item-min-width: calc(300px * var(--mult-size));
+  --comment: calc((12rem / 16) * var(--mult-size));
+  --text: calc((14rem / 16) * var(--mult-size));
+  --content-headline: calc((14rem / 16) * var(--mult-size));
+  --sub-headline: calc((16rem / 16) * var(--mult-size));
+  --headline: calc((18rem / 16) * var(--mult-size));
+
+  /* Grid */
+  /* Verteiler */
+  --cssDisplay: 'block';
+  --cssGridAreas: '.';
+  --cssGridAreasTablet: '.';
+  --cssGridAreasMobile: '.';
+  --settings-open: 63vh;
+  --layout-icon-size: 1;
+  --layout-grid-icon-gap: 1px;
+
+  /* Z-Indexes */
+  --zBG: -1;
+  --z0: 0;
+  --z1: 10;
+  --z2: 100;
+  --z3: 1000;
+  --z4: 1500;
+  --z5: 2000;
+  --z6: 2500;
+  --z7: 3000;
+  --z8: 3500;
+  --z9: 4000;
+  --z10: 4500;
+  --z11: 5000;
+  --z12: 5500;
+  --z13: 6000;
+  --z14: 6000;
+  --zTop: 1000000;
+  --zNav: 10000000;
+}

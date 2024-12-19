@@ -1,0 +1,19 @@
+.dropdown_container {
+  background-color: var(--white);
+  box-shadow: 0 0 5px var(--shadow);
+  position: absolute;
+  border: 0;
+}
+
+.dropdown_item {
+  display: block;
+  background-color: transparent;
+  padding: 2px 10px;
+  text-align: left;
+  color: var(--textgray);
+  cursor: pointer;
+  width: 100%;
+}
+.dropdown_item:hover {
+  background-color: var(--bluegray);
+}

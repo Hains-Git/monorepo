@@ -1,0 +1,1180 @@
+div.verteiler-wrapper {
+  --fs: calc(var(--text) * 1.1);
+  --input-pad-block: calc(0.5px * var(--mult-size));
+}
+div.verteiler-wrapper div.serious-conflict,
+div.verteiler-wrapper div.possible-conflict {
+  background-color: transparent;
+}
+
+div.verteiler-wrapper h4 {
+  font-size: var(--sub-headline);
+}
+
+div.verteiler-wrapper .errMsg {
+  color: firebrick;
+  font-size: var(--11px);
+}
+
+div.verteiler-wrapper div.verteiler-body p,
+div.verteiler-wrapper div.verteiler-body span,
+div.verteiler-wrapper div.verteiler-body select,
+div.verteiler-wrapper div.verteiler-body label,
+div.verteiler-wrapper div.verteiler-body textarea,
+div.verteiler-wrapper div.verteiler-body input,
+div.verteiler-wrapper div.verteiler-body input:checked,
+div.verteiler-wrapper div.verteiler-body input:focus {
+  font-size: var(--text);
+  outline: none !important;
+}
+div.verteiler-wrapper span.m-length {
+  display: inline-block;
+  margin-left: 4px;
+  margin-right: 2px;
+}
+
+div.verteiler-wrapper.wochenverteiler fieldset label {
+  cursor: pointer;
+}
+
+div.verteiler-wrapper .text-center {
+  text-align: center;
+}
+
+div.verteiler-wrapper div.verteiler-body div.info-comment input,
+div.verteiler-wrapper div.verteiler-body div.searchbox input {
+  width: calc(100% - 0px);
+  border: 0;
+  outline: none;
+  font-size: var(--fs);
+  display: block;
+  background-color: transparent;
+}
+
+div.verteiler-wrapper div.date-selection {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+div.verteiler-wrapper div.date-selection div.columns {
+  display: flex;
+}
+div.verteiler-wrapper div.date-selection div.columns button:not(.api-auto-einteilen-btn) {
+  margin-left: 10px;
+  background-color: #00427a;
+  color: wheat;
+  padding: 0 10px;
+  border-radius: 7px;
+}
+
+div.verteiler-wrapper div.date-selection div.date-cal {
+  position: relative;
+}
+
+div.verteiler-wrapper input[type='date'] {
+  border: 0;
+  color: #5b5b5b;
+  padding: 3px;
+  outline: none;
+}
+div.verteiler-wrapper div.date-selection input[type='date'] {
+  font-size: 18px;
+  width: 140px;
+}
+
+div.verteiler-wrapper div.date-selection p.date-name {
+  text-align: center;
+  /* font-size:var(--headline); */
+  font-size: 18px;
+  padding: 0 3px;
+}
+div.verteiler-wrapper div.date-selection p.date-today {
+  padding: 2px 5px;
+  background-color: var(--primary);
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+div.verteiler-wrapper select {
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+div.verteiler-wrapper p,
+div.verteiler-wrapper li {
+  font-size: var(--text);
+}
+
+div.verteiler-wrapper div.scrolling-window {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: calc(50% - 110px);
+  width: 160px;
+  background-color: #2bff2b;
+  /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.7); */
+  opacity: 0.8;
+  height: 25px;
+  display: none;
+  font-size: var(--headline);
+  z-index: 200;
+}
+
+div.verteiler-wrapper div.scrolling-window.active {
+  background-color: red;
+}
+div.verteiler-wrapper div.scrolling-window.bottom {
+  bottom: 36px;
+}
+div.verteiler-wrapper div.scrolling-window.left {
+  top: calc(50% - 10px);
+  left: 46px;
+  width: 120px;
+}
+div.verteiler-wrapper div.scrolling-window.right {
+  top: calc(50% - 10px);
+  right: 56px;
+  left: inherit;
+  width: 120px;
+}
+
+.scrolling-window::after {
+  content: '';
+  position: absolute;
+  border: 20px solid transparent;
+}
+
+.scrolling-window.top::after {
+  border-bottom-color: #2bff2b;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.scrolling-window.active.top::after {
+  border-bottom-color: red;
+}
+
+.scrolling-window.bottom::after {
+  border-top-color: #2bff2b;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.scrolling-window.active.bottom::after {
+  border-top-color: red;
+}
+
+.scrolling-window.left::after {
+  border-right-color: #2bff2b;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.scrolling-window.active.left::after {
+  border-right-color: red;
+}
+
+.scrolling-window.right::after {
+  border-left-color: #2bff2b;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.scrolling-window.active.right::after {
+  border-left-color: red;
+}
+
+div.verteiler-wrapper.layout-right div.scrolling-window.top,
+div.verteiler-wrapper.layout-left div.scrolling-window.top {
+  top: 0;
+}
+div.verteiler-wrapper {
+  position: relative;
+}
+div.verteiler-wrapper div.my-flex-spinner {
+  top: 4em;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+div.verteiler-wrapper.tagesverteiler div.verteiler-body div.daycol-wrapper {
+  height: calc(100vh - 180px);
+  overflow: auto;
+}
+div.verteiler-wrapper.wochenverteiler div.verteiler-body div.daycol-wrapper {
+  height: calc(100vh - 240px);
+  overflow: auto;
+}
+
+div.verteiler-wrapper div.content div.po-dienst-row {
+  min-height: 20px;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+div.verteiler-wrapper div.content div.po-dienst-row:empty {
+  display: none;
+}
+
+div.verteiler-wrapper div.content.two_col_dienst div.po-dienst-row {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+div.verteiler-wrapper div.content.one_col_list {
+  height: calc(100% - 10px);
+}
+div.verteiler-wrapper div.content.one_col_list div.po-dienst-row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 5px;
+  height: 100%;
+  align-content: baseline;
+}
+div.verteiler-wrapper div.content.one_col_list p {
+  flex-basis: 50%;
+  cursor: grab;
+  height: max-content;
+  font-size: var(--fs);
+  display: flex;
+  align-items: center;
+  min-height: 23px;
+  padding-right: 7px;
+  justify-content: space-between;
+}
+div.verteiler-wrapper div.content.one_col_list p span.action-btns {
+  cursor: pointer;
+  display: none;
+}
+div.verteiler-wrapper div.content.one_col_list p:hover span.action-btns {
+  display: block;
+}
+
+div.verteiler-wrapper div.content-row.one_col {
+  padding: 0 5px;
+  margin-bottom: 3px;
+}
+div.verteiler-wrapper div.content-row.two_col_saal {
+  padding: 0 5px 0 5px;
+  margin-bottom: 3px;
+  --saal-width: 65px;
+}
+div.verteiler-wrapper div.content-row.two_col_saal select {
+  text-align: center;
+  min-width: calc(var(--saal-width) * var(--mult-size));
+}
+
+div.verteiler-wrapper div.content-container div.subheadline {
+  margin-bottom: 10px;
+}
+div.verteiler-wrapper div.content-row.one_col div.col.number,
+div.verteiler-wrapper div.content-row.two_col_saal div.col.number {
+  margin-left: 5px;
+}
+div.verteiler-wrapper div.content-row.one_col div.col.icons,
+div.verteiler-wrapper div.content-row.two_col_saal div.col.icons {
+  margin-left: 5px;
+}
+div.verteiler-wrapper div.content-row.one_col div.col.icons button,
+div.verteiler-wrapper div.content-row.one_col div.col.icons svg,
+div.verteiler-wrapper div.content-row.two_col_saal div.col.icons button,
+div.verteiler-wrapper div.content-row.two_col_saal div.col.icons svg {
+  vertical-align: middle;
+}
+div.verteiler-wrapper div.content-row div.col.icons svg {
+  font-size: var(--fs);
+}
+
+div.verteiler-wrapper div.content-row.two_col_saal div.columns,
+div.verteiler-wrapper div.content-row.two_col_saal.room div.columns,
+div.verteiler-wrapper div.content-row.one_col div.columns {
+  display: flex;
+  align-items: center;
+}
+div.verteiler-wrapper div.content-row.two_col_saal div.columns div.col {
+  display: flex;
+  align-items: center;
+}
+div.verteiler-wrapper div.content-row.two_col_saal div.columns {
+  align-items: center;
+}
+div.verteiler-wrapper div.content-row.one_col div.col:nth-child(1) {
+  width: 100%;
+}
+div.verteiler-wrapper div.content-row.two_col_saal div.col.employee,
+div.verteiler-wrapper div.content-row.two_col_saal div.col.employee div.employee {
+  width: 100%;
+}
+div.verteiler-wrapper div.content-row div.col:last-child div.employee {
+  width: 100%;
+  cursor: grab;
+}
+div.verteiler-wrapper div.content-row.one_col div.info-comment {
+  margin: 0;
+  margin-top: 2px;
+}
+
+div.verteiler-wrapper div.content-row div.info-comment:last-child {
+  margin-top: 2px;
+  display: flex;
+  margin-left: 5px;
+}
+div.verteiler-wrapper div.content-row div.info-comment:last-child {
+  margin-bottom: calc(10px * var(--mult-size));
+}
+div.verteiler-wrapper div.content-row.two_col_saal div.info-comment {
+  margin-left: calc(var(--saal-width) * var(--mult-size));
+}
+div.verteiler-wrapper div.content-row div.info-comment input {
+  background-color: #fff;
+}
+div.verteiler-wrapper div.content-row div.info-comment .button {
+  display: inherit;
+  margin-left: 5px;
+}
+div.verteiler-wrapper div.content-row div.info-comment p,
+div.verteiler-wrapper div.content-row div.info-comment input {
+  font-size: var(--comment);
+  color: #555;
+}
+
+div.verteiler-wrapper div.employee div.fake-input {
+  background-color: #fff;
+  cursor: grab;
+  position: relative;
+}
+div.verteiler-wrapper div.employee div.fake-input.opt {
+  background-color: #ececec;
+  border: 1px dashed #777;
+}
+div.verteiler-wrapper div.employee div.fake-input p {
+  font-size: var(--fs);
+  padding: 1px 5px 1px 5px;
+}
+div.verteiler-wrapper div.employee div.fake-input p span {
+  cursor: pointer;
+}
+div.verteiler-wrapper div.employee div.fake-input.exceed {
+  background-color: orange;
+}
+
+div.verteiler-wrapper div.verteiler-body div.info-comment input,
+div.verteiler-wrapper div.verteiler-body div.searchbox input,
+div.verteiler-wrapper div.employee div.fake-input p {
+  padding-top: var(--input-pad-block);
+  padding-bottom: var(--input-pad-block);
+}
+
+div.verteiler-wrapper div.employee div.action-btns {
+  position: absolute;
+  background-color: var(--white);
+  border: 1px solid var(--bordergray);
+  box-shadow: var(--shadow);
+  right: 6px;
+  height: calc(26px * var(--mult-size));
+  transform: translateY(calc(-26px * var(--mult-size)));
+  cursor: pointer;
+  display: none;
+}
+div.verteiler-wrapper div.employee:hover div.action-btns {
+  display: flex;
+  align-items: center;
+}
+div.verteiler-wrapper div.employee div.action-btns span {
+  margin-left: 5px;
+  display: inline-flex;
+}
+div.verteiler-wrapper div.employee div.fake-input div.action-btns {
+  right: 0;
+}
+div.verteiler-wrapper div.employee.wunsch-erfuellt p {
+  background-color: var(--wunsch-erfuellt);
+}
+div.verteiler-wrapper div.employee.possible-conflict p {
+  background-color: var(--yellow);
+}
+div.verteiler-wrapper div.employee.serious-conflict p {
+  background-color: var(--conflict-strong);
+}
+div.verteiler-wrapper div.searchbox {
+  background-color: #ececec;
+}
+div.verteiler-wrapper div.employee.possible-conflict.wunsch-erfuellt p {
+  background-image: linear-gradient(to right, var(--yellow) 25%, var(--wunsch-erfuellt));
+}
+div.verteiler-wrapper div.employee.serious-conflict.wunsch-erfuellt p {
+  background-image: linear-gradient(to right, var(--conflict-strong) 25%, var(--wunsch-erfuellt));
+}
+
+div.verteiler-wrapper div.searchbox p.close {
+  position: absolute;
+  right: 25px;
+  display: block;
+  transform: translate(-10px, -17px);
+  cursor: pointer;
+  height: 12px;
+  padding: 0 6px;
+  overflow: hidden;
+}
+div.verteiler-wrapper div.searchbox p.close.hide {
+  display: none;
+}
+div.verteiler-wrapper div.searchbox p.close span {
+  width: 2px;
+  height: 12px;
+  background-color: #bbb;
+  display: block;
+  position: absolute;
+}
+div.verteiler-wrapper div.searchbox p.close span:first-child {
+  transform: rotate(-45deg);
+}
+div.verteiler-wrapper div.searchbox p.close span:last-child {
+  transform: rotate(45deg);
+}
+
+div.verteiler-wrapper div.searchbox.min {
+  background-color: var(--white);
+}
+div.verteiler-wrapper div.searchbox.show_empty_work_spots {
+  background-color: var(--conflict-strong);
+}
+div.verteiler-wrapper div.searchbox.exceed {
+  background-color: orange;
+}
+
+div.verteiler-wrapper div.searchbox div.searchbox-list {
+  position: absolute;
+  width: calc(100% - 12px);
+  background-color: #f6f6f6;
+  cursor: pointer;
+  max-height: 160px;
+  border-radius: 7px;
+  margin-top: 5px;
+  overflow-y: auto;
+  box-shadow: 0px 5px 10px rgba(0, 66, 122, 0.12);
+  z-index: 1;
+}
+div.verteiler-wrapper div.two_col_saal div.col + div.col div.searchbox div.searchbox-list {
+  width: calc(100% - 82px);
+}
+div.verteiler-wrapper div.searchbox ul {
+  list-style-type: none;
+}
+div.verteiler-wrapper div.searchbox ul li {
+  padding-left: 10px;
+  border-bottom: 1px solid #e9e9e9;
+  color: #777;
+}
+div.verteiler-wrapper div.searchbox ul li:first-child {
+  margin-top: 5px;
+}
+
+div.verteiler-wrapper div.content-container div.bg-layer {
+  z-index: -1;
+  position: absolute;
+  height: 100%;
+}
+div.verteiler-wrapper div.headline p {
+  font-size: var(--headline);
+  text-align: center;
+  font-weight: 700;
+  height: var(--headline-h);
+  line-height: var(--headline-h);
+}
+
+div.verteiler-wrapper div.content-container div.subheadline p {
+  font-size: var(--sub-headline);
+  font-weight: 700;
+  padding-right: 5px;
+  text-align: right;
+  height: var(--subheadline-h);
+  line-height: var(--subheadline-h);
+}
+div.verteiler-wrapper div.content-container div.content-headline {
+  text-align: center;
+}
+div.verteiler-wrapper div.content-container div.row + div.content-headline {
+  padding-top: var(--15px);
+  padding-bottom: var(--5px);
+}
+div.verteiler-wrapper div.content-container.color_abwesende div.content-headline {
+  margin-top: var(--15px);
+}
+div.verteiler-wrapper div.content-container div.content-headline p {
+  cursor: pointer;
+  font-size: var(--content-headline);
+  /* font-size: calc(var(--content-headline) * 1.1); */
+  font-weight: bold;
+}
+
+div.verteiler-wrapper div.popup-form {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.35);
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 150;
+  overflow: auto;
+}
+div.verteiler-wrapper div.form-container {
+  position: relative;
+  max-width: 290px;
+  background-color: var(--white);
+  padding: 10px;
+  padding-top: 15px;
+  min-width: 290px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+div.verteiler-wrapper div.form-container > fieldset {
+  margin-bottom: 10px;
+}
+div.verteiler-wrapper div.form-container textarea,
+div.verteiler-wrapper div.form-container select,
+div.verteiler-wrapper div.form-container input:not([type='checkbox']) {
+  width: 100%;
+  background-color: #eee;
+  padding: 5px 3px;
+  border: 0;
+  outline: none;
+}
+div.verteiler-wrapper div.form-container textarea {
+  padding-top: 0;
+  outline: none;
+}
+div.verteiler-wrapper div.form-container input.search-input {
+  padding-left: 7px;
+}
+div.verteiler-wrapper div.form-container select {
+  background-color: #eee;
+  padding: 5px 3px;
+}
+div.verteiler-wrapper div.form-container fieldset label {
+  display: block;
+}
+div.verteiler-wrapper div.form-container fieldset input#do-it + label {
+  cursor: pointer;
+}
+div.verteiler-wrapper div.form-container fieldset.columns {
+  display: flex;
+  gap: 0 10px;
+}
+div.verteiler-wrapper div.form-container fieldset.columns fieldset {
+  flex-basis: 50%;
+  position: relative;
+}
+div.verteiler-wrapper div.form-container fieldset.columns button {
+  width: 50%;
+  padding: 3px;
+  background-color: var(--primary);
+  color: var(--white);
+  border: 2px solid var(--primary);
+  margin-top: 10px;
+  cursor: pointer;
+}
+div.verteiler-wrapper div.form-container fieldset.columns button:hover {
+  background-color: transparent;
+  color: var(--primary);
+}
+
+div.verteiler-wrapper div.form-container div.conflict-messages {
+  max-height: 250px;
+  overflow: hidden;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+div.verteiler-wrapper div.form-container div.conflict-messages fieldset {
+  margin-top: 10px;
+}
+
+div.verteiler-wrapper div.form-container div.conflict-messages p span {
+  display: inline-block;
+  background-color: transparent;
+}
+div.verteiler-wrapper div.form-container div.conflict-messages p span:not(:last-child):after {
+  content: ',';
+}
+div.verteiler-wrapper div.form-container div.conflict-messages p span.wunsch-erfuellt {
+  color: var(--green);
+}
+div.verteiler-wrapper div.form-container div.conflict-messages p span.possible-conflict {
+  color: var(--conflict-weak-letters);
+}
+div.verteiler-wrapper div.form-container div.conflict-messages p span.serious-conflict {
+  color: var(--conflict-strong);
+}
+div.verteiler-wrapper div.form-container div.conflict-messages div.conflict-bedarf p span {
+  color: var(--primary);
+}
+
+div.verteiler-wrapper div.user-settings-container.open,
+div.verteiler-wrapper div.info-table.open,
+div.verteiler-wrapper div.settings-container.open {
+  z-index: 100;
+}
+
+div.verteiler-wrapper div.info-table-content,
+div.verteiler-wrapper div.settings-content {
+  padding: 15px;
+}
+div.verteiler-wrapper div.settings-content div.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+div.verteiler-wrapper div.settings-content div.header button.save {
+  background-color: #00427a;
+  color: var(--white);
+  padding: 5px 10px;
+  border: 2px solid #00427a;
+  border-radius: 5px;
+  cursor: pointer;
+}
+div.verteiler-wrapper div.settings-content div.header button i {
+  height: 15px;
+  width: 15px;
+  margin-left: 10px;
+  vertical-align: middle;
+  background-image: url('../assets/circles.svg');
+  background-size: contain;
+  display: inline-block;
+}
+div.verteiler-wrapper div.settings-content div.header button:hover i {
+  background-image: url('../assets/circles_blue.svg');
+}
+div.verteiler-wrapper div.settings-content div.header button:hover {
+  background-color: transparent;
+  color: #00427a;
+}
+div.verteiler-wrapper div.settings-content fieldset {
+  display: flex;
+}
+div.verteiler-wrapper div.settings-content fieldset.group fieldset {
+  margin-right: 10px;
+}
+
+div.verteiler-wrapper div.settings-content input {
+  width: 45px;
+  border: 0;
+  margin-left: 5px;
+  padding-left: 5px;
+}
+div.verteiler-wrapper div.settings-block select.zoom {
+  width: auto;
+}
+div.verteiler-wrapper div.settings-block.grid-layout {
+  overflow-y: auto;
+  padding-bottom: 120px;
+}
+div.verteiler-wrapper div.settings-block.grid-layout div.grid-template {
+  margin-top: 20px;
+}
+div.verteiler-wrapper div.settings-block div.devices {
+  display: flex;
+  justify-content: space-between;
+}
+div.verteiler-wrapper div.settings-block div.grid-row {
+  display: flex;
+}
+div.verteiler-wrapper div.settings-block div.grid-row select {
+  width: 100px;
+}
+
+div.verteiler-wrapper div.grid-table {
+  position: relative;
+}
+
+div.verteiler-wrapper div.info-table-content table,
+div.verteiler-wrapper div.grid-table table {
+  width: 100%;
+}
+div.verteiler-wrapper div.grid-table table tr td div.select {
+  display: flex;
+}
+div.verteiler-wrapper div.grid-table table tr td div.select button {
+  width: 30px;
+  border: 0;
+  cursor: pointer;
+}
+div.verteiler-wrapper div.grid-table table tr td select {
+  background-color: transparent;
+  border: 0;
+  text-align: center;
+  margin-right: 10px;
+  width: 100%;
+}
+div.verteiler-wrapper div.grid-table div.table-col-popup {
+  background-color: var(--white);
+  position: absolute;
+  left: 0;
+  padding-bottom: 5px;
+  display: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+  width: 260px;
+  z-index: 100;
+}
+
+div.verteiler-wrapper div.grid-table div.table-col-popup.show {
+  display: block;
+}
+div.verteiler-wrapper div.grid-table div.table-col-popup div.close {
+  display: flex;
+  padding-right: 5px;
+  justify-content: right;
+  background-color: #f7f4f4;
+}
+div.verteiler-wrapper div.grid-table div.table-col-popup div.close span {
+  cursor: pointer;
+}
+div.verteiler-wrapper div.grid-table div.table-col-popup ul li {
+  margin-bottom: 5px;
+  padding: 3px 5px;
+  cursor: pointer;
+  list-style-type: none;
+  width: 130px;
+  display: inline-block;
+}
+div.verteiler-wrapper div.grid-table div.table-col-popup ul li:hover {
+  background-color: #00427a;
+  color: var(--white);
+}
+
+div.verteiler-wrapper div.info-table-content div.header {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+div.verteiler-wrapper div.info-table-content table {
+  width: 100%;
+  text-align: left;
+  color: #888;
+}
+div.verteiler-wrapper div.info-table-content table thead th {
+  padding-bottom: 5px;
+  color: #888;
+}
+div.verteiler-wrapper div.info-table-content table td {
+  padding: 2px 0;
+  border-bottom: 1px solid #eee;
+}
+
+div.verteiler-wrapper div.user.settings-content input {
+  width: auto;
+  margin-left: 0;
+}
+
+div.verteiler-wrapper.print div.content-row.one_col div.col.icons,
+div.verteiler-wrapper.print div.content-row.two_col_saal div.col.icons {
+  display: none;
+}
+
+/* Tagesverteiler */
+
+div.verteiler-wrapper.tagesverteiler div.user-layout.right,
+div.verteiler-wrapper.tagesverteiler div.user-layout.left {
+  display: flex;
+  overflow: hidden;
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.right div.daycol-wrapper,
+div.verteiler-wrapper.tagesverteiler div.user-layout.left div.daycol-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.right div.info,
+div.verteiler-wrapper.tagesverteiler div.user-layout.left div.info {
+  width: calc(230px * var(--mult-size));
+  margin-bottom: 0;
+  height: 100%;
+  background-color: #e3e3e3;
+  border-radius: 5px;
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.left div.info {
+  margin-right: calc(15px * var(--mult-size));
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.right div.info {
+  margin-left: calc(15px * var(--mult-size));
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.right div.grid-wrapper,
+div.verteiler-wrapper.tagesverteiler div.user-layout.left div.grid-wrapper {
+  width: calc(100% - (0px * var(--mult-size)));
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+div.verteiler-wrapper.tagesverteiler div.user-layout.right div.info div.not-allocated,
+div.verteiler-wrapper.tagesverteiler div.user-layout.left div.info div.not-allocated {
+  display: block;
+}
+div.verteiler-wrapper div.user-layout.right div.info div.column-funktion div.column-container,
+div.verteiler-wrapper div.user-layout.left div.info div.column-funktion div.column-container {
+  overflow: auto;
+  border: 2px solid #ccc;
+  padding: 5px;
+}
+div.verteiler-wrapper div.user-layout.right div.info div.column-funktion.hide div.column-container,
+div.verteiler-wrapper div.user-layout.left div.info div.column-funktion.hide div.column-container {
+  height: auto;
+  border: 2px solid transparent;
+}
+div.verteiler-wrapper div.user-layout.top div.info div.column-funktion.hide div.column-container,
+div.verteiler-wrapper div.user-layout.bottom div.info div.column-funktion.hide div.column-container,
+div.verteiler-wrapper div.user-layout.right div.info div.column-funktion.hide div.column-container,
+div.verteiler-wrapper div.user-layout.left div.info div.column-funktion.hide div.column-container {
+  display: none;
+}
+div.verteiler-wrapper div.user-layout.right div.info div.column-funktion div.column-container,
+div.verteiler-wrapper div.user-layout.left div.info div.column-funktion div.column-container {
+  display: block;
+}
+div.verteiler-wrapper div.user-layout.top div.info div.column-funktion div.column-container,
+div.verteiler-wrapper div.user-layout.bottom div.info div.column-funktion div.column-container {
+  display: flex;
+}
+
+div.verteiler-wrapper.tagesverteiler div.user-layout.right {
+  flex-direction: row-reverse;
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout.bottom {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+div.verteiler-wrapper div.header div.buttons {
+  display: flex;
+  align-items: center;
+}
+div.verteiler-wrapper div.header div.buttons button {
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  color: var(--primary);
+  background: none;
+  font-size: 14px;
+  box-shadow: none;
+}
+div.verteiler-wrapper div.header div.buttons button.btn-transparent {
+  cursor: pointer;
+  background-color: transparent;
+  border: 0;
+  color: var(--primary);
+}
+
+div.verteiler-wrapper.tagesverteiler.settings-open div.grid-wrapper {
+  padding-bottom: calc(var(--settings-open) + 3vh);
+}
+div.verteiler-wrapper.tagesverteiler div.user-layout div.grid-wrapper {
+  display: var(--cssDisplay);
+  grid-gap: 15px 10px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-min-width), 1fr));
+  grid-auto-flow: dense;
+  grid-template-areas: var(--cssGridAreas);
+  padding-bottom: 20px;
+}
+
+div.verteiler-wrapper.print,
+div.verteiler-wrapper.print div.user-layout div.grid-wrapper {
+  overflow: visible;
+  width: fit-content;
+}
+div.verteiler-wrapper.print div.user-layout div.grid-wrapper {
+  grid-gap: 5px 2px;
+}
+
+div.verteiler-wrapper div.content-container {
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+  min-width: var(--grid-item-min-width);
+  position: relative;
+}
+
+div.verteiler-wrapper div.header button#info span.badge {
+  background-color: firebrick;
+  border-radius: 50%;
+  padding: 3px;
+  color: var(--white);
+  font-size: 10px;
+  position: absolute;
+  right: 3px;
+  top: 0px;
+  z-index: -1;
+}
+
+/* End Tagesverteiler */
+
+/* Wochenverteiler */
+div.verteiler-wrapper div.user-layout.right div.daycol-header-wrapper div.daycol-header,
+div.verteiler-wrapper div.user-layout.left div.daycol-header-wrapper div.daycol-header,
+div.verteiler-wrapper div.user-layout.top div.daycol-header-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+div.verteiler-wrapper div.user-layout.bottom div.daycol-header-wrapper,
+div.verteiler-wrapper div.user-layout.top div.daycol-header-wrapper {
+  width: calc(100vw - 61px);
+}
+
+div.verteiler-wrapper.wochenverteiler div.daycol-header {
+  margin-bottom: var(--15px);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-width: var(--grid-item-min-width);
+  width: 100%;
+}
+div.verteiler-wrapper.wochenverteiler div.daycol-header p.date {
+  background-color: #fff;
+  padding: 0 3px;
+  display: flex;
+  justify-content: space-between;
+}
+div.verteiler-wrapper.wochenverteiler div.daycol-header-5 p.date,
+div.verteiler-wrapper.wochenverteiler div.daycol-header-6 p.date {
+  background-color: #888;
+  color: #fff;
+}
+div.verteiler-wrapper.wochenverteiler div.daycol-header.holiday p.date {
+  background-color: #d85555;
+}
+div.verteiler-wrapper.wochenverteiler div.daycol-header p.date span {
+  font-size: var(--sub-headline);
+}
+div.verteiler-wrapper.wochenverteiler div.info div.not-allocated {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  background-color: #e3e3e3;
+  padding: 10px;
+  gap: 10px 15px;
+}
+div.verteiler-wrapper.wochenverteiler div.not-allocated div.column-container {
+  overflow: auto;
+  max-height: 300px;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 5px;
+  justify-content: space-around;
+}
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.team-filter-wrapper {
+  width: calc(100vw - 61px);
+}
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.daycol-wrapper,
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.daycol-header-wrapper {
+  display: flex;
+  gap: 10px;
+}
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.daycol-wrapper div.day-col {
+  height: fit-content;
+  min-width: var(--grid-item-min-width);
+  width: 100%;
+}
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.daycol-wrapper div.day-col div.content-container {
+  margin-bottom: 15px;
+}
+div.verteiler-wrapper.wochenverteiler div.days-wrapper div.daycol-header-wrapper {
+  z-index: 100;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+  width: calc(100vw - 61px);
+}
+
+/* End Wochenverteiler */
+
+div.verteiler-wrapper div.user-layout div.info {
+  margin-bottom: 5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+div.verteiler-wrapper div.user-layout div.info div.not-allocated {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  background-color: #e3e3e3;
+  padding: 10px;
+  gap: 10px 15px;
+}
+div.verteiler-wrapper div.info div.not-allocated h4 {
+  text-align: center;
+  cursor: pointer;
+}
+div.verteiler-wrapper div.info div.not-allocated p {
+  background-color: var(--white);
+  padding: 0 10px;
+  border-radius: 4px;
+  cursor: grab;
+  margin-bottom: 5px;
+}
+div.verteiler-wrapper div.user-layout div.info div.column-funktion {
+  border: 1px solid transparent;
+}
+div.verteiler-wrapper div.info div.column-funktion span.arrow-wrapper {
+  margin-left: 5px;
+  display: inline-block;
+}
+div.verteiler-wrapper div.info div.column-funktion span.arrow-wrapper span {
+  width: 10px;
+  height: 2px;
+  display: inline-block;
+  background-color: #000;
+}
+div.verteiler-wrapper div.info div.column-funktion span.arrow-wrapper span:first-child {
+  transform: translate(2px, -4px) rotate(45deg);
+}
+div.verteiler-wrapper div.info div.column-funktion span.arrow-wrapper span:last-child {
+  transform: translate(-2px, -4px) rotate(-45deg);
+}
+
+div.verteiler-wrapper div.info div.column-funktion.hide span.arrow-wrapper span:first-child {
+  transform: translate(2px, -4px) rotate(-45deg);
+}
+div.verteiler-wrapper div.info div.column-funktion.hide span.arrow-wrapper span:last-child {
+  transform: translate(-2px, -4px) rotate(45deg);
+}
+
+div.verteiler-wrapper div.user-layout div.info div.column-funktion div.column-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 7px;
+  justify-content: center;
+}
+div.verteiler-wrapper div.info div.column-funktion.hide div.column-container {
+  display: none;
+}
+
+div.verteiler-wrapper.print div.content div.po-dienst-row {
+  margin-bottom: 0;
+}
+div.verteiler-wrapper.print p,
+div.verteiler-wrapper.print li {
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 1px;
+  font-size: 16px;
+}
+
+div.verteiler-wrapper div.verteiler-body {
+  display: block;
+}
+
+div.verteiler-wrapper.show-loader div.verteiler-body {
+  display: none;
+}
+
+div.verteiler-wrapper div.verteiler-body div.verteiler-body-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+div.verteiler-wrapper div.verteiler-body div.verteiler-body-header .custom-select-field-dropdown {
+  z-index: var(--z3);
+}
+
+div.verteiler-wrapper div.verteiler-body div.verteiler-body-header .standard-select-field input {
+  border: none;
+  text-align: center;
+}
+
+div.verteiler-wrapper.show-loader div.my-flex-spinner {
+  z-index: 1000;
+  display: flex;
+}
+
+div.verteiler-wrapper.wochenverteiler div.user.settings-content div.bereiche-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+div.verteiler-wrapper.wochenverteiler div.user.settings-content div.bereiche-wrapper fieldset {
+  width: 280px;
+}
+div.verteiler-wrapper.wochenverteiler div.user.settings-content div.bereiche-wrapper fieldset label {
+  margin-left: 5px;
+}
+div.verteiler-wrapper.wochenverteiler div.user.settings-content div.headline-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+div.verteiler-wrapper.wochenverteiler div.user.settings-content div.headline-buttons button {
+  background-color: #00427a;
+  color: var(--white);
+  padding: 3px 5px;
+  border: 2px solid #00427a;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: var(--comment);
+  margin-left: 15px;
+}
+
+/* Info-Tab */
+
+div.verteiler-wrapper.print div.searchbox,
+div.verteiler-wrapper.print div.employee div.fake-input,
+div.verteiler-wrapper.print div.searchbox.min,
+div.verteiler-wrapper.print div.content div.po-dienst-row,
+div.verteiler-wrapper.print div.employee.possible-conflict p {
+  background-color: transparent !important;
+}
+
+/* div.verteiler-wrapper.print div.content-container:not(:has(:not(div.one_col_list) div.po-dienst-row div.content-row div.fake-input)), */
+/* div.verteiler-wrapper.print div.content-container div.one_col div.po-dienst-row:not(:has(div.content-row div.fake-input)), */
+/* div.verteiler-wrapper.print div.content-container div.two_col_saal div.po-dienst-row:not(:has(div.content-row div.fake-input)) { */
+/*   display:none; */
+/* } */
+
+/* Ende Info Tab */
+
+/* Konflikte-Filter */
+div.user-settings-container .konflikt-filter .konflikt-filter-label > p > span {
+  font-weight: bold;
+  cursor: default;
+  font-size: var(--sub-headline);
+  width: 100%;
+  display: inline-block;
+}
+
+div.user-settings-container .konflikt-filter .konflikt-filter-label > p > .caret {
+  display: none;
+}
+
+div.user-settings-container .konflikt-filter .konflikt-filter-optionen {
+  display: flex;
+  flex-direction: row;
+  column-gap: 15px;
+  flex-wrap: wrap;
+}
+
+div.user-settings-container .konflikt-filter .konflikt-filter-optionen .konflikte-filter-konflikt-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+div.user-settings-container .konflikt-filter .konflikt-filter-optionen .konflikte-filter-konflikt-head > input,
+div.user-settings-container .konflikt-filter .konflikt-filter-optionen .konflikte-filter-konflikt-head > label {
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  div.verteiler-wrapper div.grid-wrapper {
+    grid-template-areas: var(--cssGridAreasTablet);
+  }
+}
+
+@media (max-width: 767px) {
+  div.verteiler-wrapper div.grid-wrapper {
+    grid-template-areas: var(--cssGridAreasMobile);
+  }
+}

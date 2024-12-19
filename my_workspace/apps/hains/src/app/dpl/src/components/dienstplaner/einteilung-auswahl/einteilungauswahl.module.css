@@ -1,0 +1,154 @@
+.container{
+  width: 100%;
+}
+
+.container > div:first-child{
+  text-align: left;
+  width: 100%;
+  padding-bottom: 1em;
+}
+
+.container > div:first-child > div:first-child{
+  display: flex;
+  justify-content: start;
+  padding: 0em 0.25em;
+}
+
+.container > div:first-child .count_main,
+.comment,
+.optional {
+  display: flex;
+  gap: 0.25em;
+  padding: 0.15em 0.25em;
+  align-items: center;
+}
+
+.comment > input{
+  border: 1px solid var(--bordergray);
+  color: var(--textgray);
+  flex: 1;
+  min-width: 50px;
+}
+
+.next_field > div > div > input{
+  width: 3.5rem !important;
+}
+
+.comment:first-of-type{
+  /* padding-left: 5rem; */
+  padding-top: 0;
+  padding-bottom: 1rem;
+  column-gap: 0;
+}
+
+.freigaben-all {
+  background-color: var(--green);
+}
+
+.freigaben-some {
+  background-color: var(--yellow);
+}
+
+.freigaben-none {
+  background-color: var(--red);
+}
+
+.table,
+.head table{
+  border: none;
+  border-collapse: collapse;
+  width: fit-content;
+}
+
+.container table.table tbody tr td,
+.head table tbody tr td{
+  padding: 0.25em;
+  background-color: inherit;
+  min-width: fit-content;
+  height: fit-content;
+}
+
+.table tr,
+.head table tr{
+  background-color: var(--white);
+  cursor: pointer;
+  border: none;
+  padding: 0 0.25em;
+}
+
+.table tr:hover,
+.head table tr:hover{
+  background-color: var(--hoverblue);
+}
+
+.table tr.group_title,
+.head table tr.group_title{
+  cursor: default;
+  font-size: 0.8em;
+}
+
+.table tr:hover.no_hover,
+.table tr:hover.group_title,
+.head table tr:hover.no_hover,
+.head table tr:hover.group_title{
+  background-color: var(--white);
+}
+
+.container table.table tbody tr td.mitarbeiter-als-abwesend-markiert,
+.head table tbody tr td.mitarbeiter-als-abwesend-markiert{
+  background-color: var(--yellowgray);
+}
+
+.container table.table tbody tr:hover td.mitarbeiter-als-abwesend-markiert,
+.head table tbody tr:hover td.mitarbeiter-als-abwesend-markiert{
+  background-color: var(--hoveryellow);
+}
+
+.container table.table tbody tr td.abwesend-eingeteilt,
+.head table tbody tr td.abwesend-eingeteilt{
+  background-color: var(--abwesend);
+}
+
+.container table.table tbody tr:hover td.abwesend-eingeteilt,
+.head table tbody tr:hover td.abwesend-eingeteilt{
+  background-color: var(--hovergray);
+}
+
+.table .label,
+.head table .label{
+  position: relative;
+}
+
+.rating_container{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  background-color: inherit;
+}
+
+.rating{
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background-color: inherit;
+}
+
+.counter_td{
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.counter{
+  padding: 0 0.25em;
+  border-radius: 3px;
+  border: 1px solid;
+  display: block;
+  text-align: center;
+}
+
+.head  div button.remove{
+  margin-left: 0.25em;
+}

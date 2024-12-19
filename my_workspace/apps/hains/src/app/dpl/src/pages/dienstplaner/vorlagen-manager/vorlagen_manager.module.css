@@ -1,0 +1,122 @@
+div.my-col {
+  display: inline-block;
+  width: 20%;
+  text-align: left;
+  padding-bottom: 0.5em;
+}
+
+div.my-col > input {
+  margin-top: 0.3em;
+  margin-right: 0.3em;
+}
+
+div.vorlage_form_name_container {
+  padding-bottom: 0.5em;
+}
+
+div.vorlage_form_name_container > p {
+  font-size: large;
+}
+
+div.vorlage_form_name_container > input {
+  padding: 0.3em 1em;
+  margin-top: 1em;
+  width: 45%;
+  text-align: center;
+}
+
+.vorlage_container {
+  border: 1px solid var(--black);
+  padding: 0.5em 1em;
+  margin-bottom: 1em;
+}
+
+div .vorlage_item {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+}
+
+div .vorlage_item > div:first-child{
+  cursor: pointer;
+}
+
+div .vorlage_item h1,
+div .vorlage_item h2,
+div .vorlage_item h3,
+div .vorlage_item h4,
+div .vorlage_item h5,
+div .vorlage_item h6 {
+  margin: 0;
+}
+
+div .vorlage_item > .standard_vorlage_radio_container {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  cursor: pointer;
+}
+
+.vorlage_btn_container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1em;
+  justify-content: center;
+  align-items: center;
+  padding: 1em 0;
+}
+
+.position{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+@media (max-width: 1800px) {
+  div.my-col {
+    width: 25%;
+  }
+}
+
+@media (max-width: 1200px) {
+  div.vorlage_form_name_container > input {
+    width: 60%;
+  }
+}
+
+@media (max-width: 992px) {
+  div.vorlage_form_name_container > input {
+    width: 75%;
+  }
+}
+
+@media (max-width: 850px) {
+  div.my-col {
+    width: 33%;
+  }
+}
+
+@media (max-width: 650px) {
+  div.my-col {
+    width: 50%;
+  }
+
+  div.vorlage_form_name_container > input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  div.my-col {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

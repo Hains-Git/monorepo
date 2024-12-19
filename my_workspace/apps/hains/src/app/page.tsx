@@ -1,5 +1,3 @@
-// import Button from './client/Button';
-import Button from './client/Button';
 import styles from './page.module.css';
 import { Input } from '@my-workspace/ui';
 
@@ -9,13 +7,17 @@ export default function Index() {
       <div className="wrapper">
         <div className="container">
           <div id="welcome">
-            <Button />
             <Input />
             <h1>
               <span> Hello there, </span>
               Welcome Hains 👋
             </h1>
           </div>
+          <ul>
+            <li>
+              <a href="/dpl">Dienstplanung</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

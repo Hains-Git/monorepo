@@ -1,0 +1,101 @@
+div.generic-table-wrapper {
+  --primary-color: #00427A;
+  --light-gray: #A9A9A9;
+  --border-color: #ccc;
+  --gray-color: #eee;
+  --red: firebrick;
+  margin-bottom:30px;
+  overflow:hidden;
+}
+
+:disabled {
+  background-color: #eee !important;
+}
+
+div.generic-table-wrapper div.column2 {
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+div.generic-table-wrapper div.filter {
+  margin-bottom:20px;
+}
+div.generic-table-wrapper div.filter > div {
+  margin-right:20px;
+}
+
+div.generic-table-wrapper div.filter label {
+  margin-right:5px;
+}
+div.generic-table-wrapper div.filter select,
+div.generic-table-wrapper div.filter input {
+  border:1px solid var(--border-color);
+  height:30px;
+  outline:none;
+}
+
+div.generic-table-wrapper div.exports {
+  display:flex;
+  flex-wrap:wrap;
+  align-self:flex-start;
+  justify-content:right;
+}
+div.generic-table-wrapper div.exports button {
+  margin-right:10px;
+  padding:0px 5px;
+  color:#000;
+  background-color:#e9e9e9;
+  border:1px solid #999;
+  background:linear-gradient(to bottom, #fff 0%, #e9e9e9 100%)
+}
+div.generic-table-wrapper div.exports button:last-child {
+  margin-right:0;
+}
+div.generic-table-wrapper div.exports button:hover {
+  background:transparent;
+}
+
+div.generic-table-wrapper div.generic-table tr {
+  cursor:pointer;
+}
+div.generic-table-wrapper div.generic-table tr:hover {
+  background-color:#ffeeee;
+}
+div.generic-table-wrapper div.generic-table tr td {
+  padding:5px 5px;
+  vertical-align:top;
+}
+div.generic-table-wrapper div.generic-table tr td p {
+  padding:0px 10px;
+}
+div.generic-table-wrapper div.generic-table tr td.purple,
+div.generic-table-wrapper div.generic-table tr td.red,
+div.generic-table-wrapper div.generic-table tr td.orange{
+  color:#fff;
+}
+
+div.generic-table-wrapper div.generic-table tr td:first-child input {
+  margin-right:5px;
+}
+
+div.generic-table-wrapper div.generic-table div.page-options button {
+  background-color:transparent;
+  border:none;
+  color: var(--light-gray);
+}
+div.generic-table-wrapper div.generic-table div.page-options button.active {
+  color:var(--primary-color);
+}
+
+div.generic-table-wrapper div.load-wrapper {
+  position: absolute;
+  top: calc(50% - 35px);
+  left: calc(50% - 35px);
+}
+div.generic-table-wrapper div.load-wrapper div.loading-spinner {
+  background-image: url(./circles.svg);
+  width: 70px;
+  height: 70px;
+  background-size: cover;
+}

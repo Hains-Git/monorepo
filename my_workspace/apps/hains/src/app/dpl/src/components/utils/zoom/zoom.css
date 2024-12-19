@@ -1,0 +1,17 @@
+:root {
+  --primary: #00427a;
+}
+div.zoom-btns {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+div.zoom-btns > button {
+  margin-right: 10px;
+  font-size: 0.8rem;
+  padding: 0.25rem;
+}
+
+div.zoom-btns > button:hover{
+  color: var(--primary);
+}

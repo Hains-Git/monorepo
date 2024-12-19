@@ -1,0 +1,7 @@
+.stacked_buttons > button:hover{
+  color: var(--primary);
+}
+
+.actions > div > div > span > button.all_einteilungen_public{
+  color: var(--textgray);
+}

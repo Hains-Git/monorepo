@@ -1,9 +1,15 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "allowJs": false,
-    "esModuleInterop": false,
+    "jsx": "react",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "isolatedModules": false,
+    "useDefineForClassFields": true,
     "strict": true
   },
   "files": [],

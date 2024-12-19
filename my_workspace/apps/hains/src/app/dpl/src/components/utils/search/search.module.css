@@ -1,0 +1,96 @@
+div.search-component-container div.search-component-main-search {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.25em;
+}
+
+div.search-component-container {
+  width: 270px;
+}
+
+div.search-component-container input[type='text'] {
+  width: 100%;
+}
+div.search-component-container p {
+  cursor: default;
+}
+
+div.search-component-container p:has(span.caret) {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--textgray);
+}
+div.search-component-container p:has(+ div.search-group-component) {
+  color: var(--black);
+}
+div.search-component-container span.caret {
+  cursor: pointer;
+  color: var(--bordergray);
+}
+
+div.search-component-container div.search-component-main-search > span > span {
+  cursor: pointer;
+  color: var(--bordergray);
+}
+
+div.search-component-container div.search-component-main-search > span:first-child{
+  border: 1px solid var(--bordergray);
+  padding-right: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.25em;
+  flex: 1;
+}
+
+div.search-component-container div.search-component-main-search input {
+  border: none;
+}
+
+div.search-component-container div.search-component-dropdown-container {
+  position: relative;
+}
+
+div.search-component-dropdown-container div.search-group-component {
+  padding: 10px;
+}
+div.search-component-dropdown-container div.search-group-component > input {
+  width: calc(100% - 15px);
+}
+
+div.search-component-container div.search-component-dropdown-container div.search-group-component-container input {
+  border: 1px solid var(--bordergray);
+  margin-bottom: 5px;
+}
+
+div.search-component-container div.search-component-dropdown {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  background-color: var(--white);
+  z-index: var(--zTop);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.25em;
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid var(--bordergray);
+  box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+  min-width: 100%;
+  border-radius: 3px;
+}
+
+
+div.search-component-container div.search-component-dropdown > div.search-group-component-container div.search-group-component-dropdown > label {
+  display: block;
+}
+
+div.search-component-container div.search-component-dropdown > div.search-group-component-container div.search-group-component-dropdown > label input {
+  margin-right: 5px;
+  color: var(--textgray);
+}

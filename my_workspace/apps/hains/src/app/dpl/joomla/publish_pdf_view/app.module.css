@@ -1,0 +1,11 @@
+.container{
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.container > div{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

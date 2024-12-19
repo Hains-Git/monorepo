@@ -1,0 +1,91 @@
+.screenshot_datetime {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 0.5em;
+  padding: 0.5em 0;
+}
+
+.screenshot_tables{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  width: 100%;
+  height: 90vh;
+  overflow: auto;
+}
+
+.screenshot_table {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  border: 1px solid var(--bordergray);
+  width: fit-content;
+}
+
+.screenshot_table_column {
+  border: 1px solid var(--bordergray);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.screenshot_table_column:first-child {
+  position: sticky;
+  left: 0;
+  top: 0;
+  background-color: var(--white-hover);
+  border-right: 2px solid var(--bordergray);
+}
+
+.screenshot_table_column .screenshot_table_column_date {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.screenshot_table_column div {
+  width: 100%;
+}
+
+.screenshot_table_column p {
+  border-bottom: 1px solid var(--bordergray);
+  padding: 0 0.25em;
+  width: 100%;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.screenshot_table_column p.screenshot_table_dienst,
+.screenshot_table_column p.screenshot_table_bereich {
+  text-align: center;
+  font-weight: bold;
+  background-color: var(--white-hover);
+}
+
+.screenshot_table_column p.screenshot_table_dienst,
+.screenshot_table_column p.screenshot_table_date {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25em;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.screenshot_table_column:first-child p.screenshot_table_dienst {
+  cursor: default;
+}
+
+.screenshot_table_column p.screenshot_table_bereich {
+  border-bottom: 3px solid var(--bordergray);
+}
+
+.screenshot_table_column .screenshot_table_mitarbeiter p:last-child {
+  border: none;
+}
+
+.screenshot_table_column p.screenshot_table_date {
+  font-weight: bold;
+  border: none;
+}

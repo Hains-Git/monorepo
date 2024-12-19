@@ -1,0 +1,33 @@
+.container{
+  margin: 0;
+  padding: 0.15em 0.25em;
+  border: none;
+  background: none;
+  min-width: 20px;
+  display: inline-block;
+}
+
+.span{
+  visibility: hidden;
+  height: 0;
+  display: block;
+  padding: 0 0.5em;
+  margin: 0;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.input{
+  width: 100%;
+  display: block;
+  border: 1px solid var(--bordergray);
+  color: var(--textgray);
+}
+
+.input[readonly] {
+  cursor: pointer;
+}
+
+
+
+

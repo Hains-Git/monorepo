@@ -1,0 +1,152 @@
+.auswahl > .auswahl_btn {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  column-gap: 5px;
+}
+.auswahl > .auswahl_btn > span {
+  display: flex;
+  align-items: center;
+}
+
+.auswahl > .auswahl_btn > span:hover,
+.auswahl > .auswahl_btn > span button:hover {
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.dropdown_container {
+  background-color: var(--white);
+  box-shadow: 0 0 5px var(--shadow);
+  position: absolute;
+  z-index: 10000;
+  border: 0;
+  transform: translateY(5px);
+}
+
+.dropdown_item {
+  display: block;
+  background-color: transparent;
+  padding: 2px 10px;
+  text-align: left;
+  color: var(--textgray);
+  cursor: pointer;
+  width: 100%;
+}
+
+.dropdown_item:hover {
+  background-color: var(--bluegray);
+}
+
+.content {
+  padding: 15px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: var(--z1);
+  background-color: var(--white);
+  padding-bottom: 10px;
+  column-gap: 0.5rem;
+}
+
+.head .head_middle{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 1rem;
+  flex-wrap: wrap;
+  flex: 0.9;
+}
+
+.head .head_middle .search_container{
+  width: fit-content;
+}
+
+.head_auswahl {
+  display: flex;
+  align-items: center;
+}
+
+.head_auswahl > button {
+  margin-left: 5px;
+}
+
+.head_auswahl > div {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.body > div {
+  margin-bottom: 15px;
+}
+.body_headline {
+  min-height: 25px;
+  cursor: pointer;
+  color: var(--textgray);
+  display: flex;
+  align-items: center;
+  column-gap: 0.5em;
+  margin-bottom: 5px;
+  width: fit-content;
+}
+.status_item_wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 20px;
+}
+.status_item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 1 370px;
+  padding: 2px 5px;
+  background-color: var(--white-hover);
+  margin-bottom: 10px;
+}
+.doppelte_einteilung {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--black);
+}
+.status_item_text {
+  color: var(--textgray);
+}
+
+.action_btns {
+  display: flex;
+  align-items: center;
+  column-gap: 0.5em;
+}
+
+.auswahl_btn.status_v,
+.as-icon-button.status-v,
+.head .head_auswahl div .status_v div > div > input[type="text"],
+.head .head_auswahl div .status_v div > span,
+.auswahl_btn.status_v > span > button,
+.auswahl_btn.status_v > span > div > button{
+  color: purple;
+}
+
+.auswahl_btn.status_c,
+.as-icon-button.status-c,
+.head .head_auswahl  div .status_c div > div > input[type="text"],
+.head .head_auswahl div .status_c div > span,
+.auswahl_btn.status_c > span > button,
+.auswahl_btn.status_c > span > div > button{
+  color: #e89264;
+}
+
+.auswahl_btn.status_p,
+.as-icon-button.status-p,
+.head .head_auswahl div .status_p div > div > input[type="text"],
+.head .head_auswahl div .status_p div > span,
+.auswahl_btn.status_p > span > button,
+.auswahl_btn.status_p > span > div > button{
+  color: darkgreen;
+}

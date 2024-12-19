@@ -1,0 +1,22 @@
+.alert {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 0.25em;
+  color: var(--firebrick);
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--z12);
+  background-color: var(--bordergray);
+  padding: 0.25em;
+}
+
+.msg {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}

@@ -1,0 +1,110 @@
+.content {
+  padding: 15px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.header .right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: 15px;
+}
+
+.block {
+  display: block;
+  margin-bottom: 20px;
+  background-color: #eee;
+  padding: 10px;
+}
+
+.headline_buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.headline_buttons > div {
+  display: flex;
+  column-gap: 15px;
+}
+
+button.btn_sec {
+  font-size: var(--comment);
+}
+
+.funktion {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 15px;
+}
+
+.funktion input {
+  width: auto;
+  margin-left: 0;
+}
+
+.funktion label {
+  margin-left: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.layouts_wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+.layout {
+  width: calc(40px * var(--layout-icon-size));
+  height: calc(30px * var(--layout-icon-size));
+  margin-right: 20px;
+  display: flex;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.layout.active {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 4px var(--primary);
+}
+.layout.top {
+  flex-direction: column;
+}
+.layout.right {
+  flex-direction: row-reverse;
+}
+.layout.bottom {
+  flex-direction: column-reverse;
+}
+.info {
+  background-color: #8bc34a;
+  height: calc(10px * var(--layout-icon-size));
+  width: 100%;
+}
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(1px * var(--layout-icon-size));
+}
+.grid span {
+  background-color: var(--primary);
+  width: calc((20px - (var(--layout-grid-icon-gap) / 2)) * var(--layout-icon-size) - 2px);
+  height: calc((10px - (var(--layout-grid-icon-gap) / 2)) * var(--layout-icon-size) - 2px);
+}
+
+.layout.left div.info,
+.layout.right div.info {
+  height: 100%;
+  width: calc(10px * var(--layout-icon-size));
+}
+.layout.left div.grid,
+.layout.right div.grid {
+  width: calc(30px * var(--layout-icon-size));
+}
+
+.layout.left div.grid span,
+.layout.right div.grid span {
+  width: calc((15px - (var(--layout-grid-icon-gap) / 2)) * var(--layout-icon-size) - 2px);
+  height: calc((15px - (var(--layout-grid-icon-gap) / 2)) * var(--layout-icon-size) - 2px);
+}

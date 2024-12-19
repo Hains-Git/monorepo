@@ -1,0 +1,353 @@
+.color_block {
+  padding: 0;
+  border: 1px solid var(--black);
+  width: 100%;
+  min-width: 2.25rem;
+  margin: auto;
+}
+
+.hint {
+  max-width: 300px;
+  margin-bottom: 10px;
+  color: gray;
+}
+
+input.check {
+  appearance: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  background-color: var(--firebrick);
+  clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
+}
+
+input.check:checked {
+  background-color: var(--primary);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.standort_span {
+  text-decoration: underline;
+}
+
+.team_vk_container,
+.team_vk_title_container {
+  position: relative;
+}
+
+.team_vk_container > p {
+  width: 100%;
+}
+
+.team_vk_title {
+  font-size: 0.8em;
+  max-height: 250px;
+  overflow: auto;
+  position: absolute;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  border-radius: 3px;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 0.25rem;
+  box-shadow: 0 0 5px 0 var(--shadow);
+}
+
+.team_vk_loader > div {
+  margin: auto;
+  padding: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.form div.form_head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.form div.form_head > button,
+.form div.form_head > button:hover {
+  border: none;
+  background-color: transparent;
+  padding: 0 0.25rem;
+}
+
+.form div.form_head > button svg {
+  fill: var(--primary);
+}
+
+.form div.form_head > button:hover svg {
+  fill: var(--primary-hover);
+}
+
+.form div.form_head > button.delete_button svg {
+  fill: var(--firebrick);
+}
+
+.form div.form_head > button.delete_button:hover svg {
+  fill: var(--firebrick-hover);
+}
+
+.form .form_edit_hint {
+  font-size: 1.2rem;
+  color: var(--firebrick);
+  width: 100%;
+  text-align: center;
+}
+
+.form .form_body {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+  width: fit-content;
+}
+
+.form .form_body select {
+  text-align: center;
+}
+
+.form .form_body fieldset {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-direction: column;
+  border: none;
+}
+
+.form .form_body label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.form .form_body label > p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form .form_body label > div {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.form .form_body .date_close {
+  cursor: pointer;
+  margin-left: 0.25rem;
+}
+
+.form .form_body .select_per_group_container {
+  padding: 0.5rem 0;
+}
+
+.form .form_body .select_per_group_container > label {
+  padding-bottom: 0.25rem;
+}
+
+.form .form_body .select_per_group_container:first-child {
+  padding-top: 0;
+}
+
+.form .form_body .select_per_group_container select:first-child {
+  width: 100%;
+}
+
+.form .form_body .select_width {
+  width: 1.25rem;
+  padding-left: 0px;
+}
+
+.form .form_body .selected_per_group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.form .form_body .selected_per_group > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form .form_body .selected_per_group > div > button {
+  padding: 0px;
+}
+
+.form .form_body textarea {
+  resize: vertical;
+}
+
+.form .form_body .multi_select_input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-direction: column;
+}
+
+.form .form_body .multi_select_input > div:first-of-type {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  flex-direction: column;
+}
+
+.form .form_body .arbeitszeiten,
+.form .form_body .kontingent_po_dienst,
+.form .form_body .kw_krank_puffer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form .form_body .kontingent_po_dienst > div,
+.form .form_body .kw_krank_puffer > div {
+  display: flex;
+}
+
+.form .form_body .arbeitszeiten > div > div {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  white-space: nowrap;
+  justify-content: space-between;
+}
+
+.form .form_body .arbeitszeiten > div > div > label {
+  width: fit-content;
+}
+
+.form .form_body .arbeitszeiten > div > label > select {
+  width: 100%;
+}
+
+.form .form_body .add_remove_button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.form .form_body .zeitraumregel {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.form .form_body .zeitraumregel > div > div {
+  padding-bottom: 0.5rem;
+}
+
+.form .form_body .zeitraumregel > div > div > div {
+  padding: 0rem 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.form .form_body .zeitraumregel label {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.form .form_body .zeitraumregel .weeks {
+  display: flex;
+  gap: 1rem;
+}
+
+.form .form_body .zeitraumregel .month_day {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-direction: column;
+  padding-bottom: 0.5rem;
+}
+
+.preview {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+div.preview > button,
+div.bedarf_preview button {
+  padding: 0.1rem 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+div.preview > button > svg {
+  fill: var(--white);
+  width: 1rem;
+  height: 1rem;
+}
+
+div.preview > button .date_loader {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+}
+
+.bedarf_preview {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.bedarf_preview_infos {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1;
+  background-color: var(--white);
+  border: 1px solid var(--black);
+  border-radius: 5px;
+  padding: 0.25rem;
+  text-align: left;
+}
+
+.bedarf_preview p {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bedarf_preview_infos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 200px;
+  overflow: auto;
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.bedarf_preview_infos > div > div > p {
+  cursor: pointer;
+  position: sticky;
+  top: 0;
+  background-color: var(--white);
+}
+
+.bedarf_preview_infos > div > div > div > div {
+  padding-top: 0.25rem;
+}

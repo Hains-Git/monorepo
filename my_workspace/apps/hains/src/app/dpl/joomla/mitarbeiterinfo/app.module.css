@@ -1,0 +1,775 @@
+div.details_page {
+  position: relative;
+}
+
+div.details_page :global(.fc-event-title) {
+  font-weight: 300;
+}
+div.details_page :global(table.table_noborder tr td) {
+  border: 0;
+}
+div.details_page :global(.fc-daygrid-event-harness:has(a.wunsch_dot)) {
+  float: left;
+}
+
+div.content_container {
+  margin-top: 30px;
+  margin-bottom: 40px;
+  --primary-color: #00427a;
+  --fc-button-hover-bg-color: var(--primary-color);
+  --fc-button-hover-border-color: var(--primary-color);
+  --fc-button-bg-color: var(--primary-color);
+  --fc-button-border-color: var(--primary-color);
+  --fc-button-active-bg-color: var(--primary-color);
+  --fc-button-active-border-color: var(--primary-color);
+}
+
+.spacer_top {
+  margin-top: 4em;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+.vertrags_page > div:not(:first-child){
+  padding-top: 1rem;
+}
+
+.max_full_width{
+  width: fit-content;
+  max-width: 100%;
+}
+
+.full_width {
+  width: 100%;
+}
+
+.cell_left {
+  text-align: left;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.right_side {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form fieldset legend {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+div.details_page div.calendar {
+  background: white;
+  padding: 20px;
+}
+
+div.details_page h2 {
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+div.details_page div.fc-daygrid-event-harness {
+  display: inline-block;
+}
+div.details_page div.fc-media-screen {
+  background: red;
+}
+
+div.details_page .wunsch_dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  font-size: 0px;
+  margin-top: 4px;
+  margin-right: 5px;
+}
+
+.error {
+  background-color: red;
+  padding: 10px;
+  color: #f9f9f9;
+  text-align: center;
+  font-size: 22px;
+}
+
+div.info_box {
+  margin-bottom: 20px;
+  position: relative;
+  background-color: #eee;
+}
+div.info_box p {
+  text-align: center;
+}
+div.info_status {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+}
+p.api_err {
+  color: firebrick;
+}
+p.api_success {
+  color: green;
+}
+span.close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+div.content_header {
+  display: flex;
+  justify-content: space-between;
+}
+div.content_header div.buttons {
+  display: flex;
+}
+div.content_header div.buttons button {
+  margin-left: 20px;
+}
+
+div.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  grid-column-gap: 40px;
+  grid-row-gap: 20px;
+  margin-bottom: 20px;
+}
+div.grid select,
+div.grid textarea,
+div.grid input[type='number'],
+div.grid input[type='date'],
+div.grid input[type='email'],
+div.grid input[type='text'] {
+  width: 100% !important;
+  background: transparent;
+  border: 1px solid var(--bordergray);
+}
+div.grid input[type='file'] {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+div.grid input[type='file']::file-selector-button {
+  background-color: #00427a;
+  color: #fff;
+  border: 2px solid transparent;
+  padding: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+div.grid h4 {
+  border-bottom: 2px solid #bbb;
+  font-size: 16px;
+  color: #bbb;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+div.grid h5 {
+  font-size: 16px;
+  color: #bbb;
+}
+div.grid div.planname {
+  width: 100%;
+  position: relative;
+}
+div.grid div.planname > span {
+  position: absolute;
+  right: 5px;
+  top: 25px;
+  color: #eee;
+  cursor: pointer;
+}
+div.grid fieldset {
+  border: 0;
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+}
+div.grid fieldset fieldset {
+  margin-bottom: 0px;
+  width: 100%;
+  position: relative;
+}
+
+table.table {
+  width: 100%;
+}
+
+div.merkamle {
+  margin-top: 30px;
+}
+
+div.merkamle legend {
+  font-size: 1em;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+div.group_merkmale {
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+div.checkbox {
+  display: flex;
+  column-gap: 20px;
+  flex-wrap: wrap;
+}
+div.radiobox_with_text legend + div,
+div.radiobox legend + div {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 20px;
+}
+div.radiobox_with_text legend + div > fieldset,
+div.radiobox legend + div > fieldset {
+  width: auto;
+}
+div.radiobox_with_text legend + div + fieldset {
+  margin-top: 10px;
+}
+div.radiobox_with_text legend + div + fieldset label {
+  column-gap: 0;
+}
+
+div.radiobox,
+div.radiobox_with_text {
+  display: flex;
+  column-gap: 50px;
+  flex-wrap: wrap;
+}
+
+div.selectbox_with_text,
+div.selectbox {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 50px;
+}
+div.selectbox_with_text legend + div {
+  display: flex;
+  column-gap: 10px;
+  align-items: end;
+}
+
+div.textbox {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 50px;
+}
+
+div.radiobox_with_text fieldset label,
+div.radiobox fieldset label,
+div.checkbox fieldset label {
+  display: flex;
+  column-gap: 5px;
+}
+
+fieldset.columns {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 10px;
+}
+fieldset.small {
+  flex: 0 0 80px;
+}
+fieldset.user_groups {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 10px;
+  flex-wrap: wrap;
+}
+div.grid fieldset.message {
+  margin-bottom: 10px;
+}
+div.grid fieldset.message div {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+div.grid fieldset.user_groups fieldset {
+  width: 240px;
+}
+div.grid fieldset.user_groups fieldset label input {
+  margin-right: 5px;
+}
+div.grid fieldset.files {
+  flex-wrap: wrap;
+}
+div.grid fieldset.files fieldset {
+  width: calc(50% - 20px);
+  margin-bottom: 5px;
+}
+div.grid fieldset.files > fieldset {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+div.grid fieldset.files > fieldset > fieldset + div {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+div.grid fieldset.files fieldset label input {
+  display: block;
+}
+
+div.group {
+  background: 'red';
+}
+
+div.filter_table {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+}
+div.filter_table fieldset {
+  border: 0;
+}
+div.edit_btn {
+  width: 100%;
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+}
+span.edit_btn {
+  display: block;
+}
+p.delete_file {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+}
+table.table tr:hover,
+div.table tr:hover {
+  cursor: pointer;
+}
+
+table.table thead tr th#3,
+table.table tbody tr td:nth-child(3) {
+  width: 450px;
+}
+table.table thead tr th#4,
+table.table tbody tr td:nth-child(4) {
+  width: 180px;
+}
+
+div.details_header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+div.details_header div.row {
+  column-gap: 10px;
+}
+div.details_header h2 {
+  font-size: 1.5rem;
+  color: var(--primary);
+  font-weight: 400;
+}
+div.details_header h2 span {
+  cursor: pointer;
+}
+
+div.details_header div.select_mitarbeiter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+}
+div.details_header div.select_mitarbeiter fieldset {
+  border: 0;
+}
+div.details_header div.select_mitarbeiter select {
+  border: 0;
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 400;
+  cursor: pointer;
+  max-width: 20px;
+}
+div.details_header div.select_mitarbeiter select option {
+  font-size: 0.8rem;
+}
+
+div.section_grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  grid-gap: 3%;
+}
+
+div.card_wrapper {
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  padding: 25px;
+  box-shadow: 1px 1px 2px rgb(0 66 122 / 20%);
+}
+span.stars {
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+form.notes {
+  max-width: 670px;
+  margin: 0 auto;
+  margin-bottom: 50px;
+}
+
+form.notes fieldset {
+  border: 0;
+  width: 100%;
+  margin-bottom: 20px;
+}
+form.notes fieldset fieldset {
+  margin-bottom: 0;
+}
+form.notes fieldset.columns {
+  display: flex;
+  justify-content: space-between;
+}
+form.notes fieldset label,
+form.notes fieldset label input[type='number'],
+form.notes fieldset label input[type='text'],
+form.notes fieldset select,
+form.notes fieldset label textarea {
+  width: 100% !important;
+  display: block;
+}
+form.notes fieldset.columns input[type='radio'] {
+  margin-right: 5px;
+}
+form.notes button {
+  display: flex;
+  align-self: flex-end;
+}
+
+div.note_history {
+  max-width: 600px;
+  min-width: 200px;
+  white-space: initial;
+  margin-top: 10px;
+}
+div.note_history p {
+  padding-left: 7px;
+  padding-bottom: 7px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+div.note_history p:last-child {
+  border-bottom: 0;
+}
+
+div.wrapper_columns {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 30px;
+}
+div.wrapper_columns > div {
+  width: 50%;
+}
+
+div.profile_img_wrapper {
+  display: flex;
+  column-gap: 30px;
+  margin-bottom: 30px;
+}
+div.profile_img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+div.profile_img img {
+  width: 100%;
+}
+
+div.columns {
+  display: flex;
+  justify-content: space-between;
+}
+div.columns div {
+  width: 50%;
+}
+div.columns div p {
+  line-height: 180%;
+}
+
+div.accordion_wrapper {
+  margin-top: 1rem;
+}
+div.accordion_wrapper ul li {
+  margin-left: 10px;
+}
+
+p.ae_action_btns {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+div.columns p span:first-child {
+  font-weight: 600;
+  margin-right: 2px;
+}
+div.my_accordion {
+  --border-color: #ccc;
+  --font-h4: 1rem;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+div.my_accordion div.accordion_content ul {
+  margin: 0 0 10px 12px;
+}
+div.my_accordion h4 {
+  padding: 10px 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  position: relative;
+  color: #333;
+  font-weight: 400;
+  font-size: var(--font-h4);
+}
+div.my_accordion h4 span.arrows::after,
+div.my_accordion h4 span.arrows::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  background-color: var(--border-color);
+  position: absolute;
+  right: 0px;
+  top: 19px;
+  transition: transform 330ms;
+}
+div.my_accordion h4 span.arrows::after {
+  transform: rotate(90deg);
+}
+div.my_accordion div.accordion_content ul {
+  margin: 0 0 10px 12px;
+}
+div.my_accordion.open div.accordion_content {
+  max-height: 400px;
+}
+
+.absprache_li > div:not(.standorte_themen),
+.absprache_li > div > div:last-child{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+}
+
+
+
+div.grid_col4 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(290px, 1fr));
+  grid-gap: 3%;
+  padding-bottom: 20px;
+}
+
+tr.table_row_active td {
+  background-color: #b6cff0 !important;
+}
+
+div.popup_wrapper {
+  background-color: rgba(0, 0, 0, 0.7);
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+div.popup_wrapper div.popup_content {
+  background-color: white;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: fit-content;
+  overflow: auto;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+div.popup_content div.popup_header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  column-gap: 0.5rem;
+}
+div.popup_header h2 {
+  font-weight: 400;
+}
+div.popup_content fieldset {
+  border: 0;
+  margin-bottom: 10px;
+}
+div.popup_content fieldset label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 10px;
+}
+div.popup_content fieldset label span {
+  flex: 1;
+}
+div.popup_content fieldset label select,
+div.popup_content fieldset label input {
+  flex: 2;
+  width: 100%;
+}
+
+div.popup_content fieldset input {
+  width: 100%;
+}
+
+div.absprache_popup_body > form > fieldset > fieldset:nth-child(1) div,
+div.absprache_popup_body > form > fieldset > fieldset:nth-child(2) div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 10px;
+}
+
+div.absprache_popup_body .nicht_einteilen_standort_themens{
+  padding: 0;
+}
+
+div.absprache_popup_body .nicht_einteilen_standort_themens > div:first-of-type{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  row-gap: 0.25rem;
+}
+
+div.absprache_popup_body .nicht_einteilen_standort_themens > div:first-of-type > div{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+div.absprache_popup_body .nicht_einteilen_standort_themens > div:last-of-type{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  column-gap: 0.5rem;
+}
+
+button.btn {
+  padding: 3px 10px;
+}
+div.table div div.table_container {
+  max-height: 90vh;
+  padding-bottom: 40px;
+}
+
+div.table {
+  padding-bottom: 40px;
+}
+
+.no_wrap,
+div table tbody tr td.no_wrap {
+  white-space: nowrap;
+}
+
+.wrap,
+div table thead tr th.wrap {
+  white-space: normal;
+}
+
+.vertrag_popup{
+  display: flex;
+  justify-content: space-between;
+  column-gap: 0.25rem;
+  padding-left: 2rem;
+}
+
+.vertrag_popup > div > div{
+  padding: 0;
+  margin: 0;
+}
+
+.vertrags_page > div.vertraege{
+  padding-top: 0;
+}
+
+div.content_container table tbody tr.vertrag_row > td{
+  border-top: none;
+  border-bottom: none;
+}
+
+div.content_container table tbody tr > td .row{
+  display: flex;
+  justify-content: flex-end;
+  column-gap: 0.15rem;
+}
+
+div.content_container table thead tr > th:first-child,
+div.content_container table tbody tr > td:first-child{
+  text-align: left;
+}
+
+div.content_container table tbody tr.vertrag_row > td:not(:first-child){
+  border-left: none;
+}
+
+div.content_container table tbody tr > td:not(:first-child){
+  text-align: center;
+}
+
+div.content_container table thead tr > th > button{
+  float: right;
+}
+
+div.content_container table tbody tr.vertrag_row > td:not(:last-child){
+  border-right: none;
+}
+
+div.content_container table tbody tr.vertrag_row:not(:first-child) > td{
+  padding-top: 1.5rem;
+}
+
+.vertrag_popup table tbody tr > td:first-child{
+  text-align: left;
+}
+
+.vertrag_popup table thead tr th{
+  background-color: var(--white);
+}
+
+.vertrag_infos_header{
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+div.content_container table tbody tr > td{
+  position: relative;
+}
+
+div.content_container table tbody tr td .add_before_after_btn{
+  padding: 0px;
+  font-size: 0.5rem;
+}
+div.content_container table tbody tr td .add_before_after_btn:first-child {
+  padding-bottom: 0.25rem;
+}

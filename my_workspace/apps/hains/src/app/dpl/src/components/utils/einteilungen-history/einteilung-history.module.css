@@ -1,0 +1,45 @@
+.dienstplan_history{
+  position: relative;
+}
+
+.dienstplan_history_button {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  cursor: pointer;
+}
+
+.dienstplan_history_button .caret {
+  min-width: 25px;
+  text-align: left;
+  color: var(--bordergray);
+  width: 100%;
+}
+
+.dienstplan_history_dropdown {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-direction: row;
+  gap: 1em;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.table{
+  border: none;
+  border-collapse: collapse;
+  width: fit-content;
+}
+
+.table tr{
+  background-color: var(--white);
+  cursor: pointer;
+  border: none;
+  padding: 0 0.25em;
+}
+
+.table tr:hover{
+  background-color: var(--hoverblue);
+}
