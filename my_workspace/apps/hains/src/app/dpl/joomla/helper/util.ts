@@ -1,4 +1,4 @@
-import { TVertragsPhase, TVertragsArbeitszeit, TVertragsstufe } from './api_data_types';
+import { TVertragsstufe } from './api_data_types';
 import { CSS_Style } from './ts_types';
 
 /**
@@ -74,7 +74,7 @@ export const numericLocaleCompare = (a: string, b: string): number => {
  * getNestedKey(obj, "a.f.@", "||") // 2||3
  * getNestedKey(obj, "a.e.@", ";") // 1;2;3
  */
-export const getNestedAttr = (obj: any, key: string, join: string = '\n'): any => {
+export const getNestedAttr = (obj: any, key: string, join = '\n'): any => {
   if (typeof obj !== 'object') return;
   const keys = key?.split?.('.') || [''];
   let attr: any = obj;
@@ -257,7 +257,7 @@ export const getStartAndEnd = (date: Date) => {
  * @param showTime = boolean [ob die Zeit mit angezeigt werden soll]
  * @returns string [in format of 24.06.2024, 11:18:03]
  */
-export const convertDateInGermanDateTimeFormat = (dateStr: string, showTime: boolean = false) => {
+export const convertDateInGermanDateTimeFormat = (dateStr: string, showTime = false) => {
   const date = new Date(dateStr);
   const day = `0${date.getDate()}`.slice(-2);
   const month = `0${date.getMonth() + 1}`.slice(-2);
