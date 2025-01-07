@@ -1,11 +1,7 @@
 import React, { ReactElement } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import { Column, TableData } from '../components/utils/table/types/table';
-import {
-  cleanInactiveName,
-  getNestedAttr,
-  numericLocaleCompare
-} from '../helper/util';
+import { cleanInactiveName, getNestedAttr, numericLocaleCompare } from '../helper/util';
 import ColorBlock from '../components/datenbank/columns/ColorBlock';
 import Check from '../components/datenbank/columns/Check';
 import ThemenProStandort from '../components/datenbank/columns/ThemenProStandort';
@@ -40,22 +36,17 @@ import MerkmalOption from '../components/datenbank/forms/MerkmalOption';
 
 import styles from './app.module.css';
 import BedarfPreview from '../components/datenbank/columns/BedarfPreview';
-import {
-  Bedarf,
-  BedarfPreviewData,
-  Schichten
-} from '../components/utils/table/types/datenbank';
+import { Bedarf, BedarfPreviewData, Schichten } from '../components/utils/table/types/datenbank';
 import Abwesenheitenspalten from '../components/datenbank/forms/Abwesenheitenspalten';
 import Dienstplanpaths from '../components/datenbank/forms/Dienstplanpaths';
 import PlanTabs from '../components/datenbank/forms/PlanTabs';
-import Merkmale from '../components/datenbank/forms/Merkmale';
 import { checkmark } from '../../src/tools/htmlentities';
 import Einteilungskontexte from '../components/datenbank/forms/Einteilungskontexte';
 import Einteilungsstatuse from '../components/datenbank/forms/Einteilungsstatuse';
 import { getGermandate } from '../helper/dates';
 
-const mitarbeiterDetailsLinkBase = `${window.location.origin}/dpl/mitarbeiterinfo/?view=detail&id=`;
-const vertragLink = `${window.location.origin}/dpl/mitarbeiterinfo/?view=vertrag&id=`;
+const mitarbeiterDetailsLinkBase = `${window.location.origin}/dpl/mitarbeiterinfo?view=detail&id=`;
+const vertragLink = `${window.location.origin}/dpl/mitarbeiterinfo?view=vertrag&id=`;
 // const vertragstypenLink = `${window.location.origin}/hains/dienstplaner/index.php?option=com_dienstplaner&view=vertragstypedit&id=`;
 
 export const getter_routes = {
@@ -134,11 +125,8 @@ const renderEditVertragLink = (row: TableData, column: Column) => (
 
 const renderMitarbeiterLink = (row: TableData, column: Column) => {
   const name =
-    cleanInactiveName(getNestedAttr(row, column?.dataKey || '')) ||
-    getNestedAttr(row, 'mitarbeiter.name') ||
-    '_';
-  const mitarbeiterId =
-    getNestedAttr(row, 'mitarbeiter_id')?.toString?.() || '';
+    cleanInactiveName(getNestedAttr(row, column?.dataKey || '')) || getNestedAttr(row, 'mitarbeiter.name') || '_';
+  const mitarbeiterId = getNestedAttr(row, 'mitarbeiter_id')?.toString?.() || '';
   return mitarbeiterId ? (
     <a
       target="_blank"
@@ -162,9 +150,7 @@ export const renderBoolean = (row: TableData, column: Column) => (
 );
 
 const renderStandortThemen = (row: TableData, column: Column) => (
-  <ThemenProStandort
-    standorteThemen={getNestedAttr(row, column?.dataKey || '')}
-  />
+  <ThemenProStandort standorteThemen={getNestedAttr(row, column?.dataKey || '')} />
 );
 
 export const renderDate = (row: TableData, column: Column) => {
@@ -172,9 +158,7 @@ export const renderDate = (row: TableData, column: Column) => {
   return date ? getGermandate(date) : '';
 };
 
-const renderArbeitszeitverteilung = (row: TableData, column: Column) => (
-  <Arbeitszeitverteilung row={row} />
-);
+const renderArbeitszeitverteilung = (row: TableData, column: Column) => <Arbeitszeitverteilung row={row} />;
 
 const renderFromArray =
   (
@@ -212,13 +196,9 @@ const renderFromArrayJoin = (
     }, [])
     .join(', ');
 
-const renderTeamVK = (row: TableData, column: Column) => (
-  <TeamKV team_vk={getNestedAttr(row, column?.dataKey || '')} />
-);
+const renderTeamVK = (row: TableData, column: Column) => <TeamKV team_vk={getNestedAttr(row, column?.dataKey || '')} />;
 
-const renderBedarfPreview = (row: TableData, column: Column) => (
-  <BedarfPreview row={row} column={column} />
-);
+const renderBedarfPreview = (row: TableData, column: Column) => <BedarfPreview row={row} column={column} />;
 
 const options: DBModel[] = [
   {
@@ -250,8 +230,7 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Absprachen (nicht einteilen)',
     routeBase: 'nichteinteilenabsprachen',
-    description:
-      'Absprachen bzgl. Einteilungen in Standorte, die nicht erwünscht sind',
+    description: 'Absprachen bzgl. Einteilungen in Standorte, die nicht erwünscht sind',
     replaceEdit: renderEditVertragLink,
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -292,12 +271,7 @@ const options: DBModel[] = [
     routeBase: 'abwesentheitenueberblick',
     description: 'Verwaltung der Abwesentheiten',
     formSelectOptions: ['mitarbeiter'],
-    getForm: (row, formSelectOptions) => (
-      <Abwesentheitenueberblick
-        row={row}
-        formSelectOptions={formSelectOptions}
-      />
-    ),
+    getForm: (row, formSelectOptions) => <Abwesentheitenueberblick row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'Id', dataKey: 'id' },
       {
@@ -323,9 +297,7 @@ const options: DBModel[] = [
     label: 'Arbeitsplätze',
     routeBase: 'arbeitsplaetze',
     description: 'Arbeitsplätze/Säle etc.',
-    getForm: (row, formSelectOptions) => (
-      <Arbeitsplaetze row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Arbeitsplaetze row={row} formSelectOptions={formSelectOptions} />,
     formSelectOptions: ['bereiche', 'standorte'],
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -338,8 +310,7 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Arbeitszeittypen',
     routeBase: 'arbeitszeittyps',
-    description:
-      'Arbeitszeittypen enthält die möglichen Typen von Arbeitszeiten',
+    description: 'Arbeitszeittypen enthält die möglichen Typen von Arbeitszeiten',
     getForm: (row) => <Arbeitszeittypen row={row} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -375,15 +346,9 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Arbeitszeitverteilung',
     routeBase: 'arbeitszeitverteilungs',
-    description:
-      'Verteilung von Arbeitszeiten, welche Bedarfen zugeordnet werden',
+    description: 'Verteilung von Arbeitszeiten, welche Bedarfen zugeordnet werden',
     formSelectOptions: ['dienstgruppen', 'arbeitszeittypen'],
-    getForm: (row, formSelectOptions) => (
-      <Arbeitszeitverteilungen
-        row={row}
-        formSelectOptions={formSelectOptions}
-      />
-    ),
+    getForm: (row, formSelectOptions) => <Arbeitszeitverteilungen row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Name', dataKey: 'name' },
@@ -410,8 +375,7 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Automatische Einteilungen',
     routeBase: 'automatischeeinteilungen',
-    description:
-      'Regeln für Einteilungen, die automatisiert vorgenommen werden könne',
+    description: 'Regeln für Einteilungen, die automatisiert vorgenommen werden könne',
     replaceEdit: renderEditVertragLink,
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -433,9 +397,7 @@ const options: DBModel[] = [
     routeBase: 'bereiche',
     description: 'Standort Bereiche',
     formSelectOptions: ['standorte', 'bereiche'],
-    getForm: (row, formSelectOptions) => (
-      <Bereiche row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Bereiche row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Name', dataKey: 'name' },
@@ -484,8 +446,7 @@ const options: DBModel[] = [
         for (const dataKey in res.dates) {
           const el: any = res.dates[dataKey];
           const label: string = el?.label?.toString?.() || '';
-          const feiertag =
-            getNestedAttr(el, 'feiertag.name')?.toString?.() || '';
+          const feiertag = getNestedAttr(el, 'feiertag.name')?.toString?.() || '';
           const feiertagClass = feiertag ? styles.feiertag : '';
           result.columns.push({
             title: label,
@@ -549,8 +510,7 @@ const options: DBModel[] = [
 
       return result;
     },
-    description:
-      'Bedarfe für Dienste, welchen Arbeitszeitverteilungen und Zeitraumkategorien zugeordnet werden',
+    description: 'Bedarfe für Dienste, welchen Arbeitszeitverteilungen und Zeitraumkategorien zugeordnet werden',
     fixColumns: [0, 1],
     formSelectOptions: [
       'dienste',
@@ -560,9 +520,7 @@ const options: DBModel[] = [
       'zeitraumkategorien',
       'arbeitszeitverteilung'
     ],
-    getForm: (row, formSelectOptions) => (
-      <Dienstbedarfe row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienstbedarfe row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Dienst', dataKey: 'po_dienst.name' },
@@ -588,9 +546,7 @@ const options: DBModel[] = [
     routeBase: 'dienste',
     description: 'Dienste, in die Mitarbeiter eingeteilt werden',
     formSelectOptions: ['teams', 'kostenstellen', 'freigabetypen', 'themen'],
-    getForm: (row, formSelectOptions) => (
-      <Dienste row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienste row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Planname', dataKey: 'planname' },
@@ -676,9 +632,7 @@ const options: DBModel[] = [
     routeBase: 'dienstgruppe',
     description: 'Gruppierte Dienste',
     formSelectOptions: ['dienste'],
-    getForm: (row, formSelectOptions) => (
-      <Dienstgruppen row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienstgruppen row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Name', dataKey: 'name' },
@@ -712,9 +666,7 @@ const options: DBModel[] = [
     routeBase: 'dienstkategorie',
     description: 'Kategorien von Diensten und Dienstwünschen',
     formSelectOptions: ['teams', 'themen'],
-    getForm: (row, formSelectOptions) => (
-      <Dienstkategorien row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienstkategorien row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Planname', dataKey: 'poppix_name' },
@@ -750,9 +702,7 @@ const options: DBModel[] = [
     routeBase: 'dienstplanpath',
     description: 'Pfade für Pläne',
     formSelectOptions: ['planintervals', 'plantabs', 'intervalpatterns'],
-    getForm: (row, formSelectOptions) => (
-      <Dienstplanpaths row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienstplanpaths row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Name', dataKey: 'name' },
@@ -783,9 +733,7 @@ const options: DBModel[] = [
     formSelectOptions: ['teams', 'verteilerVorlagen'],
     createData: false,
     showLoeschen: false,
-    getForm: (row, formSelectOptions) => (
-      <Dienstplaner row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Dienstplaner row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       {
@@ -801,11 +749,7 @@ const options: DBModel[] = [
       {
         title: 'Verteiler Vorlagen',
         dataKey: 'dienstplaners_verteiler_vorlagens',
-        bodyRender: renderFromArray(
-          'name',
-          '',
-          (el) => ` (${getNestedAttr(el, 'typ')})`
-        )
+        bodyRender: renderFromArray('name', '', (el) => ` (${getNestedAttr(el, 'typ')})`)
       }
     ]
   },
@@ -914,9 +858,7 @@ const options: DBModel[] = [
     routeBase: 'funktions',
     description: 'Mitarbeiter-Funktionen',
     formSelectOptions: ['teams'],
-    getForm: (row, formSelectOptions) => (
-      <Funktionen row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Funktionen row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Planname', dataKey: 'planname' },
@@ -956,9 +898,7 @@ const options: DBModel[] = [
     showLoeschen: false,
     createData: false,
     formSelectOptions: ['teams', 'themen', 'dienste'],
-    getForm: (row, formSelectOptions) => (
-      <Kontingente row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Kontingente row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Position', dataKey: 'position' },
@@ -982,7 +922,9 @@ const options: DBModel[] = [
           '',
           '',
           (el) =>
-            `${getNestedAttr(el, 'po_dienst.planname')} (${getNestedAttr(el, 'eingeteilt_count_factor')})${getNestedAttr(el, 'magic_einteilung') ? checkmark : ''}`
+            `${getNestedAttr(el, 'po_dienst.planname')} (${getNestedAttr(el, 'eingeteilt_count_factor')})${
+              getNestedAttr(el, 'magic_einteilung') ? checkmark : ''
+            }`
         )
       },
       { title: 'Default', dataKey: 'default', bodyRender: renderBoolean },
@@ -1031,9 +973,7 @@ const options: DBModel[] = [
     routeBase: 'merkmaloption',
     description: 'Optionen für die Merkmale die einen typ selectbox haben',
     formSelectOptions: ['merkmalopt'],
-    getForm: (row, formSelectOptions) => (
-      <MerkmalOption row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <MerkmalOption row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Wert', dataKey: 'wert' },
@@ -1083,20 +1023,9 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Tagesverteiler-Untergruppen',
     routeBase: 'bereichtagesverteiler',
-    description:
-      'Zuordnung von Bereichen oder Diensten zu Tagesverteiler-Gruppen',
-    formSelectOptions: [
-      'tagesverteilerHeadlines',
-      'bereiche',
-      'dienste',
-      'contentLayoutOptions'
-    ],
-    getForm: (row, formSelectOptions) => (
-      <TagesverteilerUntergruppen
-        row={row}
-        formSelectOptions={formSelectOptions}
-      />
-    ),
+    description: 'Zuordnung von Bereichen oder Diensten zu Tagesverteiler-Gruppen',
+    formSelectOptions: ['tagesverteilerHeadlines', 'bereiche', 'dienste', 'contentLayoutOptions'],
+    getForm: (row, formSelectOptions) => <TagesverteilerUntergruppen row={row} formSelectOptions={formSelectOptions} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
       { title: 'Tagesverteiler Gruppe', dataKey: 'tagesverteiler.name' },
@@ -1117,15 +1046,12 @@ const options: DBModel[] = [
     routeBase: 'teams',
     description: 'Mitarbeiter Teams',
     formSelectOptions: ['kostenstellen', 'funktionen'],
-    getForm: (row, formSelectOptions) => (
-      <Teams row={row} formSelectOptions={formSelectOptions} />
-    ),
+    getForm: (row, formSelectOptions) => <Teams row={row} formSelectOptions={formSelectOptions} />,
     selectVKDay: (res: any, data: TableData[]) => {
       if (!Array.isArray(data)) return data;
       if (typeof res !== 'object') return data;
       return data.map((el) => {
-        const team =
-          typeof el === 'object' && getNestedAttr(res, `teams.${el.id}`);
+        const team = typeof el === 'object' && getNestedAttr(res, `teams.${el.id}`);
         const team_vk =
           typeof team === 'object'
             ? {
@@ -1157,12 +1083,7 @@ const options: DBModel[] = [
       {
         title: 'KW Krank Puffer',
         dataKey: 'team_kw_krankpuffers',
-        bodyRender: renderFromArray(
-          '',
-          '',
-          (el) =>
-            `KW ${getNestedAttr(el, 'kw')}: ${getNestedAttr(el, 'puffer')}`
-        )
+        bodyRender: renderFromArray('', '', (el) => `KW ${getNestedAttr(el, 'kw')}: ${getNestedAttr(el, 'puffer')}`)
       }
     ]
   },
@@ -1170,8 +1091,7 @@ const options: DBModel[] = [
     ...defaultModelOptions,
     label: 'Themen',
     routeBase: 'thema',
-    description:
-      'Themengebiete für die Dienste, Dienstkategorien und Kontingente',
+    description: 'Themengebiete für die Dienste, Dienstkategorien und Kontingente',
     getForm: (row) => <Themen row={row} />,
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -1238,14 +1158,9 @@ const options: DBModel[] = [
             }
             return `${getNestedAttr(el, 'name')}`;
           },
-          (a, b) =>
-            numericLocaleCompare(
-              getNestedAttr(a, 'name'),
-              getNestedAttr(b, 'name')
-            )
+          (a, b) => numericLocaleCompare(getNestedAttr(a, 'name'), getNestedAttr(b, 'name'))
         ),
-        getColumnClass: () =>
-          `${styles.break_white_space} ${styles.vertrags_phases}`
+        getColumnClass: () => `${styles.break_white_space} ${styles.vertrags_phases}`
       }
     ]
   },
@@ -1260,9 +1175,7 @@ const options: DBModel[] = [
       if (typeof res !== 'object') return data;
       return data.map((el) => {
         const vertrag = getNestedAttr(res, `vertraege.${el.id}`);
-        const team =
-          typeof vertrag === 'object' &&
-          getNestedAttr(res, `teams.${vertrag.team_id}`);
+        const team = typeof vertrag === 'object' && getNestedAttr(res, `teams.${vertrag.team_id}`);
         const team_vk =
           typeof team === 'object'
             ? {
@@ -1312,8 +1225,7 @@ const options: DBModel[] = [
             { label: 'Bis', key: 'bis', date: true }
           ])
         ),
-        getColumnClass: () =>
-          `${styles.break_white_space} ${styles.vertrags_phases}`
+        getColumnClass: () => `${styles.break_white_space} ${styles.vertrags_phases}`
       },
       {
         title: 'Arbeitszeit',
@@ -1338,10 +1250,7 @@ const options: DBModel[] = [
     fixColumns: [0],
     formSelectOptions: ['bereiche', 'dienste', 'contentLayoutOptions'],
     getForm: (row, formSelectOptions) => (
-      <WochenverteilerUntergruppen
-        row={row}
-        formSelectOptions={formSelectOptions}
-      />
+      <WochenverteilerUntergruppen row={row} formSelectOptions={formSelectOptions} />
     ),
     columns: [
       { title: 'ID', dataKey: 'id' },
@@ -1391,8 +1300,7 @@ const options: DBModel[] = [
         for (const dataKey in res.dates) {
           const el: any = res.dates[dataKey];
           const label = el?.label?.toString?.() || '';
-          const feiertag =
-            getNestedAttr(el, 'feiertag.name')?.toString?.() || '';
+          const feiertag = getNestedAttr(el, 'feiertag.name')?.toString?.() || '';
           const feiertagClass = feiertag ? styles.feiertag : '';
           result.columns.push({
             title: label,
@@ -1401,8 +1309,7 @@ const options: DBModel[] = [
             sortable: false,
             getColumnClass: () => feiertagClass,
             headRender: () => <p>{label}</p>,
-            bodyRender: (row: TableData) =>
-              el?.zeitraumkategorien?.includes(row?.id) ? <Check checked /> : ''
+            bodyRender: (row: TableData) => (el?.zeitraumkategorien?.includes(row?.id) ? <Check checked /> : '')
           });
         }
       }
@@ -1429,8 +1336,7 @@ const options: DBModel[] = [
         title: 'Regelcode',
         dataKey: 'regelcode',
         bodyRender: (row: TableData, column: Column) => {
-          const value =
-            getNestedAttr(row, column?.dataKey || '')?.toString?.() || '';
+          const value = getNestedAttr(row, column?.dataKey || '')?.toString?.() || '';
           return value.split('_').join(', ');
         },
         getColumnClass: () => styles.break_white_space
