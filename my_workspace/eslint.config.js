@@ -23,7 +23,6 @@ module.exports = [
           ],
         },
       ],
-      'react/display-name': 'warn',
     },
   },
   {
