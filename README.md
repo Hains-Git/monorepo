@@ -59,21 +59,27 @@ url      = env("DATABASE_URL")
 ```
 
 2. Es muss eine Migration angelegt werden, die jedoch nicht ausgefuehrt wird, damit die history der migrations passt.
+   > Wichtig keine Änderungen an dem schema durchführen!
 
 - `mkdir -p prisma/migrations/0_init`
 - `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql`
 - `npx prisma migrate resolve --applied 0_init`
 - `npx prisma db push`
 
+3. BigInt zu Int ändern.
+
+> [!IMPORTANT]
+> byte_size, einsatznummer -> Bleibt bei BigInt
+
+4. Danach sollten Aenderungen am schema moeglich sein.
+
+   4.1 Schema anpassen
+   4.2 Tasks ausfuehren -> format, validate und generate.
+   4.3 Migration erstellen: -> `npm run migration:create`
+   Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
+   sql kann ueberprueft werden und dnach ausgefuehrt werden.
+   4.4 Migration ausfuehren: -> `npm run migrate`
+
 `npx prisma format` -> Formatiert die Datei
 `npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
 `npx prisma generate` -> Generient den client, damit man die Modelle in typesript vorhanden sind.
-
-Danach sollten Aenderungen am schema moeglich sein.
-
-1. Schema anpassen
-2. Tasks ausfuehren -> format, validate und generate.
-3. Migration erstellen: -> `npm run migration:create`
-   Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
-   sql kann ueberprueft werden und dnach ausgefuehrt werden.
-4. Migration ausfuehren: -> `npm run migrate`

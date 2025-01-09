@@ -211,7 +211,11 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
         include: {
           vertrags: {
             include: {
-              vertragsgruppes: true,
+              vertragstyps: {
+                include: {
+                  vertragsgruppes: true
+                }
+              },
               vertrags_phases: true
             }
           }
