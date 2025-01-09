@@ -18,18 +18,17 @@ model abwesentheiten_spaltens {
 }
 
 model abwesentheitenueberblick_counters {
-  id             Int       @id @default(autoincrement())
+  id             Int           @id @default(autoincrement())
   mitarbeiter_id Int?
   po_dienst_id   Int?
-  planname       String?   @db.VarChar
-  description    String?   @db.VarChar
-  von            DateTime? @db.Date
-  bis            DateTime? @db.Date
-  created_at     DateTime  @db.Timestamp(6)
-  updated_at     DateTime  @db.Timestamp(6)
-
-  mitarbeiters mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
-  po_diensts   po_diensts?   @relation(fields: [po_dienst_id], references: [id])
+  planname       String?       @db.VarChar
+  description    String?       @db.VarChar
+  von            DateTime?     @db.Date
+  bis            DateTime?     @db.Date
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
+  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_abwesentheitenueberblick_counters_on_mitarbeiter_id")
   @@index([po_dienst_id], map: "index_abwesentheitenueberblick_counters_on_po_dienst_id")
@@ -42,8 +41,9 @@ model abwesentheitenueberblick_settings {
   visible_team_ids Int[]         @default([])
   created_at       DateTime      @db.Timestamp(6)
   updated_at       DateTime      @db.Timestamp(6)
-  mitarbeiters     mitarbeiters? @relation(fields: [mitarbeitersId], references: [id])
   mitarbeitersId   Int?
+  data_sorting     String?       @default("") @db.VarChar
+  mitarbeiters     mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_abwesentheitenueberblick_settings_on_mitarbeiter_id")
 }
@@ -105,8 +105,8 @@ model account_infos {
   vertragsende        String?       @db.VarChar
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
+  users               users?        @relation(fields: [user_id], references: [id])
   mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
-  user                users?        @relation(fields: [user_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
 }
@@ -180,18 +180,17 @@ model allgemeine_vorlages {
 }
 
 model antraege_histories {
-  id               Int      @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   mitarbeiter_id   Int?
   antraege_id      Int?
   antragsstatus_id Int?
-  weiteres         String?  @db.VarChar
-  kommentar        String?  @db.VarChar
-  created_at       DateTime @db.Timestamp(6)
-  updated_at       DateTime @db.Timestamp(6)
-
-  mitarbeiters    mitarbeiters?    @relation(fields: [mitarbeiter_id], references: [id])
-  antragsstatuses antragsstatuses? @relation(fields: [antragsstatus_id], references: [id])
-  antraeges       antraeges?       @relation(fields: [antraege_id], references: [id])
+  weiteres         String?          @db.VarChar
+  kommentar        String?          @db.VarChar
+  created_at       DateTime         @db.Timestamp(6)
+  updated_at       DateTime         @db.Timestamp(6)
+  antraeges        antraeges?       @relation(fields: [antraege_id], references: [id])
+  antragsstatuses  antragsstatuses? @relation(fields: [antragsstatus_id], references: [id])
+  mitarbeiters     mitarbeiters?    @relation(fields: [mitarbeiter_id], references: [id])
 
   @@index([antraege_id], map: "index_antraege_histories_on_antraege_id")
   @@index([antragsstatus_id], map: "index_antraege_histories_on_antragsstatus_id")
@@ -211,8 +210,8 @@ model antraeges {
   updated_at         DateTime             @db.Timestamp(6)
   antraege_histories antraege_histories[]
   antragsstatuses    antragsstatuses?     @relation(fields: [antragsstatus_id], references: [id])
-  mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id])
   antragstyps        antragstyps?         @relation(fields: [antragstyp_id], references: [id])
+  mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id])
 
   @@index([antragsstatus_id], map: "index_antraeges_on_antragsstatus_id")
   @@index([antragstyp_id], map: "index_antraeges_on_antragstyp_id")
@@ -239,10 +238,10 @@ model antragstyps {
   check_alternative_po_dienst_id                                    Int?
   alternative_po_dienst_id                                          Int?
   antraeges                                                         antraeges[]
-  po_diensts_antragstyps_check_alternative_po_dienst_idTopo_diensts po_diensts? @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts", fields: [check_alternative_po_dienst_id], references: [id])
-  po_diensts_antragstyps_we_holiday_po_dienst_idTopo_diensts        po_diensts? @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts", fields: [we_holiday_po_dienst_id], references: [id])
-  po_diensts_antragstyps_po_dienst_idTopo_diensts                   po_diensts? @relation("antragstyps_po_dienst_idTopo_diensts", fields: [po_dienst_id], references: [id])
   po_diensts_antragstyps_alternative_po_dienst_idTopo_diensts       po_diensts? @relation("antragstyps_alternative_po_dienst_idTopo_diensts", fields: [alternative_po_dienst_id], references: [id])
+  po_diensts_antragstyps_check_alternative_po_dienst_idTopo_diensts po_diensts? @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts", fields: [check_alternative_po_dienst_id], references: [id])
+  po_diensts_antragstyps_po_dienst_idTopo_diensts                   po_diensts? @relation("antragstyps_po_dienst_idTopo_diensts", fields: [po_dienst_id], references: [id])
+  po_diensts_antragstyps_we_holiday_po_dienst_idTopo_diensts        po_diensts? @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts", fields: [we_holiday_po_dienst_id], references: [id])
 
   @@index([alternative_po_dienst_id], map: "index_antragstyps_on_alternative_po_dienst_id")
   @@index([check_alternative_po_dienst_id], map: "index_antragstyps_on_check_alternative_po_dienst_id")
@@ -280,14 +279,11 @@ model arbeitszeit_absprachens {
   arbeitszeit_von      DateTime           @db.Time(6)
   arbeitszeit_bis      DateTime           @db.Time(6)
   pause                Int                @default(0)
-  vertrags_phase_id    Int?
   bemerkung            String             @default("")
-  vertrags_phases      vertrags_phases?   @relation(fields: [vertrags_phase_id], references: [id])
   mitarbeiters         mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id])
   zeitraumkategories   zeitraumkategories @relation(fields: [zeitraumkategorie_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_arbeitszeit_absprachens_on_mitarbeiter_id")
-  @@index([vertrags_phase_id], map: "index_arbeitszeit_absprachens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_arbeitszeit_absprachens_on_zeitraumkategorie_id")
 }
 
@@ -331,19 +327,16 @@ model automatische_einteilungens {
   id                   Int                 @id @default(autoincrement())
   mitarbeiter_id       Int?
   po_dienst_id         Int?
-  vertrags_phase_id    Int?
   von                  DateTime?           @db.Date
   bis                  DateTime?           @db.Date
   zeitraumkategorie_id Int?
   days                 Int?                @default(0)
-  po_diensts           po_diensts?         @relation(fields: [po_dienst_id], references: [id])
-  vertrags_phases      vertrags_phases?    @relation(fields: [vertrags_phase_id], references: [id])
   mitarbeiters         mitarbeiters?       @relation(fields: [mitarbeiter_id], references: [id])
+  po_diensts           po_diensts?         @relation(fields: [po_dienst_id], references: [id])
   zeitraumkategories   zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_automatische_einteilungens_on_mitarbeiter_id")
   @@index([po_dienst_id], map: "index_automatische_einteilungens_on_po_dienst_id")
-  @@index([vertrags_phase_id], map: "index_automatische_einteilungens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_automatische_einteilungens_on_zeitraumkategorie_id")
 }
 
@@ -364,12 +357,12 @@ model bedarfs_eintrags {
   updated_at              DateTime               @db.Timestamp(6)
   ausgleich_tage          Int?                   @default(0)
   kostenstelle_id         Int?                   @default(2)
-  dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id])
-  po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id])
-  dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id])
-  kostenstelles           kostenstelles?         @relation(fields: [kostenstelle_id], references: [id])
   bereiches               bereiches?             @relation(fields: [bereich_id], references: [id])
   dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id])
+  dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id])
+  dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id])
+  kostenstelles           kostenstelles?         @relation(fields: [kostenstelle_id], references: [id])
+  po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id])
   schichts                schichts[]
 
   @@index([bereich_id], map: "index_bedarfs_eintrags_on_bereich_id")
@@ -535,9 +528,9 @@ model dienstbedarves {
   kostenstelle_id          Int?                    @default(2)
   ignore_in_urlaubssaldo   Boolean?                @default(false)
   bedarfs_eintrags         bedarfs_eintrags[]
-  dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id])
   arbeitszeitverteilungs   arbeitszeitverteilungs? @relation(fields: [arbeitszeitverteilung_id], references: [id])
   bereiches                bereiches?              @relation(fields: [bereich_id], references: [id])
+  dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id])
   kostenstelles            kostenstelles?          @relation(fields: [kostenstelle_id], references: [id])
   po_diensts               po_diensts?             @relation(fields: [po_dienst_id], references: [id])
   zeitraumkategories       zeitraumkategories?     @relation(fields: [zeitraumkategories_id], references: [id])
@@ -577,11 +570,11 @@ model diensteinteilungs {
   context_comment       String?              @default("") @db.VarChar
   info_comment          String?              @default("") @db.VarChar
   is_optional           Boolean?             @default(false)
-  po_diensts            po_diensts?          @relation(fields: [po_dienst_id], references: [id])
-  einteilungsstatuses   einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id])
-  dienstplans           dienstplans?         @relation(fields: [dienstplan_id], references: [id])
-  mitarbeiters          mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id])
   bereiches             bereiches?           @relation(fields: [bereich_id], references: [id])
+  dienstplans           dienstplans?         @relation(fields: [dienstplan_id], references: [id])
+  einteilungsstatuses   einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id])
+  mitarbeiters          mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id])
+  po_diensts            po_diensts?          @relation(fields: [po_dienst_id], references: [id])
 
   @@index([bereich_id], map: "index_diensteinteilungs_on_bereich_id")
   @@index([einteilungskontext_id], map: "index_diensteinteilungs_on_einteilungskontext_id")
@@ -624,11 +617,11 @@ model dienstfreigabes {
   updated_at        DateTime          @db.Timestamp(6)
   user_id           Int?
   standort_id       Int?
-  mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id])
+  freigabestatuses  freigabestatuses? @relation(fields: [freigabestatus_id], references: [id])
   freigabetyps      freigabetyps?     @relation(fields: [freigabetyp_id], references: [id])
+  mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id])
   standorts         standorts?        @relation(fields: [standort_id], references: [id])
   users             users?            @relation(fields: [user_id], references: [id])
-  freigabestatuses  freigabestatuses? @relation(fields: [freigabestatus_id], references: [id])
 
   @@index([freigabetyp_id], map: "index_dienstfreigabes_on_freigabetyp_id")
 }
@@ -757,8 +750,8 @@ model dienstplan_paths {
   begin_on_monday     Boolean?              @default(false)
   kalender_name       String?               @default("") @db.VarChar
   allgemeine_vorlages allgemeine_vorlages[]
-  planintervals       planintervals?        @relation(fields: [planinterval_id], references: [id])
   plan_tabs           plan_tabs?            @relation(fields: [plan_tab_id], references: [id])
+  planintervals       planintervals?        @relation(fields: [planinterval_id], references: [id])
   verteiler_vorlagens verteiler_vorlagens[]
 
   @@index([plan_tab_id], map: "index_dienstplan_paths_on_plan_tab_id")
@@ -840,8 +833,8 @@ model dienstplaners_verteiler_vorlagens {
   vorlage_id          Int?
   created_at          DateTime             @db.Timestamp(6)
   updated_at          DateTime             @db.Timestamp(6)
-  verteiler_vorlagens verteiler_vorlagens? @relation(fields: [vorlage_id], references: [id])
   users               users?               @relation(fields: [user_id], references: [id])
+  verteiler_vorlagens verteiler_vorlagens? @relation(fields: [vorlage_id], references: [id])
 
   @@index([user_id], map: "index_dienstplaners_verteiler_vorlagens_on_user_id")
   @@index([vorlage_id], map: "index_dienstplaners_verteiler_vorlagens_on_vorlage_id")
@@ -924,8 +917,8 @@ model dienstwunsches {
   dienstkategorie_id Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
-  mitarbeiters       mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id])
   dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id])
+  mitarbeiters       mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id])
 
   @@unique([tag, mitarbeiter_id], map: "index_dienstwunsches_on_tag_and_mitarbeiter_id")
   @@index([dienstkategorie_id], map: "index_dienstwunsches_on_dienstkategorie_id")
@@ -947,8 +940,8 @@ model einteilung_rotations {
   published_by         String?       @db.VarChar
   published_at         DateTime?     @db.Timestamp(6)
   position             Int?
-  mitarbeiters         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
   kontingents          kontingents?  @relation(fields: [kontingent_id], references: [id])
+  mitarbeiters         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
 }
 
 model einteilung_versions {
@@ -1120,7 +1113,7 @@ model gruppes {
   resource_type String?         @db.VarChar(255)
   created_at    DateTime?       @db.Timestamp(6)
   updated_at    DateTime?       @db.Timestamp(6)
-  users         users_gruppes[]
+  users_gruppes users_gruppes[]
 
   @@index([name], map: "index_gruppes_on_name")
   @@index([name, resource_type, resource_id], map: "index_gruppes_on_name_and_resource_type_and_resource_id")
@@ -1205,8 +1198,8 @@ model kontingent_po_diensts {
   created_at              DateTime     @db.Timestamp(6)
   updated_at              DateTime     @db.Timestamp(6)
   magic_einteilung        Boolean?     @default(false)
-  po_diensts              po_diensts?  @relation(fields: [po_dienst_id], references: [id])
   kontingents             kontingents? @relation(fields: [kontingent_id], references: [id])
+  po_diensts              po_diensts?  @relation(fields: [po_dienst_id], references: [id])
 
   @@index([kontingent_id], map: "index_kontingent_po_diensts_on_kontingent_id")
   @@index([po_dienst_id], map: "index_kontingent_po_diensts_on_po_dienst_id")
@@ -1224,10 +1217,10 @@ model kontingents {
   team_id               Int?                    @default(8)
   default               Boolean?                @default(false)
   sonderrotation        Boolean?                @default(false)
+  show_all_rotations    Boolean?                @default(false)
   einteilung_rotations  einteilung_rotations[]
   kontingent_po_diensts kontingent_po_diensts[]
   teams                 teams?                  @relation(fields: [team_id], references: [id])
-  show_all_rotations    Boolean?                @default(false)
 
   @@index([team_id], map: "index_kontingents_on_team_id")
 }
@@ -1272,8 +1265,8 @@ model mailer_ccs {
   mailer_addresse_id Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
-  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id])
   mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id])
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id])
 
   @@index([mailer_addresse_id], map: "index_mailer_ccs_on_mailer_addresse_id")
   @@index([mailer_context_id], map: "index_mailer_ccs_on_mailer_context_id")
@@ -1303,8 +1296,8 @@ model mailer_tos {
   mailer_addresse_id Int?
   created_at         DateTime          @db.Timestamp(6)
   updated_at         DateTime          @db.Timestamp(6)
-  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id])
   mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id])
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id])
 
   @@index([mailer_addresse_id], map: "index_mailer_tos_on_mailer_addresse_id")
   @@index([mailer_context_id], map: "index_mailer_tos_on_mailer_context_id")
@@ -1341,8 +1334,8 @@ model mitarbeiter_default_eingeteilts {
   eingeteilt     Int           @default(0)
   created_at     DateTime      @db.Timestamp(6)
   updated_at     DateTime      @db.Timestamp(6)
-  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id])
   mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
+  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_mitarbeiter_default_eingeteilts_on_mitarbeiter_id")
   @@index([po_dienst_id], map: "index_mitarbeiter_default_eingeteilts_on_po_dienst_id")
@@ -1435,14 +1428,11 @@ model nicht_einteilen_absprachens {
   zeitraumkategorie_id            Int
   von                             DateTime?                         @db.Date
   bis                             DateTime?                         @db.Date
-  vertrags_phase_id               Int?
   mitarbeiters                    mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id])
-  vertrags_phases                 vertrags_phases?                  @relation(fields: [vertrags_phase_id], references: [id])
   zeitraumkategories              zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id])
   nicht_einteilen_standort_themen nicht_einteilen_standort_themen[]
 
   @@index([mitarbeiter_id], map: "index_nicht_einteilen_absprachens_on_mitarbeiter_id")
-  @@index([vertrags_phase_id], map: "index_nicht_einteilen_absprachens_on_vertrags_phase_id")
   @@index([zeitraumkategorie_id], map: "index_nicht_einteilen_absprachens_on_zeitraumkategorie_id")
 }
 
@@ -1496,9 +1486,9 @@ model notes_histories {
   notiz                                                     String?       @db.VarChar
   created_at                                                DateTime      @db.Timestamp(6)
   updated_at                                                DateTime      @db.Timestamp(6)
-  notes                                                     notes?        @relation(fields: [note_id], references: [id])
   mitarbeiters_notes_histories_ersteller_idTomitarbeiters   mitarbeiters? @relation("notes_histories_ersteller_idTomitarbeiters", fields: [ersteller_id], references: [id])
   mitarbeiters_notes_histories_mitarbeiter_idTomitarbeiters mitarbeiters? @relation("notes_histories_mitarbeiter_idTomitarbeiters", fields: [mitarbeiter_id], references: [id])
+  notes                                                     notes?        @relation(fields: [note_id], references: [id])
 
   @@index([ersteller_id], map: "index_notes_histories_on_ersteller_id")
   @@index([mitarbeiter_id], map: "index_notes_histories_on_mitarbeiter_id")
@@ -1530,8 +1520,8 @@ model notfallmedizin_registers {
   mails_send               Boolean?                 @default(true)
   aktiv                    Boolean?                 @default(true)
   nef_fahrts               nef_fahrts[]
-  notfallmedizin_statuses  notfallmedizin_statuses? @relation(fields: [notfallmedizin_status_id], references: [id])
   mitarbeiters             mitarbeiters?            @relation(fields: [mitarbeiter_id], references: [id])
+  notfallmedizin_statuses  notfallmedizin_statuses? @relation(fields: [notfallmedizin_status_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_notfallmedizin_registers_on_mitarbeiter_id")
 }
@@ -1580,6 +1570,20 @@ model oauth_access_tokens {
   @@index([resource_owner_id], map: "index_oauth_access_tokens_on_resource_owner_id")
 }
 
+model oauth_access_tokens_new {
+  id                   Int                  @id @default(autoincrement())
+  user_id              Int
+  client_id            String               @db.VarChar(255)
+  refresh_token_id     Int
+  token                String               @unique @db.VarChar(255)
+  scopes               String[]
+  created_at           DateTime             @db.Timestamp(6)
+  updated_at           DateTime             @db.Timestamp(6)
+  expires_at           DateTime
+  oauth_refresh_tokens oauth_refresh_tokens @relation(fields: [refresh_token_id], references: [id])
+  users                users                @relation(fields: [user_id], references: [id])
+}
+
 model oauth_applications {
   id           Int       @id @default(autoincrement())
   name         String    @db.VarChar(255)
@@ -1592,49 +1596,35 @@ model oauth_applications {
   confidential Boolean   @default(true)
 }
 
+model oauth_authorization_codes {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  client_id  String
+  code       String   @unique
+  expires_at DateTime
+}
+
 model oauth_clients {
   id            Int      @id @default(autoincrement())
   name          String
-  client_id     String   @unique() @db.VarChar(255)
-  client_secret String
+  client_id     String   @unique @db.VarChar(255)
   scopes        String[]
   created_at    DateTime @db.Timestamp(6)
   updated_at    DateTime @db.Timestamp(6)
-}
-
-model oauth_access_tokens_new {
-  id               Int                  @id @default(autoincrement())
-  user_id          Int
-  client_id        String               @db.VarChar(255)
-  refresh_token_id Int
-  token            String               @unique() @db.VarChar(255)
-  expires_at       DateTime
-  scopes           String[]
-  user             users                @relation(fields: [user_id], references: [id])
-  refresh_token    oauth_refresh_tokens @relation(fields: [refresh_token_id], references: [id])
-  created_at       DateTime             @db.Timestamp(6)
-  updated_at       DateTime             @db.Timestamp(6)
+  client_secret String
 }
 
 model oauth_refresh_tokens {
   id                      Int                       @id @default(autoincrement())
   user_id                 Int
   client_id               String                    @db.VarChar(255)
-  token                   String                    @unique() @db.VarChar(255)
-  expires_at              DateTime
+  token                   String                    @unique @db.VarChar(255)
   scopes                  String[]
-  user                    users                     @relation(fields: [user_id], references: [id])
   created_at              DateTime                  @db.Timestamp(6)
   updated_at              DateTime                  @db.Timestamp(6)
+  expires_at              DateTime
   oauth_access_tokens_new oauth_access_tokens_new[]
-}
-
-model oauth_authorization_codes {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  client_id  String
-  code       String   @unique()
-  expires_at DateTime
+  users                   users                     @relation(fields: [user_id], references: [id])
 }
 
 model parametersets {
@@ -1683,8 +1673,8 @@ model planparameters {
   created_at              DateTime             @db.Timestamp(6)
   updated_at              DateTime             @db.Timestamp(6)
   wish_weight             Float?
-  parametersets           parametersets?       @relation(fields: [parameterset_id], references: [id])
   einteilungsstatuses     einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id])
+  parametersets           parametersets?       @relation(fields: [parameterset_id], references: [id])
 
   @@index([einteilungsstatus_id], map: "index_planparameters_on_einteilungsstatus_id")
   @@index([parameterset_id], map: "index_planparameters_on_parameterset_id")
@@ -1723,10 +1713,10 @@ model po_diensts {
   pep_name                                                           String                              @default("") @db.VarChar
   pep_color                                                          String                              @default("") @db.VarChar
   abwesentheitenueberblick_counters                                  abwesentheitenueberblick_counters[]
-  antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
-  antragstyps_antragstyps_we_holiday_po_dienst_idTopo_diensts        antragstyps[]                       @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts")
-  antragstyps_antragstyps_po_dienst_idTopo_diensts                   antragstyps[]                       @relation("antragstyps_po_dienst_idTopo_diensts")
   antragstyps_antragstyps_alternative_po_dienst_idTopo_diensts       antragstyps[]                       @relation("antragstyps_alternative_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_po_dienst_idTopo_diensts                   antragstyps[]                       @relation("antragstyps_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_we_holiday_po_dienst_idTopo_diensts        antragstyps[]                       @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts")
   automatische_einteilungens                                         automatische_einteilungens[]
   bedarfs_eintrags                                                   bedarfs_eintrags[]
   bereich_tagesverteilers                                            bereich_tagesverteilers[]
@@ -1807,9 +1797,9 @@ model stundennachweis {
   rufbereitschaft_von       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
   rufbereitschaft_bis       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
   kommentar                 String?                   @default("") @db.VarChar
-  stundennachweis_statuses  stundennachweis_statuses? @relation(fields: [stundennachweis_status_id], references: [id])
   kostenstelles             kostenstelles?            @relation(fields: [kostenstelle_id], references: [id])
   mitarbeiters              mitarbeiters?             @relation(fields: [mitarbeiter_id], references: [id])
+  stundennachweis_statuses  stundennachweis_statuses? @relation(fields: [stundennachweis_status_id], references: [id])
 
   @@index([kostenstelle_id], map: "index_stundennachweis_on_kostenstelle_id")
   @@index([mitarbeiter_id], map: "index_stundennachweis_on_mitarbeiter_id")
@@ -1876,8 +1866,8 @@ model team_funktions {
   funktion_id Int?
   created_at  DateTime   @db.Timestamp(6)
   updated_at  DateTime   @db.Timestamp(6)
-  teams       teams?     @relation(fields: [team_id], references: [id])
   funktions   funktions? @relation(fields: [funktion_id], references: [id])
+  teams       teams?     @relation(fields: [team_id], references: [id])
 
   @@index([funktion_id], map: "index_team_funktions_on_funktion_id")
   @@index([team_id], map: "index_team_funktions_on_team_id")
@@ -1998,28 +1988,27 @@ model users {
   otp_secret_key                    String?                             @db.VarChar
   otp_enabled                       Boolean?                            @default(false)
   otp_counter                       Int?                                @default(0)
+  account_infos                     account_infos?
   channel_room_users                channel_room_users[]
   dienstfreigabes                   dienstfreigabes[]
   dienstplaner_user_farbgruppens    dienstplaner_user_farbgruppens[]
   dienstplaner_user_settings        dienstplaner_user_settings[]
   dienstplaners_teams               dienstplaners_teams[]
   dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
-  user_gruppes                      users_gruppes[]
   oauth_access_tokens_new           oauth_access_tokens_new[]
   oauth_refresh_tokens              oauth_refresh_tokens[]
-  account_info                      account_infos?
+  users_gruppes                     users_gruppes[]
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model users_gruppes {
   user_id   Int
   gruppe_id Int
-  gruppes   gruppes? @relation(fields: [gruppe_id], references: [id])
-  users     users?   @relation(fields: [user_id], references: [id])
+  gruppes   gruppes @relation(fields: [gruppe_id], references: [id])
+  users     users   @relation(fields: [user_id], references: [id])
 
-  @@id([user_id, gruppe_id]) // Composite primary key
+  @@id([user_id, gruppe_id])
   @@index([user_id, gruppe_id], map: "index_users_gruppes_on_user_id_and_gruppe_id")
 }
 
@@ -2059,18 +2048,18 @@ model verteiler_tagesverteilers {
 }
 
 model verteiler_vorlagens {
-  id                 Int      @id @default(autoincrement())
-  name               String   @default("Vorlage") @db.VarChar
-  beschreibung       String   @default("") @db.VarChar
-  typ                String   @default("wochenverteiler") @db.VarChar
-  dienstplan_path_id Int?
-  order              Int      @default(0)
-  bereiche_ids       Int[]    @default([])
-  dienste_ids        Int[]    @default([])
-  team_ids           Int[]    @default([])
-  created_at         DateTime @db.Timestamp(6)
-  updated_at         DateTime @db.Timestamp(6)
-
+  id                                Int                                 @id @default(autoincrement())
+  name                              String                              @default("Vorlage") @db.VarChar
+  beschreibung                      String                              @default("") @db.VarChar
+  typ                               String                              @default("wochenverteiler") @db.VarChar
+  dienstplan_path_id                Int?
+  order                             Int                                 @default(0)
+  bereiche_ids                      Int[]                               @default([])
+  dienste_ids                       Int[]                               @default([])
+  team_ids                          Int[]                               @default([])
+  created_at                        DateTime                            @db.Timestamp(6)
+  updated_at                        DateTime                            @db.Timestamp(6)
+  kommentar                         String?                             @default("") @db.VarChar
   dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
   tagesverteiler_layouts            tagesverteiler_layouts[]
   dienstplan_paths                  dienstplan_paths?                   @relation(fields: [dienstplan_path_id], references: [id])
@@ -2086,63 +2075,72 @@ model verteilungsoverrides {
   verteilungscode         String?                @db.VarChar
   created_at              DateTime               @db.Timestamp(6)
   updated_at              DateTime               @db.Timestamp(6)
+  dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id])
   dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id])
   parametersets           parametersets?         @relation(fields: [parameterset_id], references: [id])
-  dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id])
 
   @@index([dienstbedarf_id], map: "index_verteilungsoverrides_on_dienstbedarf_id")
   @@index([dienstverteilungstyp_id], map: "index_verteilungsoverrides_on_dienstverteilungstyp_id")
   @@index([parameterset_id], map: "index_verteilungsoverrides_on_parameterset_id")
 }
 
-model vertrags {
-  id                Int               @id @default(autoincrement())
-  mitarbeiter_id    Int?
-  created_at        DateTime          @db.Timestamp(6)
-  updated_at        DateTime          @db.Timestamp(6)
-  vertragstyp_id    Int?
-  anfang            DateTime?         @db.Date
-  ende              DateTime?         @db.Date
-  vertragsgruppe_id Int?
-  vertragsgruppes   vertragsgruppes?  @relation(fields: [vertragsgruppe_id], references: [id])
-  mitarbeiters      mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id])
-  vertragstyps      vertragstyps?     @relation(fields: [vertragstyp_id], references: [id])
-  vertrags_phases   vertrags_phases[]
+model vertrag_versions {
+  id         BigInt    @id @default(autoincrement())
+  item_type  String    @db.VarChar
+  item_id    Int
+  event      String    @db.VarChar
+  whodunnit  String?   @db.VarChar
+  object     String?
+  created_at DateTime? @db.Timestamp(6)
 
-  @@index([vertragsgruppe_id], map: "index_vertrags_on_vertragsgruppe_id")
+  @@index([item_type, item_id], map: "index_vertrag_versions_on_item_type_and_item_id")
+}
+
+model vertrags {
+  id                    Int                     @id @default(autoincrement())
+  mitarbeiter_id        Int?
+  created_at            DateTime                @db.Timestamp(6)
+  updated_at            DateTime                @db.Timestamp(6)
+  vertragstyp_id        Int?
+  anfang                DateTime?               @db.Date
+  ende                  DateTime?               @db.Date
+  unbefristet           Boolean?                @default(false)
+  kommentar             String?                 @default("") @db.VarChar
+  mitarbeiters          mitarbeiters?           @relation(fields: [mitarbeiter_id], references: [id])
+  vertragstyps          vertragstyps?           @relation(fields: [vertragstyp_id], references: [id])
+  vertrags_arbeitszeits vertrags_arbeitszeits[]
+  vertrags_phases       vertrags_phases[]
+
   @@index([vertragstyp_id], map: "index_vertrags_on_vertragstyp_id")
 }
 
-model vertrags_aenderungs {
-  id             Int       @id @default(autoincrement())
-  von            DateTime? @db.Timestamp(6)
-  bis            DateTime? @db.Timestamp(6)
-  teilzeitAnteil Int?
-  rolle          String?   @db.VarChar
-  vertrag_id     Int?
-  kommentar      String?
-  mitarbeiter_id Int?
-  vertrag_ruht   Boolean?
-  created_at     DateTime  @db.Timestamp(6)
-  updated_at     DateTime  @db.Timestamp(6)
+model vertrags_arbeitszeits {
+  id         BigInt    @id @default(autoincrement())
+  vertrag_id BigInt?
+  von        DateTime? @db.Date
+  bis        DateTime? @db.Date
+  vk         Decimal?  @db.Decimal(3, 2)
+  tage_woche Float?    @default(5.0)
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+  vertrags   vertrags? @relation(fields: [vertrag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8e47624856")
+
+  @@index([vertrag_id], map: "index_vertrags_arbeitszeits_on_vertrag_id")
 }
 
 model vertrags_phases {
-  id                          Int                           @id @default(autoincrement())
-  vertrag_id                  Int?
-  vk                          Decimal?                      @db.Decimal(3, 2)
-  stufe                       Int?
-  von                         DateTime?                     @db.Date
-  bis                         DateTime?                     @db.Date
-  created_at                  DateTime                      @db.Timestamp(6)
-  updated_at                  DateTime                      @db.Timestamp(6)
-  tage_woche                  Float?                        @default(5.0)
-  arbeitszeit_absprachens     arbeitszeit_absprachens[]
-  automatische_einteilungens  automatische_einteilungens[]
-  nicht_einteilen_absprachens nicht_einteilen_absprachens[]
-  vertrags                    vertrags?                     @relation(fields: [vertrag_id], references: [id])
+  id               Int             @id @default(autoincrement())
+  vertrag_id       Int?
+  von              DateTime?       @db.Date
+  bis              DateTime?       @db.Date
+  created_at       DateTime        @db.Timestamp(6)
+  updated_at       DateTime        @db.Timestamp(6)
+  vertragsstufe_id BigInt?
+  vertragsstuves   vertragsstuves? @relation(fields: [vertragsstufe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f9b8646f70")
+  vertrags         vertrags?       @relation(fields: [vertrag_id], references: [id])
 
   @@index([vertrag_id], map: "index_vertrags_phases_on_vertrag_id")
+  @@index([vertragsstufe_id], map: "index_vertrags_phases_on_vertragsstufe_id")
 }
 
 model vertrags_variantes {
@@ -2154,6 +2152,7 @@ model vertrags_variantes {
   wochenstunden  Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
+  tage_monat     Float?           @default(2.5)
   vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id])
   vertragsstuves vertragsstuves[]
 
@@ -2166,7 +2165,6 @@ model vertragsgruppes {
   vertragstyp_id Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
-  vertrags       vertrags[]
   vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id])
   vertragsstuves vertragsstuves[]
 
@@ -2175,7 +2173,6 @@ model vertragsgruppes {
 
 model vertragsstuves {
   id                   Int                 @id @default(autoincrement())
-  name                 String?             @db.VarChar
   stufe                Int?
   nach_jahren          Int?
   monatsgehalt         Decimal?            @db.Decimal(15, 2)
@@ -2183,8 +2180,9 @@ model vertragsstuves {
   updated_at           DateTime            @db.Timestamp(6)
   vertragsgruppe_id    Int?
   vertrags_variante_id Int?
-  vertragsgruppes      vertragsgruppes?    @relation(fields: [vertragsgruppe_id], references: [id])
+  vertrags_phases      vertrags_phases[]
   vertrags_variantes   vertrags_variantes? @relation(fields: [vertrags_variante_id], references: [id])
+  vertragsgruppes      vertragsgruppes?    @relation(fields: [vertragsgruppe_id], references: [id])
 
   @@index([vertrags_variante_id], map: "index_vertragsstuves_on_vertrags_variante_id")
   @@index([vertragsgruppe_id], map: "index_vertragsstuves_on_vertragsgruppe_id")
@@ -2195,7 +2193,6 @@ model vertragstyps {
   name               String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
-  tage_monat         Float?               @default(2.5)
   vertrags           vertrags[]
   vertrags_variantes vertrags_variantes[]
   vertragsgruppes    vertragsgruppes[]
@@ -2235,8 +2232,8 @@ model wochenbilanzs {
   krankstunden                  Decimal?        @default(0) @db.Decimal(6, 2)
   created_at                    DateTime        @db.Timestamp(6)
   updated_at                    DateTime        @db.Timestamp(6)
-  mitarbeiters                  mitarbeiters?   @relation(fields: [mitarbeiter_id], references: [id])
   kalenderwoches                kalenderwoches? @relation(fields: [kalenderwoche_id], references: [id])
+  mitarbeiters                  mitarbeiters?   @relation(fields: [mitarbeiter_id], references: [id])
 
   @@index([kalenderwoche_id], map: "index_wochenbilanzs_on_kalenderwoche_id")
   @@index([mitarbeiter_id], map: "index_wochenbilanzs_on_mitarbeiter_id")
