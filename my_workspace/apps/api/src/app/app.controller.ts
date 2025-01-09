@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -7,11 +7,11 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('dienstplanung')
-  getData(@Query() query: any) {
-    return this.appService.getDienstplanung(query.dienstplan_id);
+  getData(@Query() query: { dienstplan_id: string; vorschlag: string }) {
+    return this.appService.getDienstplanung(Number(query.dienstplan_id), query.vorschlag === 'true');
   }
   @Get('apidata')
-  getApiData(@Query() query: any) {
-    return this.appService.getApiData(query?.user_id);
+  getApiData(@Query() query: { user_id: string }) {
+    return this.appService.getApiData(Number(query?.user_id));
   }
 }
