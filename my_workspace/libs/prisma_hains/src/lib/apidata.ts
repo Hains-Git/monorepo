@@ -350,6 +350,17 @@ async function getAllApiData(userId: number) {
   res['mitarbeiters'] = await processAsyncData(
     'id',
     await getApiDataByKey('mitarbeiters', {
+      where: {
+        OR: [
+          {
+            platzhalter: false
+          },
+          {
+            platzhalter: true,
+            aktiv: true
+          }
+        ]
+      },
       include: {
         account_infos: true,
         dienstfreigabes: true,
