@@ -1411,7 +1411,7 @@ model nef_fahrts {
   notfallmedizin_register_id Int?
   fahrtnummer                Int?
   datum                      DateTime?                 @db.Date
-  einsatznummer              BigInt?
+  einsatznummer              Int?
   diagnose_therapie          String?                   @db.VarChar
   notarzt                    String?                   @db.VarChar
   bemerkung                  String?                   @db.VarChar
@@ -2085,7 +2085,7 @@ model verteilungsoverrides {
 }
 
 model vertrag_versions {
-  id         BigInt    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   item_type  String    @db.VarChar
   item_id    Int
   event      String    @db.VarChar
@@ -2115,8 +2115,8 @@ model vertrags {
 }
 
 model vertrags_arbeitszeits {
-  id         BigInt    @id @default(autoincrement())
-  vertrag_id BigInt?
+  id         Int       @id @default(autoincrement())
+  vertrag_id Int?
   von        DateTime? @db.Date
   bis        DateTime? @db.Date
   vk         Decimal?  @db.Decimal(3, 2)
@@ -2135,7 +2135,7 @@ model vertrags_phases {
   bis              DateTime?       @db.Date
   created_at       DateTime        @db.Timestamp(6)
   updated_at       DateTime        @db.Timestamp(6)
-  vertragsstufe_id BigInt?
+  vertragsstufe_id Int?
   vertragsstuves   vertragsstuves? @relation(fields: [vertragsstufe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f9b8646f70")
   vertrags         vertrags?       @relation(fields: [vertrag_id], references: [id])
 
