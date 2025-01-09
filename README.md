@@ -73,12 +73,12 @@ url      = env("DATABASE_URL")
 
 4. Danach sollten Aenderungen am schema moeglich sein.
 
-   4.1 Schema anpassen
-   4.2 Tasks ausfuehren -> format, validate und generate.
-   4.3 Migration erstellen: -> `npm run migration:create`
-   Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
-   sql kann ueberprueft werden und dnach ausgefuehrt werden.
-   4.4 Migration ausfuehren: -> `npm run migrate`
+- Schema anpassen
+- Tasks ausfuehren -> format, validate und generate.
+- Migration erstellen: -> `npm run migration:create`
+  Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
+  sql kann ueberprueft werden und dnach ausgefuehrt werden.
+- Migration ausfuehren: -> `npm run migrate`
 
 `npx prisma format` -> Formatiert die Datei
 `npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
