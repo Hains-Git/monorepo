@@ -969,6 +969,8 @@ model einteilungskontexts {
   updated_at     DateTime @db.Timestamp(6)
   tagesverteiler Boolean? @default(false)
   default        Boolean? @default(false)
+  ersatz         Boolean? @default(false)
+  einspringen    Boolean? @default(false)
 }
 
 model einteilungsstatuses {
