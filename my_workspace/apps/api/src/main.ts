@@ -19,9 +19,7 @@ async function bootstrap() {
   app.use(compression());
 
   await app.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
-  );
+  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());
