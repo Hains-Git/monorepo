@@ -1678,6 +1678,14 @@ model planparameters {
   @@index([parameterset_id], map: "index_planparameters_on_parameterset_id")
 }
 
+model planungsinformations {
+  id           Int      @id @default(autoincrement())
+  tag          DateTime @db.Date
+  po_dienst_id Int?
+  bereich_id   Int?
+  kommentar    String
+}
+
 model po_diensts {
   id                                                                 Int                                 @id @default(autoincrement())
   name                                                               String?                             @db.VarChar

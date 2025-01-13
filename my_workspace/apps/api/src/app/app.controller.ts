@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -14,5 +14,9 @@ export class AppController {
   @Get('apidata')
   getApiData(@Query() query: any) {
     return this.appService.getApiData(query?.user_id || 3);
+  }
+  @Post('save_planungs_comment')
+  getSavePlanungsComment(@Body() body: any) {
+    return this.appService.savePlanungsComment(body);
   }
 }

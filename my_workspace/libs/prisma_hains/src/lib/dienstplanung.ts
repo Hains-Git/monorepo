@@ -6,6 +6,7 @@ import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';
+import { getAllPlanungsinfo } from './crud/planungsinfo';
 
 function getDataByHash(data: any, key = 'id') {
   return data.reduce((hash: any, value: any) => {
@@ -710,6 +711,7 @@ export async function getDienstplanung(dpl_id: number) {
 
   const { anfang, ende, anfang_frame, ende_frame } = get_dpl_anfang_ende(dienstplan);
   const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
+  const planungsinfos = await getAllPlanungsinfo(anfang, ende);
 
   if (!data) {
     return '';
@@ -732,6 +734,7 @@ export async function getDienstplanung(dpl_id: number) {
     sys: dienstplan?.sys,
     recompute: false,
     updated_at: dienstplan?.updated_at,
+    planungsinfos,
     ...data
   };
 }
