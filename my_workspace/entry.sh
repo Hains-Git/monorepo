@@ -5,16 +5,15 @@ apt-get update
 apt-get install -y lsof
 echo "Show open Ports"
 lsof -i -P -n -U
-export NX_DAEMON=true
+# export NX_DAEMON=true
+
+rm /tmp/f53b52ad6d21cceb72df/fp252.sock
 
 npm install --force
-# npx prisma format
-npx prisma generate --watch &
-# npx prisma generate
-echo "Show open Ports after prisma generate"
-lsof -i -P -n -U
 
-rm /tmp/f53b52ad6d21cceb72df/fp160.sock
+npx prisma format
+npx prisma validate
+npx prisma generate
 
 # Development
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose

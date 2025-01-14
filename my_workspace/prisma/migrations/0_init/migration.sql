@@ -34,6 +34,8 @@ CREATE TABLE "abwesentheitenueberblick_settings" (
     "visible_team_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
+    "mitarbeitersId" INTEGER,
+    "data_sorting" VARCHAR DEFAULT '',
 
     CONSTRAINT "abwesentheitenueberblick_settings_pkey" PRIMARY KEY ("id")
 );
@@ -134,7 +136,7 @@ CREATE TABLE "active_storage_blobs" (
     "filename" VARCHAR NOT NULL,
     "content_type" VARCHAR,
     "metadata" TEXT,
-    "byte_size" INTEGER NOT NULL,
+    "byte_size" BIGINT NOT NULL,
     "checksum" VARCHAR NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
 
@@ -258,7 +260,6 @@ CREATE TABLE "arbeitszeit_absprachens" (
     "arbeitszeit_von" TIME(6) NOT NULL,
     "arbeitszeit_bis" TIME(6) NOT NULL,
     "pause" INTEGER NOT NULL DEFAULT 0,
-    "vertrags_phase_id" INTEGER,
     "bemerkung" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "arbeitszeit_absprachens_pkey" PRIMARY KEY ("id")
@@ -304,7 +305,6 @@ CREATE TABLE "automatische_einteilungens" (
     "id" SERIAL NOT NULL,
     "mitarbeiter_id" INTEGER,
     "po_dienst_id" INTEGER,
-    "vertrags_phase_id" INTEGER,
     "von" DATE,
     "bis" DATE,
     "zeitraumkategorie_id" INTEGER,
@@ -682,6 +682,7 @@ CREATE TABLE "dienstplan_paths" (
     "name" VARCHAR NOT NULL DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
     "begin_on_monday" BOOLEAN DEFAULT false,
+    "kalender_name" VARCHAR DEFAULT '',
 
     CONSTRAINT "dienstplan_paths_pkey" PRIMARY KEY ("id")
 );
@@ -1152,6 +1153,7 @@ CREATE TABLE "kontingents" (
     "team_id" INTEGER DEFAULT 8,
     "default" BOOLEAN DEFAULT false,
     "sonderrotation" BOOLEAN DEFAULT false,
+    "show_all_rotations" BOOLEAN DEFAULT false,
 
     CONSTRAINT "kontingents_pkey" PRIMARY KEY ("id")
 );
@@ -1304,7 +1306,7 @@ CREATE TABLE "nef_fahrts" (
     "notfallmedizin_register_id" INTEGER,
     "fahrtnummer" INTEGER,
     "datum" DATE,
-    "einsatznummer" INTEGER,
+    "einsatznummer" BIGINT,
     "diagnose_therapie" VARCHAR,
     "notarzt" VARCHAR,
     "bemerkung" VARCHAR,
@@ -1321,7 +1323,6 @@ CREATE TABLE "nicht_einteilen_absprachens" (
     "zeitraumkategorie_id" INTEGER NOT NULL,
     "von" DATE,
     "bis" DATE,
-    "vertrags_phase_id" INTEGER,
 
     CONSTRAINT "nicht_einteilen_absprachens_pkey" PRIMARY KEY ("id")
 );
@@ -1455,6 +1456,21 @@ CREATE TABLE "oauth_access_tokens" (
 );
 
 -- CreateTable
+CREATE TABLE "oauth_access_tokens_new" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "refresh_token_id" INTEGER NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_access_tokens_new_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "oauth_applications" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
@@ -1467,6 +1483,44 @@ CREATE TABLE "oauth_applications" (
     "confidential" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "oauth_applications_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "oauth_authorization_codes" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_authorization_codes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "oauth_clients" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "client_secret" TEXT NOT NULL,
+
+    CONSTRAINT "oauth_clients_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "oauth_refresh_tokens" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_refresh_tokens_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -1821,8 +1875,10 @@ CREATE TABLE "users" (
 
 -- CreateTable
 CREATE TABLE "users_gruppes" (
-    "user_id" INTEGER,
-    "gruppe_id" INTEGER
+    "user_id" INTEGER NOT NULL,
+    "gruppe_id" INTEGER NOT NULL,
+
+    CONSTRAINT "users_gruppes_pkey" PRIMARY KEY ("user_id","gruppe_id")
 );
 
 -- CreateTable
@@ -1876,6 +1932,7 @@ CREATE TABLE "verteiler_vorlagens" (
     "team_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
+    "kommentar" VARCHAR DEFAULT '',
 
     CONSTRAINT "verteiler_vorlagens_pkey" PRIMARY KEY ("id")
 );
@@ -1894,6 +1951,19 @@ CREATE TABLE "verteilungsoverrides" (
 );
 
 -- CreateTable
+CREATE TABLE "vertrag_versions" (
+    "id" BIGSERIAL NOT NULL,
+    "item_type" VARCHAR NOT NULL,
+    "item_id" INTEGER NOT NULL,
+    "event" VARCHAR NOT NULL,
+    "whodunnit" VARCHAR,
+    "object" TEXT,
+    "created_at" TIMESTAMP(6),
+
+    CONSTRAINT "vertrag_versions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "vertrags" (
     "id" SERIAL NOT NULL,
     "mitarbeiter_id" INTEGER,
@@ -1902,39 +1972,35 @@ CREATE TABLE "vertrags" (
     "vertragstyp_id" INTEGER,
     "anfang" DATE,
     "ende" DATE,
-    "vertragsgruppe_id" INTEGER,
+    "unbefristet" BOOLEAN DEFAULT false,
+    "kommentar" VARCHAR DEFAULT '',
 
     CONSTRAINT "vertrags_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "vertrags_aenderungs" (
-    "id" SERIAL NOT NULL,
-    "von" TIMESTAMP(6),
-    "bis" TIMESTAMP(6),
-    "teilzeitAnteil" INTEGER,
-    "rolle" VARCHAR,
-    "vertrag_id" INTEGER,
-    "kommentar" TEXT,
-    "mitarbeiter_id" INTEGER,
-    "vertrag_ruht" BOOLEAN,
+CREATE TABLE "vertrags_arbeitszeits" (
+    "id" BIGSERIAL NOT NULL,
+    "vertrag_id" BIGINT,
+    "von" DATE,
+    "bis" DATE,
+    "vk" DECIMAL(3,2),
+    "tage_woche" DOUBLE PRECISION DEFAULT 5.0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
-    CONSTRAINT "vertrags_aenderungs_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "vertrags_arbeitszeits_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "vertrags_phases" (
     "id" SERIAL NOT NULL,
     "vertrag_id" INTEGER,
-    "vk" DECIMAL(3,2),
-    "stufe" INTEGER,
     "von" DATE,
     "bis" DATE,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "tage_woche" DOUBLE PRECISION DEFAULT 5.0,
+    "vertragsstufe_id" BIGINT,
 
     CONSTRAINT "vertrags_phases_pkey" PRIMARY KEY ("id")
 );
@@ -1949,6 +2015,7 @@ CREATE TABLE "vertrags_variantes" (
     "wochenstunden" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
+    "tage_monat" DOUBLE PRECISION DEFAULT 2.5,
 
     CONSTRAINT "vertrags_variantes_pkey" PRIMARY KEY ("id")
 );
@@ -1967,7 +2034,6 @@ CREATE TABLE "vertragsgruppes" (
 -- CreateTable
 CREATE TABLE "vertragsstuves" (
     "id" SERIAL NOT NULL,
-    "name" VARCHAR,
     "stufe" INTEGER,
     "nach_jahren" INTEGER,
     "monatsgehalt" DECIMAL(15,2),
@@ -1985,7 +2051,6 @@ CREATE TABLE "vertragstyps" (
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "tage_monat" DOUBLE PRECISION DEFAULT 2.5,
 
     CONSTRAINT "vertragstyps_pkey" PRIMARY KEY ("id")
 );
@@ -2068,6 +2133,9 @@ CREATE INDEX "index_abwesentheitenueberblick_settings_on_mitarbeiter_id" ON "abw
 CREATE INDEX "index_abwesentheitenueberblicks_on_mitarbeiter_id" ON "abwesentheitenueberblicks"("mitarbeiter_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "account_infos_user_id_key" ON "account_infos"("user_id");
+
+-- CreateIndex
 CREATE INDEX "index_account_infos_on_mitarbeiter_id" ON "account_infos"("mitarbeiter_id");
 
 -- CreateIndex
@@ -2140,9 +2208,6 @@ CREATE INDEX "index_arbeitsplatzs_on_standort_id" ON "arbeitsplatzs"("standort_i
 CREATE INDEX "index_arbeitszeit_absprachens_on_mitarbeiter_id" ON "arbeitszeit_absprachens"("mitarbeiter_id");
 
 -- CreateIndex
-CREATE INDEX "index_arbeitszeit_absprachens_on_vertrags_phase_id" ON "arbeitszeit_absprachens"("vertrags_phase_id");
-
--- CreateIndex
 CREATE INDEX "index_arbeitszeit_absprachens_on_zeitraumkategorie_id" ON "arbeitszeit_absprachens"("zeitraumkategorie_id");
 
 -- CreateIndex
@@ -2156,9 +2221,6 @@ CREATE INDEX "index_automatische_einteilungens_on_mitarbeiter_id" ON "automatisc
 
 -- CreateIndex
 CREATE INDEX "index_automatische_einteilungens_on_po_dienst_id" ON "automatische_einteilungens"("po_dienst_id");
-
--- CreateIndex
-CREATE INDEX "index_automatische_einteilungens_on_vertrags_phase_id" ON "automatische_einteilungens"("vertrags_phase_id");
 
 -- CreateIndex
 CREATE INDEX "index_automatische_einteilungens_on_zeitraumkategorie_id" ON "automatische_einteilungens"("zeitraumkategorie_id");
@@ -2416,9 +2478,6 @@ CREATE INDEX "index_nef_fahrts_on_notfallmedizin_register_id" ON "nef_fahrts"("n
 CREATE INDEX "index_nicht_einteilen_absprachens_on_mitarbeiter_id" ON "nicht_einteilen_absprachens"("mitarbeiter_id");
 
 -- CreateIndex
-CREATE INDEX "index_nicht_einteilen_absprachens_on_vertrags_phase_id" ON "nicht_einteilen_absprachens"("vertrags_phase_id");
-
--- CreateIndex
 CREATE INDEX "index_nicht_einteilen_absprachens_on_zeitraumkategorie_id" ON "nicht_einteilen_absprachens"("zeitraumkategorie_id");
 
 -- CreateIndex
@@ -2464,7 +2523,19 @@ CREATE UNIQUE INDEX "index_oauth_access_tokens_on_refresh_token" ON "oauth_acces
 CREATE INDEX "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens"("resource_owner_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "oauth_access_tokens_new_token_key" ON "oauth_access_tokens_new"("token");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "index_oauth_applications_on_uid" ON "oauth_applications"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_authorization_codes_code_key" ON "oauth_authorization_codes"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_clients_client_id_key" ON "oauth_clients"("client_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_refresh_tokens_token_key" ON "oauth_refresh_tokens"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "index_parametersets_on_email" ON "parametersets"("email");
@@ -2569,13 +2640,19 @@ CREATE INDEX "index_verteilungsoverrides_on_dienstverteilungstyp_id" ON "verteil
 CREATE INDEX "index_verteilungsoverrides_on_parameterset_id" ON "verteilungsoverrides"("parameterset_id");
 
 -- CreateIndex
-CREATE INDEX "index_vertrags_on_vertragsgruppe_id" ON "vertrags"("vertragsgruppe_id");
+CREATE INDEX "index_vertrag_versions_on_item_type_and_item_id" ON "vertrag_versions"("item_type", "item_id");
 
 -- CreateIndex
 CREATE INDEX "index_vertrags_on_vertragstyp_id" ON "vertrags"("vertragstyp_id");
 
 -- CreateIndex
+CREATE INDEX "index_vertrags_arbeitszeits_on_vertrag_id" ON "vertrags_arbeitszeits"("vertrag_id");
+
+-- CreateIndex
 CREATE INDEX "index_vertrags_phases_on_vertrag_id" ON "vertrags_phases"("vertrag_id");
+
+-- CreateIndex
+CREATE INDEX "index_vertrags_phases_on_vertragsstufe_id" ON "vertrags_phases"("vertragsstufe_id");
 
 -- CreateIndex
 CREATE INDEX "index_vertrags_variantes_on_vertragstyp_id" ON "vertrags_variantes"("vertragstyp_id");
@@ -2605,452 +2682,449 @@ CREATE INDEX "index_wochenbilanzs_on_mitarbeiter_id" ON "wochenbilanzs"("mitarbe
 CREATE INDEX "index_zeitraumkategories_on_zeitraumregel_id" ON "zeitraumkategories"("zeitraumregel_id");
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "fk_rails_336f14c2e2" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "abwesentheitenueberblick_counters_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "fk_rails_daea018e64" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "abwesentheitenueberblick_counters_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblick_settings" ADD CONSTRAINT "fk_rails_3d45bd1bd3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "abwesentheitenueberblicks" ADD CONSTRAINT "abwesentheitenueberblicks_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblicks" ADD CONSTRAINT "fk_rails_ed4202ea8e" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "account_infos" ADD CONSTRAINT "account_infos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account_infos" ADD CONSTRAINT "fk_rails_58245fd0a4" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "fk_rails_01e0e49755" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "allgemeine_vorlages_dienstplan_path_id_fkey" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "fk_rails_0c44f45c22" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "allgemeine_vorlages_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_6b4c176fee" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_antraege_id_fkey" FOREIGN KEY ("antraege_id") REFERENCES "antraeges"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_702e44afb0" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_antragsstatus_id_fkey" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_d2c22a9e1a" FOREIGN KEY ("antraege_id") REFERENCES "antraeges"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_0101e13655" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_antragsstatus_id_fkey" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_a5f48af37e" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_antragstyp_id_fkey" FOREIGN KEY ("antragstyp_id") REFERENCES "antragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_f887e40996" FOREIGN KEY ("antragstyp_id") REFERENCES "antragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_3734c17d7f" FOREIGN KEY ("check_alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_alternative_po_dienst_id_fkey" FOREIGN KEY ("alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_5dd7757f25" FOREIGN KEY ("we_holiday_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_check_alternative_po_dienst_id_fkey" FOREIGN KEY ("check_alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_8ac569efac" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_a43ad8c57f" FOREIGN KEY ("alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_we_holiday_po_dienst_id_fkey" FOREIGN KEY ("we_holiday_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "fk_rails_1029690348" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "arbeitsplatzs_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "fk_rails_4ce8e3dfb0" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "arbeitsplatzs_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "fk_rails_0e2b934340" FOREIGN KEY ("vertrags_phase_id") REFERENCES "vertrags_phases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "arbeitszeit_absprachens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "fk_rails_3d5cc996a1" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "arbeitszeit_absprachens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "fk_rails_4a9339ea11" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "arbeitszeitverteilungs_dienstgruppe_id_fkey" FOREIGN KEY ("dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "fk_rails_7b802cfd89" FOREIGN KEY ("dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "arbeitszeitverteilungs_pre_dienstgruppe_id_fkey" FOREIGN KEY ("pre_dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "fk_rails_fe777cf5f2" FOREIGN KEY ("pre_dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_03e173cb8b" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_17f873556d" FOREIGN KEY ("vertrags_phase_id") REFERENCES "vertrags_phases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_2286cd78f3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_3651daf545" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstbedarf_id_fkey" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_00545eb639" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstplanbedarf_id_fkey" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_08c867c460" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_0f89581c7b" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_aa2e3d95aa" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e18eeada6a" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "benachrichtigungs_benachrichtigungs_status_id_fkey" FOREIGN KEY ("benachrichtigungs_status_id") REFERENCES "benachrichtigungs_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e8f3cb8e16" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "benachrichtigungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "fk_rails_2d4826acc2" FOREIGN KEY ("benachrichtigungs_status_id") REFERENCES "benachrichtigungs_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "fk_rails_d72e570086" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_082f661ba0" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_tagesverteiler_id_fkey" FOREIGN KEY ("tagesverteiler_id") REFERENCES "tagesverteilers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_c9d75975f6" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "bereich_wochenverteilers_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_fdf23f3f87" FOREIGN KEY ("tagesverteiler_id") REFERENCES "tagesverteilers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "bereich_wochenverteilers_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "fk_rails_2430b21746" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "channel_room_users" ADD CONSTRAINT "channel_room_users_channel_room_id_fkey" FOREIGN KEY ("channel_room_id") REFERENCES "channel_rooms"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "fk_rails_ef32afba54" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "channel_room_users" ADD CONSTRAINT "channel_room_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_07d9c65830" FOREIGN KEY ("channel_room_id") REFERENCES "channel_rooms"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_arbeitszeitverteilung_id_fkey" FOREIGN KEY ("arbeitszeitverteilung_id") REFERENCES "arbeitszeitverteilungs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_fa37f889bb" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_05b1cdbc7e" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_2b3b1e6b71" FOREIGN KEY ("arbeitszeitverteilung_id") REFERENCES "arbeitszeitverteilungs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_434a8ef988" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_495258659a" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_zeitraumkategories_id_fkey" FOREIGN KEY ("zeitraumkategories_id") REFERENCES "zeitraumkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_9ae4035ecf" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_a8c5f3913d" FOREIGN KEY ("zeitraumkategories_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_dienstplan_id_fkey" FOREIGN KEY ("dienstplan_id") REFERENCES "dienstplans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_0c69b8191a" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_einteilungsstatus_id_fkey" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_2a437cd8da" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_37afbd5ac9" FOREIGN KEY ("dienstplan_id") REFERENCES "dienstplans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_8d2ed7f2ce" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_freigabestatus_id_fkey" FOREIGN KEY ("freigabestatus_id") REFERENCES "freigabestatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_f7e8479926" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_freigabetyp_id_fkey" FOREIGN KEY ("freigabetyp_id") REFERENCES "freigabetyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_3a9471d624" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_7c27a8ab72" FOREIGN KEY ("freigabetyp_id") REFERENCES "freigabetyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_8328bf76e2" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_ab3f7cd811" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "dienstkategorie_teams_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_b201a8e9f5" FOREIGN KEY ("freigabestatus_id") REFERENCES "freigabestatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "dienstkategorie_teams_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "fk_rails_10d49ef0f8" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "dienstkategoriethemas_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "fk_rails_8c261f9aef" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "dienstkategoriethemas_thema_id_fkey" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "fk_rails_27dd54d2f6" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplan_custom_counters" ADD CONSTRAINT "dienstplan_custom_counters_dienstplan_custom_feld_id_fkey" FOREIGN KEY ("dienstplan_custom_feld_id") REFERENCES "dienstplan_custom_felds"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "fk_rails_a1ff9468f4" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplan_custom_felds" ADD CONSTRAINT "dienstplan_custom_felds_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_custom_counters" ADD CONSTRAINT "fk_rails_cc48ac5d4f" FOREIGN KEY ("dienstplan_custom_feld_id") REFERENCES "dienstplan_custom_felds"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "dienstplan_paths_plan_tab_id_fkey" FOREIGN KEY ("plan_tab_id") REFERENCES "plan_tabs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_custom_felds" ADD CONSTRAINT "fk_rails_3b768fab84" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "dienstplan_paths_planinterval_id_fkey" FOREIGN KEY ("planinterval_id") REFERENCES "planintervals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "fk_rails_1ef594e615" FOREIGN KEY ("planinterval_id") REFERENCES "planintervals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaner_user_farbgruppens" ADD CONSTRAINT "dienstplaner_user_farbgruppens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "fk_rails_5a0e779422" FOREIGN KEY ("plan_tab_id") REFERENCES "plan_tabs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaner_user_settings" ADD CONSTRAINT "dienstplaner_user_settings_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaner_user_farbgruppens" ADD CONSTRAINT "fk_rails_d0e228908c" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "dienstplaners_teams_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaner_user_settings" ADD CONSTRAINT "fk_rails_0e9ce655bd" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "dienstplaners_teams_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "fk_rails_75274a3398" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "dienstplaners_verteiler_vorlagens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "fk_rails_ae25869849" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "dienstplaners_verteiler_vorlagens_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "fk_rails_4924e39a88" FOREIGN KEY ("vorlage_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_dienstplanbedarf_id_fkey" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "fk_rails_9e9354836f" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_dienstplanstatus_id_fkey" FOREIGN KEY ("dienstplanstatus_id") REFERENCES "dienstplanstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_36027a91b3" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_55a766d44f" FOREIGN KEY ("dienstplanstatus_id") REFERENCES "dienstplanstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstratings" ADD CONSTRAINT "dienstratings_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_5f55bd1d2e" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstratings" ADD CONSTRAINT "dienstratings_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstratings" ADD CONSTRAINT "fk_rails_514befc444" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstwunsches" ADD CONSTRAINT "dienstwunsches_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstratings" ADD CONSTRAINT "fk_rails_661abcf60e" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "dienstwunsches" ADD CONSTRAINT "dienstwunsches_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstwunsches" ADD CONSTRAINT "fk_rails_0839dc09ce" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "einteilung_rotations_kontingent_id_fkey" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "dienstwunsches" ADD CONSTRAINT "fk_rails_28e8d817f4" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "einteilung_rotations_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "fk_rails_0754d2d566" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "freistellungs" ADD CONSTRAINT "freistellungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "fk_rails_5eeae3bb85" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "funktions" ADD CONSTRAINT "funktions_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "freistellungs" ADD CONSTRAINT "fk_rails_f7bfd583fd" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "geraetepasses" ADD CONSTRAINT "geraetepasses_geraet_id_fkey" FOREIGN KEY ("geraet_id") REFERENCES "geraets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "funktions" ADD CONSTRAINT "fk_rails_1a9f2cf982" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "geraetepasses" ADD CONSTRAINT "geraetepasses_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "geraetepasses" ADD CONSTRAINT "fk_rails_01560b5637" FOREIGN KEY ("geraet_id") REFERENCES "geraets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "geraets" ADD CONSTRAINT "geraets_geraeteklasse_id_fkey" FOREIGN KEY ("geraeteklasse_id") REFERENCES "geraeteklasses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "geraetepasses" ADD CONSTRAINT "fk_rails_e3a3b73828" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "jahresbilanzs" ADD CONSTRAINT "jahresbilanzs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "geraets" ADD CONSTRAINT "fk_rails_87c8fbadfa" FOREIGN KEY ("geraeteklasse_id") REFERENCES "geraeteklasses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "kontingent_po_diensts_kontingent_id_fkey" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "jahresbilanzs" ADD CONSTRAINT "fk_rails_5221012030" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "kontingent_po_diensts_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "fk_rails_3d72be3049" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "kontingents" ADD CONSTRAINT "kontingents_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "fk_rails_e01ed6b5a5" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_ccs" ADD CONSTRAINT "mailer_ccs_mailer_addresse_id_fkey" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "kontingents" ADD CONSTRAINT "fk_rails_99108947ac" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_ccs" ADD CONSTRAINT "mailer_ccs_mailer_context_id_fkey" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_ccs" ADD CONSTRAINT "fk_rails_6fb0b59cad" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_contexts" ADD CONSTRAINT "mailer_contexts_from_id_fkey" FOREIGN KEY ("from_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_ccs" ADD CONSTRAINT "fk_rails_75d69d0976" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_contexts" ADD CONSTRAINT "mailer_contexts_reply_to_id_fkey" FOREIGN KEY ("reply_to_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_contexts" ADD CONSTRAINT "fk_rails_35af776dcd" FOREIGN KEY ("from_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_tos" ADD CONSTRAINT "mailer_tos_mailer_addresse_id_fkey" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_contexts" ADD CONSTRAINT "fk_rails_d9811e872a" FOREIGN KEY ("reply_to_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mailer_tos" ADD CONSTRAINT "mailer_tos_mailer_context_id_fkey" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_tos" ADD CONSTRAINT "fk_rails_08dc607943" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "merkmal_options" ADD CONSTRAINT "merkmal_options_merkmal_id_fkey" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mailer_tos" ADD CONSTRAINT "fk_rails_3324b483bd" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "mitarbeiter_default_eingeteilts_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "merkmal_options" ADD CONSTRAINT "fk_rails_e746e9188c" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "mitarbeiter_default_eingeteilts_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "fk_rails_893ef3958e" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "mitarbeitermerkmals_merkmal_id_fkey" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "fk_rails_8dc3d88f3b" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "mitarbeitermerkmals_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "fk_rails_41412590af" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "mitarbeiters" ADD CONSTRAINT "mitarbeiters_funktion_id_fkey" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "fk_rails_c1efcdc64d" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nef_fahrts" ADD CONSTRAINT "nef_fahrts_notfallmedizin_register_id_fkey" FOREIGN KEY ("notfallmedizin_register_id") REFERENCES "notfallmedizin_registers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiters" ADD CONSTRAINT "fk_rails_5006408ec6" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "nicht_einteilen_absprachens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nef_fahrts" ADD CONSTRAINT "fk_rails_be395c9f8e" FOREIGN KEY ("notfallmedizin_register_id") REFERENCES "notfallmedizin_registers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "nicht_einteilen_absprachens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "fk_rails_c13db17963" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_absprache_id_fkey" FOREIGN KEY ("absprache_id") REFERENCES "nicht_einteilen_absprachens"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "fk_rails_d4a48572df" FOREIGN KEY ("vertrags_phase_id") REFERENCES "vertrags_phases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "fk_rails_f981032257" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_thema_id_fkey" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_44fd8a9177" FOREIGN KEY ("absprache_id") REFERENCES "nicht_einteilen_absprachens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notes" ADD CONSTRAINT "notes_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_77f147e42b" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notes" ADD CONSTRAINT "notes_note_category_id_fkey" FOREIGN KEY ("note_category_id") REFERENCES "note_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_fd8449d811" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_ersteller_id_fkey" FOREIGN KEY ("ersteller_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notes" ADD CONSTRAINT "fk_rails_660860a381" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notes" ADD CONSTRAINT "fk_rails_e70fa12604" FOREIGN KEY ("note_category_id") REFERENCES "note_categories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_note_id_fkey" FOREIGN KEY ("note_id") REFERENCES "notes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_22a7972a2b" FOREIGN KEY ("note_id") REFERENCES "notes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "notfallmedizin_registers_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_2de2e64c38" FOREIGN KEY ("ersteller_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "notfallmedizin_registers_notfallmedizin_status_id_fkey" FOREIGN KEY ("notfallmedizin_status_id") REFERENCES "notfallmedizin_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_863d1cabe1" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_refresh_token_id_fkey" FOREIGN KEY ("refresh_token_id") REFERENCES "oauth_refresh_tokens"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_7e6262d50a" FOREIGN KEY ("notfallmedizin_status_id") REFERENCES "notfallmedizin_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_8497fb4436" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "oauth_refresh_tokens" ADD CONSTRAINT "oauth_refresh_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "planparameters" ADD CONSTRAINT "fk_rails_024b3ff545" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "planparameters" ADD CONSTRAINT "planparameters_einteilungsstatus_id_fkey" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "planparameters" ADD CONSTRAINT "fk_rails_ca3ff20b34" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "planparameters" ADD CONSTRAINT "planparameters_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "po_diensts" ADD CONSTRAINT "fk_rails_4223136f27" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "po_diensts" ADD CONSTRAINT "po_diensts_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "po_diensts" ADD CONSTRAINT "fk_rails_6ac1abf20e" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "po_diensts" ADD CONSTRAINT "po_diensts_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "schichts" ADD CONSTRAINT "fk_rails_b62a6b1ca3" FOREIGN KEY ("arbeitszeittyp_id") REFERENCES "arbeitszeittyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "schichts" ADD CONSTRAINT "schichts_arbeitszeittyp_id_fkey" FOREIGN KEY ("arbeitszeittyp_id") REFERENCES "arbeitszeittyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "schichts" ADD CONSTRAINT "fk_rails_bd78a44984" FOREIGN KEY ("bedarfs_eintrag_id") REFERENCES "bedarfs_eintrags"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "schichts" ADD CONSTRAINT "schichts_bedarfs_eintrag_id_fkey" FOREIGN KEY ("bedarfs_eintrag_id") REFERENCES "bedarfs_eintrags"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_05b269d564" FOREIGN KEY ("stundennachweis_status_id") REFERENCES "stundennachweis_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_745ff2de6c" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_f7210f061b" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_stundennachweis_status_id_fkey" FOREIGN KEY ("stundennachweis_status_id") REFERENCES "stundennachweis_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tagesverteiler_layouts" ADD CONSTRAINT "fk_rails_9293af7154" FOREIGN KEY ("verteiler_vorlagen_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "tagesverteiler_layouts" ADD CONSTRAINT "tagesverteiler_layouts_verteiler_vorlagen_id_fkey" FOREIGN KEY ("verteiler_vorlagen_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "team_funktions" ADD CONSTRAINT "fk_rails_0043aa77c2" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "team_funktions" ADD CONSTRAINT "team_funktions_funktion_id_fkey" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "team_funktions" ADD CONSTRAINT "fk_rails_bec8e126a9" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "team_funktions" ADD CONSTRAINT "team_funktions_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "team_kw_krankpuffers" ADD CONSTRAINT "fk_rails_5eded83672" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "team_kw_krankpuffers" ADD CONSTRAINT "team_kw_krankpuffers_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "teams" ADD CONSTRAINT "fk_rails_9d14807ce7" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "teams" ADD CONSTRAINT "teams_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "users_gruppes" ADD CONSTRAINT "fk_rails_0c3453aa77" FOREIGN KEY ("gruppe_id") REFERENCES "gruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "users_gruppes" ADD CONSTRAINT "users_gruppes_gruppe_id_fkey" FOREIGN KEY ("gruppe_id") REFERENCES "gruppes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "users_gruppes" ADD CONSTRAINT "fk_rails_cec3e4ee8f" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "users_gruppes" ADD CONSTRAINT "users_gruppes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "verteiler_vorlagens" ADD CONSTRAINT "fk_rails_02b7f85cbd" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "verteiler_vorlagens" ADD CONSTRAINT "verteiler_vorlagens_dienstplan_path_id_fkey" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_171044f6f2" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_dienstbedarf_id_fkey" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_4383eac96c" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_e75f8ddeae" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertrags" ADD CONSTRAINT "fk_rails_36207cab70" FOREIGN KEY ("vertragsgruppe_id") REFERENCES "vertragsgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertrags" ADD CONSTRAINT "vertrags_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertrags" ADD CONSTRAINT "fk_rails_b20fe19842" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertrags" ADD CONSTRAINT "vertrags_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertrags" ADD CONSTRAINT "fk_rails_f2cec23b66" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertrags_phases" ADD CONSTRAINT "vertrags_phases_vertrag_id_fkey" FOREIGN KEY ("vertrag_id") REFERENCES "vertrags"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertrags_phases" ADD CONSTRAINT "fk_rails_4db5fece40" FOREIGN KEY ("vertrag_id") REFERENCES "vertrags"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertrags_variantes" ADD CONSTRAINT "vertrags_variantes_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertrags_variantes" ADD CONSTRAINT "fk_rails_e70c474827" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertragsgruppes" ADD CONSTRAINT "vertragsgruppes_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertragsgruppes" ADD CONSTRAINT "fk_rails_26cb34c5df" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertragsstuves" ADD CONSTRAINT "vertragsstuves_vertrags_variante_id_fkey" FOREIGN KEY ("vertrags_variante_id") REFERENCES "vertrags_variantes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertragsstuves" ADD CONSTRAINT "fk_rails_75bdf87379" FOREIGN KEY ("vertragsgruppe_id") REFERENCES "vertragsgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vertragsstuves" ADD CONSTRAINT "vertragsstuves_vertragsgruppe_id_fkey" FOREIGN KEY ("vertragsgruppe_id") REFERENCES "vertragsgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vertragsstuves" ADD CONSTRAINT "fk_rails_91403e2823" FOREIGN KEY ("vertrags_variante_id") REFERENCES "vertrags_variantes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vorlages" ADD CONSTRAINT "vorlages_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vorlages" ADD CONSTRAINT "fk_rails_176adae085" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "vorlages" ADD CONSTRAINT "vorlages_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "vorlages" ADD CONSTRAINT "fk_rails_69e32bd9f7" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "wochenbilanzs_kalenderwoche_id_fkey" FOREIGN KEY ("kalenderwoche_id") REFERENCES "kalenderwoches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "fk_rails_4e802b69e3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "wochenbilanzs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "fk_rails_eb52f30dad" FOREIGN KEY ("kalenderwoche_id") REFERENCES "kalenderwoches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "zeitraumkategories" ADD CONSTRAINT "fk_rails_cf637e5e41" FOREIGN KEY ("zeitraumregel_id") REFERENCES "zeitraumregels"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "zeitraumkategories" ADD CONSTRAINT "zeitraumkategories_zeitraumregel_id_fkey" FOREIGN KEY ("zeitraumregel_id") REFERENCES "zeitraumregels"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 

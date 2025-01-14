@@ -32,46 +32,54 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
+
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
 
-## Prisma Schema
+### Mastering Prisma Migrations
 
-- changing schema and adding just relations no need for migration.
-- just run `npx prisma generate` or docker restart
+- https://www.youtube.com/watch?v=_-YCDwm9M7M
 
-### Prisma pull DB
+Bei einer bestehenden Datenbank muss folgendes ausgefuehrt werden damit die migrations durchgehen.
 
-- `npx prisma db pull`
+1.  `npx prisma db pull`
+    > pulled das schema der Datenbank und fuegt es in die prisma.schema ein.
+    > Wichtig dabei ist es, das diese Datei vorhanden ist mit folgendem content:
 
-  > Jedoch sollte im prisma ordner zuerst die Datei schem.prisma erstellt sein mit folgendem Content.
+```prisma
+generator client {
+provider = "prisma-client-js"
+}
 
-  ```prisma
-  generator client {
-  provider = "prisma-client-js"
-  }
+datasource db {
+provider = "postgresql"
+url      = env("DATABASE_URL")
+}
+```
 
-  datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  }
-  ```
-
-- Dann in den Container den Befehl ausfuehren `npx prisma db pull`
-
-### Prisma Migrations
-
-- `prisma migrate dev --name bigint_to_int`
-  > LOESCHT DIE DATEN IN DER DATENBANK!!! DANGER!!!
-
-### Migration richtig ausfuehren!!:
-
-> Info Bei jeder Migration die 0 => 1,2,3,4,.. hoch zaehlen!
+2. Es muss eine Migration angelegt werden, die jedoch nicht ausgefuehrt wird, damit die history der migrations passt.
+   > Wichtig keine Änderungen an dem schema durchführen!
 
 - `mkdir -p prisma/migrations/0_init`
-- `npx prisma migrate diff \
---from-empty \
---to-schema-datamodel prisma/schema.prisma \
---script > prisma/migrations/0_init/migration.sql`
-- Im docker container run `npx prisma migrate resolve --applied 0_init`
+- `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql`
+- `npx prisma migrate resolve --applied 0_init`
+- `npx prisma db push`
+
+3. BigInt zu Int ändern.
+
+> [!IMPORTANT]
+> byte_size, einsatznummer -> Bleibt bei BigInt
+
+4. Danach sollten Aenderungen am schema moeglich sein.
+
+- Schema anpassen
+- Tasks ausfuehren -> format, validate und generate.
+- Migration erstellen: -> `npm run migration:create`
+  Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
+  sql kann ueberprueft werden und dnach ausgefuehrt werden.
+- Migration ausfuehren: -> `npm run migrate`
+
+`npx prisma format` -> Formatiert die Datei
+`npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
+`npx prisma generate` -> Generient den client, damit man die Modelle in typesript vorhanden sind.
