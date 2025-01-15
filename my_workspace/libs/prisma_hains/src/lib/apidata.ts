@@ -268,7 +268,6 @@ async function getAllApiData(userId: number) {
     }
   });
 
-  console.log('user', user);
   if (!user?.account_info) return '';
 
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);

@@ -1,6 +1,147 @@
 -- CreateTable
+CREATE SEQUENCE "abwesentheiten_spaltens_id_seq" AS INTEGER;
+CREATE SEQUENCE "abwesentheitenueberblick_counters_id_seq" AS INTEGER;
+CREATE SEQUENCE "abwesentheitenueberblick_settings_id_seq" AS INTEGER;
+CREATE SEQUENCE "abwesentheitenueberblicks_id_seq" AS INTEGER;
+CREATE SEQUENCE "account_infos_id_seq" AS INTEGER;
+CREATE SEQUENCE "active_admin_comments_id_seq" AS INTEGER;
+CREATE SEQUENCE "active_storage_attachments_id_seq" AS INTEGER;
+CREATE SEQUENCE "active_storage_blobs_id_seq" AS INTEGER;
+CREATE SEQUENCE "admin_users_id_seq" AS INTEGER;
+CREATE SEQUENCE "allgemeine_vorlages_id_seq" AS INTEGER;
+CREATE SEQUENCE "antraege_histories_id_seq" AS INTEGER;
+CREATE SEQUENCE "antraeges_id_seq" AS INTEGER;
+CREATE SEQUENCE "antragsstatuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "antragstyps_id_seq" AS INTEGER;
+CREATE SEQUENCE "ar_internal_metadata_id_seq" AS INTEGER;
+CREATE SEQUENCE "arbeitsplatzs_id_seq" AS INTEGER;
+CREATE SEQUENCE "arbeitszeit_absprachens_id_seq" AS INTEGER;
+CREATE SEQUENCE "arbeitszeittyps_id_seq" AS INTEGER;
+CREATE SEQUENCE "arbeitszeitverteilungs_id_seq" AS INTEGER;
+CREATE SEQUENCE "automatische_einteilungens_id_seq" AS INTEGER;
+CREATE SEQUENCE "bedarfs_eintrags_id_seq" AS INTEGER;
+CREATE SEQUENCE "benachrichtigungs_id_seq" AS INTEGER;
+CREATE SEQUENCE "benachrichtigungs_statuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "benachrichtigungs_typs_id_seq" AS INTEGER;
+CREATE SEQUENCE "bereich_tagesverteilers_id_seq" AS INTEGER;
+CREATE SEQUENCE "bereich_wochenverteilers_id_seq" AS INTEGER;
+CREATE SEQUENCE "bereiches_id_seq" AS INTEGER;
+CREATE SEQUENCE "channel_room_users_id_seq" AS INTEGER;
+CREATE SEQUENCE "channel_rooms_id_seq" AS INTEGER;
+CREATE SEQUENCE "datei_typs_id_seq" AS INTEGER;
+CREATE SEQUENCE "dateis_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstbedarves_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstbedarveshistory_id_seq" AS INTEGER;
+CREATE SEQUENCE "diensteinteilungs_id_seq" AS INTEGER;
+CREATE SEQUENCE "diensteinteilungs_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstfreigabe_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstfreigabes_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstgruppes_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstkategorie_teams_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstkategories_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstkategoriethemas_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplan_custom_counters_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplan_custom_felds_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplan_paths_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplanbedarves_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplaner_user_farbgruppens_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplaner_user_settings_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplaners_teams_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplaners_verteiler_vorlagens_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplans_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstplanstatuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstratings_id_seq" AS INTEGER;
+CREATE SEQUENCE "diensts_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstverteilungstyps_id_seq" AS INTEGER;
+CREATE SEQUENCE "dienstwunsches_id_seq" AS INTEGER;
+CREATE SEQUENCE "einteilung_rotations_id_seq" AS INTEGER;
+CREATE SEQUENCE "einteilung_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "einteilungskontexts_id_seq" AS INTEGER;
+CREATE SEQUENCE "einteilungsstatuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "feiertages_id_seq" AS INTEGER;
+CREATE SEQUENCE "freigabestatuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "freigabetyps_id_seq" AS INTEGER;
+CREATE SEQUENCE "freistellungs_id_seq" AS INTEGER;
+CREATE SEQUENCE "funktions_id_seq" AS INTEGER;
+CREATE SEQUENCE "geraetebereiches_id_seq" AS INTEGER;
+CREATE SEQUENCE "geraeteklasses_id_seq" AS INTEGER;
+CREATE SEQUENCE "geraetepasses_id_seq" AS INTEGER;
+CREATE SEQUENCE "geraets_id_seq" AS INTEGER;
+CREATE SEQUENCE "gruppes_id_seq" AS INTEGER;
+CREATE SEQUENCE "hains_tasks_id_seq" AS INTEGER;
+CREATE SEQUENCE "jahresbilanzs_id_seq" AS INTEGER;
+CREATE SEQUENCE "kalendermarkierungs_id_seq" AS INTEGER;
+CREATE SEQUENCE "kalenderwoches_id_seq" AS INTEGER;
+CREATE SEQUENCE "kontingent_po_diensts_id_seq" AS INTEGER;
+CREATE SEQUENCE "kontingents_id_seq" AS INTEGER;
+CREATE SEQUENCE "kostenstelles_id_seq" AS INTEGER;
+CREATE SEQUENCE "links_id_seq" AS INTEGER;
+CREATE SEQUENCE "mailer_addresses_id_seq" AS INTEGER;
+CREATE SEQUENCE "mailer_ccs_id_seq" AS INTEGER;
+CREATE SEQUENCE "mailer_contexts_id_seq" AS INTEGER;
+CREATE SEQUENCE "mailer_tos_id_seq" AS INTEGER;
+CREATE SEQUENCE "merkmal_options_id_seq" AS INTEGER;
+CREATE SEQUENCE "merkmals_id_seq" AS INTEGER;
+CREATE SEQUENCE "mitarbeiter_default_eingeteilts_id_seq" AS INTEGER;
+CREATE SEQUENCE "mitarbeitermerkmals_id_seq" AS INTEGER;
+CREATE SEQUENCE "mitarbeiters_id_seq" AS INTEGER;
+CREATE SEQUENCE "nef_fahrts_id_seq" AS INTEGER;
+CREATE SEQUENCE "nicht_einteilen_absprachens_id_seq" AS INTEGER;
+CREATE SEQUENCE "nicht_einteilen_standort_themen_id_seq" AS INTEGER;
+CREATE SEQUENCE "note_categories_id_seq" AS INTEGER;
+CREATE SEQUENCE "notes_id_seq" AS INTEGER;
+CREATE SEQUENCE "notes_histories_id_seq" AS INTEGER;
+CREATE SEQUENCE "notfallmedizin_registers_id_seq" AS INTEGER;
+CREATE SEQUENCE "notfallmedizin_statuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_access_grants_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_access_tokens_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_access_tokens_new_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_applications_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_authorization_codes_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_clients_id_seq" AS INTEGER;
+CREATE SEQUENCE "oauth_refresh_tokens_id_seq" AS INTEGER;
+CREATE SEQUENCE "parametersets_id_seq" AS INTEGER;
+CREATE SEQUENCE "plan_tabs_id_seq" AS INTEGER;
+CREATE SEQUENCE "planintervals_id_seq" AS INTEGER;
+CREATE SEQUENCE "planparameters_id_seq" AS INTEGER;
+CREATE SEQUENCE "po_diensts_id_seq" AS INTEGER;
+CREATE SEQUENCE "schichts_id_seq" AS INTEGER;
+CREATE SEQUENCE "standorts_id_seq" AS INTEGER;
+CREATE SEQUENCE "stundennachweis_id_seq" AS INTEGER;
+CREATE SEQUENCE "stundennachweis_statuses_id_seq" AS INTEGER;
+CREATE SEQUENCE "tagesverteiler_layouts_id_seq" AS INTEGER;
+CREATE SEQUENCE "tagesverteiler_user_settings_id_seq" AS INTEGER;
+CREATE SEQUENCE "tagesverteilers_id_seq" AS INTEGER;
+CREATE SEQUENCE "tagkategories_id_seq" AS INTEGER;
+CREATE SEQUENCE "team_funktions_id_seq" AS INTEGER;
+CREATE SEQUENCE "team_kw_krankpuffer_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "team_kw_krankpuffers_id_seq" AS INTEGER;
+CREATE SEQUENCE "teams_id_seq" AS INTEGER;
+CREATE SEQUENCE "telefonlistes_id_seq" AS INTEGER;
+CREATE SEQUENCE "themas_id_seq" AS INTEGER;
+CREATE SEQUENCE "user_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "users_id_seq" AS INTEGER;
+CREATE SEQUENCE "users_gruppes_id_seq" AS INTEGER;
+CREATE SEQUENCE "version_associations_id_seq" AS INTEGER;
+CREATE SEQUENCE "versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "verteiler_tagesverteilers_id_seq" AS INTEGER;
+CREATE SEQUENCE "verteiler_vorlagens_id_seq" AS INTEGER;
+CREATE SEQUENCE "verteilungsoverrides_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertrag_versions_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertrags_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertrags_arbeitszeits_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertrags_phases_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertrags_variantes_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertragsgruppes_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertragsstuves_id_seq" AS INTEGER;
+CREATE SEQUENCE "vertragstyps_id_seq" AS INTEGER;
+CREATE SEQUENCE "vorlages_id_seq" AS INTEGER;
+CREATE SEQUENCE "wochenbilanzs_id_seq" AS INTEGER;
+CREATE SEQUENCE "zeitraumkategories_id_seq" AS INTEGER;
+CREATE SEQUENCE "zeitraumregels_id_seq" AS INTEGER;
+
 CREATE TABLE "abwesentheiten_spaltens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('abwesentheiten_spaltens_id_seq'),
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
@@ -13,7 +154,7 @@ CREATE TABLE "abwesentheiten_spaltens" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_counters" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('abwesentheitenueberblick_counters_id_seq'),
     "mitarbeiter_id" INTEGER,
     "po_dienst_id" INTEGER,
     "planname" VARCHAR,
@@ -28,7 +169,7 @@ CREATE TABLE "abwesentheitenueberblick_counters" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_settings" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('abwesentheitenueberblick_settings_id_seq'),
     "mitarbeiter_id" INTEGER,
     "visible_columns" VARCHAR[] DEFAULT ARRAY[]::VARCHAR[],
     "visible_team_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
@@ -42,7 +183,7 @@ CREATE TABLE "abwesentheitenueberblick_settings" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblicks" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('abwesentheitenueberblicks_id_seq'),
     "mitarbeiter_id" INTEGER,
     "jahr" INTEGER,
     "ug" INTEGER DEFAULT 30,
@@ -65,7 +206,7 @@ CREATE TABLE "abwesentheitenueberblicks" (
 
 -- CreateTable
 CREATE TABLE "account_infos" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('account_infos_id_seq'),
     "old_user_id" INTEGER,
     "comments" TEXT,
     "nameKurz" VARCHAR(255) DEFAULT '',
@@ -104,7 +245,7 @@ CREATE TABLE "account_infos" (
 
 -- CreateTable
 CREATE TABLE "active_admin_comments" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('active_admin_comments_id_seq'),
     "namespace" VARCHAR,
     "body" TEXT,
     "resource_type" VARCHAR,
@@ -119,7 +260,7 @@ CREATE TABLE "active_admin_comments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_attachments" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('active_storage_attachments_id_seq'),
     "name" VARCHAR NOT NULL,
     "record_type" VARCHAR NOT NULL,
     "record_id" INTEGER NOT NULL,
@@ -131,7 +272,7 @@ CREATE TABLE "active_storage_attachments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_blobs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('active_storage_blobs_id_seq'),
     "key" VARCHAR NOT NULL,
     "filename" VARCHAR NOT NULL,
     "content_type" VARCHAR,
@@ -145,7 +286,7 @@ CREATE TABLE "active_storage_blobs" (
 
 -- CreateTable
 CREATE TABLE "admin_users" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('admin_users_id_seq'),
     "email" VARCHAR(50) NOT NULL DEFAULT '',
     "encrypted_password" VARCHAR NOT NULL DEFAULT '',
     "reset_password_token" VARCHAR(160),
@@ -159,7 +300,7 @@ CREATE TABLE "admin_users" (
 
 -- CreateTable
 CREATE TABLE "allgemeine_vorlages" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('allgemeine_vorlages_id_seq'),
     "vorlage_id" INTEGER,
     "dienstplan_path_id" INTEGER,
     "publishable" BOOLEAN DEFAULT false,
@@ -175,7 +316,7 @@ CREATE TABLE "allgemeine_vorlages" (
 
 -- CreateTable
 CREATE TABLE "antraege_histories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('antraege_histories_id_seq'),
     "mitarbeiter_id" INTEGER,
     "antraege_id" INTEGER,
     "antragsstatus_id" INTEGER,
@@ -189,7 +330,7 @@ CREATE TABLE "antraege_histories" (
 
 -- CreateTable
 CREATE TABLE "antraeges" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('antraeges_id_seq'),
     "mitarbeiter_id" INTEGER,
     "antragstyp_id" INTEGER,
     "antragsstatus_id" INTEGER,
@@ -205,7 +346,7 @@ CREATE TABLE "antraeges" (
 
 -- CreateTable
 CREATE TABLE "antragsstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('antragsstatuses_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -216,7 +357,7 @@ CREATE TABLE "antragsstatuses" (
 
 -- CreateTable
 CREATE TABLE "antragstyps" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('antragstyps_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -240,7 +381,7 @@ CREATE TABLE "ar_internal_metadata" (
 
 -- CreateTable
 CREATE TABLE "arbeitsplatzs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('arbeitsplatzs_id_seq'),
     "name" VARCHAR DEFAULT '',
     "bereich_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -252,7 +393,7 @@ CREATE TABLE "arbeitsplatzs" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeit_absprachens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('arbeitszeit_absprachens_id_seq'),
     "mitarbeiter_id" INTEGER,
     "zeitraumkategorie_id" INTEGER NOT NULL,
     "von" DATE,
@@ -267,7 +408,7 @@ CREATE TABLE "arbeitszeit_absprachens" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeittyps" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('arbeitszeittyps_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -284,7 +425,7 @@ CREATE TABLE "arbeitszeittyps" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeitverteilungs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('arbeitszeitverteilungs_id_seq'),
     "name" VARCHAR,
     "dauer" INTEGER,
     "verteilung" TIME[],
@@ -302,7 +443,7 @@ CREATE TABLE "arbeitszeitverteilungs" (
 
 -- CreateTable
 CREATE TABLE "automatische_einteilungens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('automatische_einteilungens_id_seq'),
     "mitarbeiter_id" INTEGER,
     "po_dienst_id" INTEGER,
     "von" DATE,
@@ -315,7 +456,7 @@ CREATE TABLE "automatische_einteilungens" (
 
 -- CreateTable
 CREATE TABLE "bedarfs_eintrags" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('bedarfs_eintrags_id_seq'),
     "tag" DATE,
     "dienstplanbedarf_id" INTEGER,
     "po_dienst_id" INTEGER,
@@ -337,7 +478,7 @@ CREATE TABLE "bedarfs_eintrags" (
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('benachrichtigungs_id_seq'),
     "mitarbeiter_id" INTEGER,
     "mitarbeiter_kommentar" VARCHAR,
     "hains_task_id" INTEGER,
@@ -351,7 +492,7 @@ CREATE TABLE "benachrichtigungs" (
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('benachrichtigungs_statuses_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -362,7 +503,7 @@ CREATE TABLE "benachrichtigungs_statuses" (
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_typs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('benachrichtigungs_typs_id_seq'),
     "name" VARCHAR,
     "respond" BOOLEAN DEFAULT false,
     "status_optionen" INTEGER[],
@@ -378,7 +519,7 @@ CREATE TABLE "benachrichtigungs_typs" (
 
 -- CreateTable
 CREATE TABLE "bereich_tagesverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('bereich_tagesverteilers_id_seq'),
     "tagesverteiler_id" INTEGER,
     "bereich_id" INTEGER,
     "po_dienst_id" INTEGER,
@@ -392,7 +533,7 @@ CREATE TABLE "bereich_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereich_wochenverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('bereich_wochenverteilers_id_seq'),
     "bereich_id" INTEGER,
     "po_dienst_id" INTEGER,
     "color_bg" VARCHAR DEFAULT '#ffffff',
@@ -407,7 +548,7 @@ CREATE TABLE "bereich_wochenverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereiches" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('bereiches_id_seq'),
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "info" TEXT,
@@ -423,7 +564,7 @@ CREATE TABLE "bereiches" (
 
 -- CreateTable
 CREATE TABLE "channel_room_users" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('channel_room_users_id_seq'),
     "channel_room_id" INTEGER,
     "user_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -436,7 +577,7 @@ CREATE TABLE "channel_room_users" (
 
 -- CreateTable
 CREATE TABLE "channel_rooms" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('channel_rooms_id_seq'),
     "name" VARCHAR NOT NULL DEFAULT '',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -446,7 +587,7 @@ CREATE TABLE "channel_rooms" (
 
 -- CreateTable
 CREATE TABLE "datei_typs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('datei_typs_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -456,7 +597,7 @@ CREATE TABLE "datei_typs" (
 
 -- CreateTable
 CREATE TABLE "dateis" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dateis_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "ersteller_id" INTEGER,
@@ -470,7 +611,7 @@ CREATE TABLE "dateis" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarves" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstbedarves_id_seq'),
     "min" INTEGER,
     "po_dienst_id" INTEGER,
     "bereich_id" INTEGER,
@@ -490,7 +631,7 @@ CREATE TABLE "dienstbedarves" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarveshistory" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstbedarveshistory_id_seq'),
     "dienstbedarf_id" INTEGER,
     "min" INTEGER,
     "opt" INTEGER,
@@ -501,7 +642,7 @@ CREATE TABLE "dienstbedarveshistory" (
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('diensteinteilungs_id_seq'),
     "mitarbeiter_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -525,7 +666,7 @@ CREATE TABLE "diensteinteilungs" (
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs_versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('diensteinteilungs_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -538,7 +679,7 @@ CREATE TABLE "diensteinteilungs_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabe_versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstfreigabe_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -551,7 +692,7 @@ CREATE TABLE "dienstfreigabe_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstfreigabes_id_seq'),
     "freigabetyp_id" INTEGER,
     "mitarbeiter_id" INTEGER,
     "freigabestatus_id" INTEGER,
@@ -565,7 +706,7 @@ CREATE TABLE "dienstfreigabes" (
 
 -- CreateTable
 CREATE TABLE "dienstgruppes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstgruppes_id_seq'),
     "name" VARCHAR,
     "dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -581,7 +722,7 @@ CREATE TABLE "dienstgruppes" (
 
 -- CreateTable
 CREATE TABLE "dienstkategorie_teams" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstkategorie_teams_id_seq'),
     "dienstkategorie_id" INTEGER,
     "team_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -592,7 +733,7 @@ CREATE TABLE "dienstkategorie_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstkategories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstkategories_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -608,7 +749,7 @@ CREATE TABLE "dienstkategories" (
 
 -- CreateTable
 CREATE TABLE "dienstkategoriethemas" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstkategoriethemas_id_seq'),
     "dienstkategorie_id" INTEGER,
     "thema_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -619,7 +760,7 @@ CREATE TABLE "dienstkategoriethemas" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_counters" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplan_custom_counters_id_seq'),
     "name" VARCHAR DEFAULT 'Zähler',
     "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "mitarbeiter_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
@@ -653,7 +794,7 @@ CREATE TABLE "dienstplan_custom_counters" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_felds" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplan_custom_felds_id_seq'),
     "ansicht_id" INTEGER DEFAULT 0,
     "vorlage_id" INTEGER,
     "row" BOOLEAN DEFAULT true,
@@ -669,7 +810,7 @@ CREATE TABLE "dienstplan_custom_felds" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_paths" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplan_paths_id_seq'),
     "path" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -689,7 +830,7 @@ CREATE TABLE "dienstplan_paths" (
 
 -- CreateTable
 CREATE TABLE "dienstplanbedarves" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplanbedarves_id_seq'),
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "anfang" DATE,
@@ -701,7 +842,7 @@ CREATE TABLE "dienstplanbedarves" (
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_farbgruppens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplaner_user_farbgruppens_id_seq'),
     "user_id" INTEGER,
     "color" VARCHAR DEFAULT '#000000',
     "pos" INTEGER DEFAULT 1,
@@ -716,7 +857,7 @@ CREATE TABLE "dienstplaner_user_farbgruppens" (
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_settings" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplaner_user_settings_id_seq'),
     "user_id" INTEGER,
     "abwesend" BOOLEAN DEFAULT true,
     "mehrfacheinteilung" BOOLEAN DEFAULT true,
@@ -746,7 +887,7 @@ CREATE TABLE "dienstplaner_user_settings" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_teams" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplaners_teams_id_seq'),
     "user_id" INTEGER,
     "team_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -757,7 +898,7 @@ CREATE TABLE "dienstplaners_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_verteiler_vorlagens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplaners_verteiler_vorlagens_id_seq'),
     "user_id" INTEGER,
     "vorlage_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -768,7 +909,7 @@ CREATE TABLE "dienstplaners_verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "dienstplans" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplans_id_seq'),
     "name" VARCHAR,
     "parameterset_id" INTEGER,
     "anfang" DATE,
@@ -785,7 +926,7 @@ CREATE TABLE "dienstplans" (
 
 -- CreateTable
 CREATE TABLE "dienstplanstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstplanstatuses_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -798,7 +939,7 @@ CREATE TABLE "dienstplanstatuses" (
 
 -- CreateTable
 CREATE TABLE "dienstratings" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstratings_id_seq'),
     "po_dienst_id" INTEGER,
     "mitarbeiter_id" INTEGER,
     "rating" INTEGER,
@@ -810,7 +951,7 @@ CREATE TABLE "dienstratings" (
 
 -- CreateTable
 CREATE TABLE "diensts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('diensts_id_seq'),
     "datum" TIMESTAMP(6),
     "dienstname" VARCHAR(255),
     "kommentar" TEXT,
@@ -824,7 +965,7 @@ CREATE TABLE "diensts" (
 
 -- CreateTable
 CREATE TABLE "dienstverteilungstyps" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstverteilungstyps_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -836,7 +977,7 @@ CREATE TABLE "dienstverteilungstyps" (
 
 -- CreateTable
 CREATE TABLE "dienstwunsches" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('dienstwunsches_id_seq'),
     "mitarbeiter_id" INTEGER,
     "tag" DATE,
     "dienstkategorie_id" INTEGER,
@@ -848,7 +989,7 @@ CREATE TABLE "dienstwunsches" (
 
 -- CreateTable
 CREATE TABLE "einteilung_rotations" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('einteilung_rotations_id_seq'),
     "kontingent_id" INTEGER,
     "mitarbeiter_id" INTEGER,
     "mitarbeiter_planname" VARCHAR,
@@ -868,7 +1009,7 @@ CREATE TABLE "einteilung_rotations" (
 
 -- CreateTable
 CREATE TABLE "einteilung_versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('einteilung_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -886,7 +1027,7 @@ CREATE TABLE "einteilung_versions" (
 
 -- CreateTable
 CREATE TABLE "einteilungskontexts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('einteilungskontexts_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -900,7 +1041,7 @@ CREATE TABLE "einteilungskontexts" (
 
 -- CreateTable
 CREATE TABLE "einteilungsstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('einteilungsstatuses_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "public" BOOLEAN DEFAULT false,
@@ -916,7 +1057,7 @@ CREATE TABLE "einteilungsstatuses" (
 
 -- CreateTable
 CREATE TABLE "feiertages" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('feiertages_id_seq'),
     "name" VARCHAR,
     "key" VARCHAR,
     "datum" DATE,
@@ -932,7 +1073,7 @@ CREATE TABLE "feiertages" (
 
 -- CreateTable
 CREATE TABLE "freigabestatuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('freigabestatuses_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -947,7 +1088,7 @@ CREATE TABLE "freigabestatuses" (
 
 -- CreateTable
 CREATE TABLE "freigabetyps" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('freigabetyps_id_seq'),
     "name" VARCHAR,
     "planname" VARCHAR,
     "beschreibung" TEXT,
@@ -960,7 +1101,7 @@ CREATE TABLE "freigabetyps" (
 
 -- CreateTable
 CREATE TABLE "freistellungs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('freistellungs_id_seq'),
     "mitarbeiter_id" INTEGER,
     "mitarbeiter_planname" VARCHAR(255),
     "plandatum" TIMESTAMP(6),
@@ -973,7 +1114,7 @@ CREATE TABLE "freistellungs" (
 
 -- CreateTable
 CREATE TABLE "funktions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('funktions_id_seq'),
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
@@ -988,7 +1129,7 @@ CREATE TABLE "funktions" (
 
 -- CreateTable
 CREATE TABLE "geraetebereiches" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('geraetebereiches_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -999,7 +1140,7 @@ CREATE TABLE "geraetebereiches" (
 
 -- CreateTable
 CREATE TABLE "geraeteklasses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('geraeteklasses_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "beschreibung" VARCHAR,
@@ -1011,7 +1152,7 @@ CREATE TABLE "geraeteklasses" (
 
 -- CreateTable
 CREATE TABLE "geraetepasses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('geraetepasses_id_seq'),
     "mitarbeiter_id" INTEGER,
     "einweiser" VARCHAR,
     "einweisungsdatum" DATE,
@@ -1026,7 +1167,7 @@ CREATE TABLE "geraetepasses" (
 
 -- CreateTable
 CREATE TABLE "geraets" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('geraets_id_seq'),
     "name" VARCHAR,
     "hersteller" VARCHAR,
     "typ" VARCHAR,
@@ -1041,7 +1182,7 @@ CREATE TABLE "geraets" (
 
 -- CreateTable
 CREATE TABLE "gruppes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('gruppes_id_seq'),
     "name" VARCHAR(255),
     "resource_id" INTEGER,
     "resource_type" VARCHAR(255),
@@ -1053,7 +1194,7 @@ CREATE TABLE "gruppes" (
 
 -- CreateTable
 CREATE TABLE "hains_tasks" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('hains_tasks_id_seq'),
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1082,7 +1223,7 @@ CREATE TABLE "hains_tasks" (
 
 -- CreateTable
 CREATE TABLE "jahresbilanzs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('jahresbilanzs_id_seq'),
     "mitarbeiter_id" INTEGER,
     "plusstunden" DECIMAL(6,2) DEFAULT 0,
     "ueberstunden" DECIMAL(6,2) DEFAULT 0,
@@ -1097,7 +1238,7 @@ CREATE TABLE "jahresbilanzs" (
 
 -- CreateTable
 CREATE TABLE "kalendermarkierungs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('kalendermarkierungs_id_seq'),
     "category" VARCHAR,
     "name" VARCHAR,
     "color" VARCHAR,
@@ -1113,7 +1254,7 @@ CREATE TABLE "kalendermarkierungs" (
 
 -- CreateTable
 CREATE TABLE "kalenderwoches" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('kalenderwoches_id_seq'),
     "jahr" INTEGER NOT NULL,
     "kw" INTEGER NOT NULL,
     "montag" DATE NOT NULL,
@@ -1129,7 +1270,7 @@ CREATE TABLE "kalenderwoches" (
 
 -- CreateTable
 CREATE TABLE "kontingent_po_diensts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('kontingent_po_diensts_id_seq'),
     "kontingent_id" INTEGER,
     "po_dienst_id" INTEGER,
     "eingeteilt_count_factor" INTEGER NOT NULL DEFAULT 1,
@@ -1142,7 +1283,7 @@ CREATE TABLE "kontingent_po_diensts" (
 
 -- CreateTable
 CREATE TABLE "kontingents" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('kontingents_id_seq'),
     "name" VARCHAR,
     "kommentar" TEXT,
     "created_at" TIMESTAMP(6),
@@ -1160,7 +1301,7 @@ CREATE TABLE "kontingents" (
 
 -- CreateTable
 CREATE TABLE "kostenstelles" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('kostenstelles_id_seq'),
     "name" VARCHAR,
     "nummer" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1171,7 +1312,7 @@ CREATE TABLE "kostenstelles" (
 
 -- CreateTable
 CREATE TABLE "links" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('links_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "url" VARCHAR,
@@ -1183,7 +1324,7 @@ CREATE TABLE "links" (
 
 -- CreateTable
 CREATE TABLE "mailer_addresses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mailer_addresses_id_seq'),
     "name" VARCHAR,
     "addresse" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1194,7 +1335,7 @@ CREATE TABLE "mailer_addresses" (
 
 -- CreateTable
 CREATE TABLE "mailer_ccs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mailer_ccs_id_seq'),
     "mailer_context_id" INTEGER,
     "mailer_addresse_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1205,7 +1346,7 @@ CREATE TABLE "mailer_ccs" (
 
 -- CreateTable
 CREATE TABLE "mailer_contexts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mailer_contexts_id_seq'),
     "context" VARCHAR NOT NULL DEFAULT '',
     "subject" VARCHAR NOT NULL DEFAULT '',
     "body" TEXT NOT NULL DEFAULT '',
@@ -1219,7 +1360,7 @@ CREATE TABLE "mailer_contexts" (
 
 -- CreateTable
 CREATE TABLE "mailer_tos" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mailer_tos_id_seq'),
     "mailer_context_id" INTEGER,
     "mailer_addresse_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1230,7 +1371,7 @@ CREATE TABLE "mailer_tos" (
 
 -- CreateTable
 CREATE TABLE "merkmal_options" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('merkmal_options_id_seq'),
     "merkmal_id" INTEGER,
     "wert" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1241,7 +1382,7 @@ CREATE TABLE "merkmal_options" (
 
 -- CreateTable
 CREATE TABLE "merkmals" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('merkmals_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "can_edit" BOOLEAN,
@@ -1254,7 +1395,7 @@ CREATE TABLE "merkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiter_default_eingeteilts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mitarbeiter_default_eingeteilts_id_seq'),
     "mitarbeiter_id" INTEGER,
     "po_dienst_id" INTEGER,
     "year" INTEGER NOT NULL,
@@ -1267,7 +1408,7 @@ CREATE TABLE "mitarbeiter_default_eingeteilts" (
 
 -- CreateTable
 CREATE TABLE "mitarbeitermerkmals" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mitarbeitermerkmals_id_seq'),
     "mitarbeiter_id" INTEGER,
     "merkmal_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1280,7 +1421,7 @@ CREATE TABLE "mitarbeitermerkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiters" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('mitarbeiters_id_seq'),
     "name" VARCHAR(255) DEFAULT '',
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
@@ -1302,7 +1443,7 @@ CREATE TABLE "mitarbeiters" (
 
 -- CreateTable
 CREATE TABLE "nef_fahrts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('nef_fahrts_id_seq'),
     "notfallmedizin_register_id" INTEGER,
     "fahrtnummer" INTEGER,
     "datum" DATE,
@@ -1318,7 +1459,7 @@ CREATE TABLE "nef_fahrts" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_absprachens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('nicht_einteilen_absprachens_id_seq'),
     "mitarbeiter_id" INTEGER NOT NULL,
     "zeitraumkategorie_id" INTEGER NOT NULL,
     "von" DATE,
@@ -1329,7 +1470,7 @@ CREATE TABLE "nicht_einteilen_absprachens" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_standort_themen" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('nicht_einteilen_standort_themen_id_seq'),
     "absprache_id" INTEGER NOT NULL,
     "standort_id" INTEGER NOT NULL,
     "thema_id" INTEGER NOT NULL,
@@ -1339,7 +1480,7 @@ CREATE TABLE "nicht_einteilen_standort_themen" (
 
 -- CreateTable
 CREATE TABLE "note_categories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('note_categories_id_seq'),
     "category" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1349,7 +1490,7 @@ CREATE TABLE "note_categories" (
 
 -- CreateTable
 CREATE TABLE "notes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('notes_id_seq'),
     "notiz" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1364,7 +1505,7 @@ CREATE TABLE "notes" (
 
 -- CreateTable
 CREATE TABLE "notes_histories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('notes_histories_id_seq'),
     "note_id" INTEGER,
     "mitarbeiter_id" INTEGER,
     "ersteller_id" INTEGER,
@@ -1378,7 +1519,7 @@ CREATE TABLE "notes_histories" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_registers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('notfallmedizin_registers_id_seq'),
     "mitarbeiter_id" INTEGER,
     "titel" VARCHAR DEFAULT '',
     "anrede" VARCHAR DEFAULT '',
@@ -1407,7 +1548,7 @@ CREATE TABLE "notfallmedizin_registers" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('notfallmedizin_statuses_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1427,7 +1568,7 @@ CREATE TABLE "notfallmedizin_statuses" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_grants" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_access_grants_id_seq'),
     "resource_owner_id" INTEGER NOT NULL,
     "application_id" INTEGER NOT NULL,
     "token" VARCHAR(255) NOT NULL,
@@ -1442,7 +1583,7 @@ CREATE TABLE "oauth_access_grants" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_tokens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_access_tokens_id_seq'),
     "resource_owner_id" INTEGER,
     "application_id" INTEGER,
     "token" VARCHAR(255) NOT NULL,
@@ -1457,7 +1598,7 @@ CREATE TABLE "oauth_access_tokens" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_tokens_new" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_access_tokens_new_id_seq'),
     "user_id" INTEGER NOT NULL,
     "client_id" VARCHAR(255) NOT NULL,
     "refresh_token_id" INTEGER NOT NULL,
@@ -1472,7 +1613,7 @@ CREATE TABLE "oauth_access_tokens_new" (
 
 -- CreateTable
 CREATE TABLE "oauth_applications" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_applications_id_seq'),
     "name" VARCHAR(255) NOT NULL,
     "uid" VARCHAR(255) NOT NULL,
     "secret" VARCHAR(255) NOT NULL,
@@ -1487,7 +1628,7 @@ CREATE TABLE "oauth_applications" (
 
 -- CreateTable
 CREATE TABLE "oauth_authorization_codes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_authorization_codes_id_seq'),
     "user_id" INTEGER NOT NULL,
     "client_id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -1498,7 +1639,7 @@ CREATE TABLE "oauth_authorization_codes" (
 
 -- CreateTable
 CREATE TABLE "oauth_clients" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_clients_id_seq'),
     "name" TEXT NOT NULL,
     "client_id" VARCHAR(255) NOT NULL,
     "scopes" TEXT[],
@@ -1511,7 +1652,7 @@ CREATE TABLE "oauth_clients" (
 
 -- CreateTable
 CREATE TABLE "oauth_refresh_tokens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('oauth_refresh_tokens_id_seq'),
     "user_id" INTEGER NOT NULL,
     "client_id" VARCHAR(255) NOT NULL,
     "token" VARCHAR(255) NOT NULL,
@@ -1525,7 +1666,7 @@ CREATE TABLE "oauth_refresh_tokens" (
 
 -- CreateTable
 CREATE TABLE "parametersets" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('parametersets_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -1542,7 +1683,7 @@ CREATE TABLE "parametersets" (
 
 -- CreateTable
 CREATE TABLE "plan_tabs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('plan_tabs_id_seq'),
     "name" VARCHAR DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
 
@@ -1551,7 +1692,7 @@ CREATE TABLE "plan_tabs" (
 
 -- CreateTable
 CREATE TABLE "planintervals" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('planintervals_id_seq'),
     "typ" VARCHAR DEFAULT '',
 
     CONSTRAINT "planintervals_pkey" PRIMARY KEY ("id")
@@ -1559,7 +1700,7 @@ CREATE TABLE "planintervals" (
 
 -- CreateTable
 CREATE TABLE "planparameters" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('planparameters_id_seq'),
     "parameterset_id" INTEGER,
     "num_threads" INTEGER,
     "relevant_timeframe_size" INTEGER,
@@ -1580,7 +1721,7 @@ CREATE TABLE "planparameters" (
 
 -- CreateTable
 CREATE TABLE "po_diensts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('po_diensts_id_seq'),
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1624,7 +1765,7 @@ CREATE TABLE "schema_migrations" (
 
 -- CreateTable
 CREATE TABLE "schichts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('schichts_id_seq'),
     "bedarfs_eintrag_id" INTEGER,
     "anfang" TIMESTAMP(6),
     "ende" TIMESTAMP(6),
@@ -1639,7 +1780,7 @@ CREATE TABLE "schichts" (
 
 -- CreateTable
 CREATE TABLE "standorts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('standorts_id_seq'),
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "adresse" TEXT,
@@ -1657,7 +1798,7 @@ CREATE TABLE "standorts" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('stundennachweis_id_seq'),
     "mitarbeiter_id" INTEGER,
     "kostenstelle_id" INTEGER,
     "tag" DATE,
@@ -1685,7 +1826,7 @@ CREATE TABLE "stundennachweis" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('stundennachweis_statuses_id_seq'),
     "name" VARCHAR,
     "confirmed" BOOLEAN,
     "submitted" BOOLEAN,
@@ -1697,7 +1838,7 @@ CREATE TABLE "stundennachweis_statuses" (
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_layouts" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('tagesverteiler_layouts_id_seq'),
     "device" VARCHAR,
     "rows" INTEGER,
     "cols" INTEGER,
@@ -1711,7 +1852,7 @@ CREATE TABLE "tagesverteiler_layouts" (
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_user_settings" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('tagesverteiler_user_settings_id_seq'),
     "user_id" INTEGER,
     "funktion_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "funktion_box" VARCHAR,
@@ -1725,7 +1866,7 @@ CREATE TABLE "tagesverteiler_user_settings" (
 
 -- CreateTable
 CREATE TABLE "tagesverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('tagesverteilers_id_seq'),
     "name" VARCHAR,
     "color" VARCHAR,
     "planname" VARCHAR,
@@ -1737,7 +1878,7 @@ CREATE TABLE "tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "tagkategories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('tagkategories_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1747,7 +1888,7 @@ CREATE TABLE "tagkategories" (
 
 -- CreateTable
 CREATE TABLE "team_funktions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('team_funktions_id_seq'),
     "team_id" INTEGER,
     "funktion_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1758,7 +1899,7 @@ CREATE TABLE "team_funktions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffer_versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('team_kw_krankpuffer_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1771,7 +1912,7 @@ CREATE TABLE "team_kw_krankpuffer_versions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('team_kw_krankpuffers_id_seq'),
     "kw" INTEGER NOT NULL DEFAULT 0,
     "team_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1783,7 +1924,7 @@ CREATE TABLE "team_kw_krankpuffers" (
 
 -- CreateTable
 CREATE TABLE "teams" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('teams_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1797,7 +1938,7 @@ CREATE TABLE "teams" (
 
 -- CreateTable
 CREATE TABLE "telefonlistes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('telefonlistes_id_seq'),
     "name" VARCHAR,
     "beschreibung" TEXT,
     "mitarbeiter" VARCHAR,
@@ -1810,7 +1951,7 @@ CREATE TABLE "telefonlistes" (
 
 -- CreateTable
 CREATE TABLE "themas" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('themas_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -1822,7 +1963,7 @@ CREATE TABLE "themas" (
 
 -- CreateTable
 CREATE TABLE "user_versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('user_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1840,7 +1981,7 @@ CREATE TABLE "user_versions" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('users_id_seq'),
     "name" VARCHAR(255),
     "uid" INTEGER,
     "login" VARCHAR(255),
@@ -1883,7 +2024,7 @@ CREATE TABLE "users_gruppes" (
 
 -- CreateTable
 CREATE TABLE "version_associations" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('version_associations_id_seq'),
     "version_id" INTEGER,
     "foreign_key_name" VARCHAR NOT NULL,
     "foreign_key_id" INTEGER,
@@ -1894,7 +2035,7 @@ CREATE TABLE "version_associations" (
 
 -- CreateTable
 CREATE TABLE "versions" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1909,7 +2050,7 @@ CREATE TABLE "versions" (
 
 -- CreateTable
 CREATE TABLE "verteiler_tagesverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('verteiler_tagesverteilers_id_seq'),
     "raw_json" TEXT,
     "datum" TIMESTAMP(6),
     "version" VARCHAR,
@@ -1921,7 +2062,7 @@ CREATE TABLE "verteiler_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "verteiler_vorlagens" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('verteiler_vorlagens_id_seq'),
     "name" VARCHAR NOT NULL DEFAULT 'Vorlage',
     "beschreibung" VARCHAR NOT NULL DEFAULT '',
     "typ" VARCHAR NOT NULL DEFAULT 'wochenverteiler',
@@ -1939,7 +2080,7 @@ CREATE TABLE "verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "verteilungsoverrides" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('verteilungsoverrides_id_seq'),
     "parameterset_id" INTEGER,
     "dienstbedarf_id" INTEGER,
     "dienstverteilungstyp_id" INTEGER,
@@ -1952,7 +2093,7 @@ CREATE TABLE "verteilungsoverrides" (
 
 -- CreateTable
 CREATE TABLE "vertrag_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" BIGINT NOT NULL DEFAULT nextval('vertrag_versions_id_seq'),
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1965,7 +2106,7 @@ CREATE TABLE "vertrag_versions" (
 
 -- CreateTable
 CREATE TABLE "vertrags" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertrags_id_seq'),
     "mitarbeiter_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1980,7 +2121,7 @@ CREATE TABLE "vertrags" (
 
 -- CreateTable
 CREATE TABLE "vertrags_arbeitszeits" (
-    "id" BIGSERIAL NOT NULL,
+    "id" BIGINT NOT NULL DEFAULT nextval('vertrags_arbeitszeits_id_seq'),
     "vertrag_id" BIGINT,
     "von" DATE,
     "bis" DATE,
@@ -1994,20 +2135,20 @@ CREATE TABLE "vertrags_arbeitszeits" (
 
 -- CreateTable
 CREATE TABLE "vertrags_phases" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertrags_phases_id_seq'),
     "vertrag_id" INTEGER,
     "von" DATE,
     "bis" DATE,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragsstufe_id" BIGINT,
+    "vertragsstufe_id" INTEGER,
 
     CONSTRAINT "vertrags_phases_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "vertrags_variantes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertrags_variantes_id_seq'),
     "von" DATE,
     "bis" DATE,
     "vertragstyp_id" INTEGER,
@@ -2022,7 +2163,7 @@ CREATE TABLE "vertrags_variantes" (
 
 -- CreateTable
 CREATE TABLE "vertragsgruppes" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertragsgruppes_id_seq'),
     "name" VARCHAR,
     "vertragstyp_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -2033,7 +2174,7 @@ CREATE TABLE "vertragsgruppes" (
 
 -- CreateTable
 CREATE TABLE "vertragsstuves" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertragsstuves_id_seq'),
     "stufe" INTEGER,
     "nach_jahren" INTEGER,
     "monatsgehalt" DECIMAL(15,2),
@@ -2047,7 +2188,7 @@ CREATE TABLE "vertragsstuves" (
 
 -- CreateTable
 CREATE TABLE "vertragstyps" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vertragstyps_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2057,7 +2198,7 @@ CREATE TABLE "vertragstyps" (
 
 -- CreateTable
 CREATE TABLE "vorlages" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('vorlages_id_seq'),
     "mitarbeiter_id" INTEGER,
     "name" VARCHAR,
     "dienste" INTEGER[],
@@ -2073,7 +2214,7 @@ CREATE TABLE "vorlages" (
 
 -- CreateTable
 CREATE TABLE "wochenbilanzs" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('wochenbilanzs_id_seq'),
     "kalenderwoche_id" INTEGER,
     "mitarbeiter_id" INTEGER,
     "geplante_arbeitszeit" DECIMAL(6,2) DEFAULT 0,
@@ -2092,7 +2233,7 @@ CREATE TABLE "wochenbilanzs" (
 
 -- CreateTable
 CREATE TABLE "zeitraumkategories" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('zeitraumkategories_id_seq'),
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "zeitraumregel_id" INTEGER,
@@ -2110,7 +2251,7 @@ CREATE TABLE "zeitraumkategories" (
 
 -- CreateTable
 CREATE TABLE "zeitraumregels" (
-    "id" SERIAL NOT NULL,
+    "id" INTEGER NOT NULL DEFAULT nextval('zeitraumregels_id_seq'),
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2119,6 +2260,148 @@ CREATE TABLE "zeitraumregels" (
 
     CONSTRAINT "zeitraumregels_pkey" PRIMARY KEY ("id")
 );
+
+
+ALTER SEQUENCE "abwesentheiten_spaltens_id_seq" OWNED BY "abwesentheiten_spaltens"."id";
+ALTER SEQUENCE "abwesentheitenueberblick_counters_id_seq" OWNED BY "abwesentheitenueberblick_counters"."id";
+ALTER SEQUENCE "abwesentheitenueberblick_settings_id_seq" OWNED BY "abwesentheitenueberblick_settings"."id";
+ALTER SEQUENCE "abwesentheitenueberblicks_id_seq" OWNED BY "abwesentheitenueberblicks"."id";
+ALTER SEQUENCE "account_infos_id_seq" OWNED BY "account_infos"."id";
+ALTER SEQUENCE "active_admin_comments_id_seq" OWNED BY "active_admin_comments"."id";
+ALTER SEQUENCE "active_storage_attachments_id_seq" OWNED BY "active_storage_attachments"."id";
+ALTER SEQUENCE "active_storage_blobs_id_seq" OWNED BY "active_storage_blobs"."id";
+ALTER SEQUENCE "admin_users_id_seq" OWNED BY "admin_users"."id";
+ALTER SEQUENCE "allgemeine_vorlages_id_seq" OWNED BY "allgemeine_vorlages"."id";
+ALTER SEQUENCE "antraege_histories_id_seq" OWNED BY "antraege_histories"."id";
+ALTER SEQUENCE "antraeges_id_seq" OWNED BY "antraeges"."id";
+ALTER SEQUENCE "antragsstatuses_id_seq" OWNED BY "antragsstatuses"."id";
+ALTER SEQUENCE "antragstyps_id_seq" OWNED BY "antragstyps"."id";
+ALTER SEQUENCE "ar_internal_metadata_id_seq" OWNED BY "ar_internal_metadata"."id";
+ALTER SEQUENCE "arbeitsplatzs_id_seq" OWNED BY "arbeitsplatzs"."id";
+ALTER SEQUENCE "arbeitszeit_absprachens_id_seq" OWNED BY "arbeitszeit_absprachens"."id";
+ALTER SEQUENCE "arbeitszeittyps_id_seq" OWNED BY "arbeitszeittyps"."id";
+ALTER SEQUENCE "arbeitszeitverteilungs_id_seq" OWNED BY "arbeitszeitverteilungs"."id";
+ALTER SEQUENCE "automatische_einteilungens_id_seq" OWNED BY "automatische_einteilungens"."id";
+ALTER SEQUENCE "bedarfs_eintrags_id_seq" OWNED BY "bedarfs_eintrags"."id";
+ALTER SEQUENCE "benachrichtigungs_id_seq" OWNED BY "benachrichtigungs"."id";
+ALTER SEQUENCE "benachrichtigungs_statuses_id_seq" OWNED BY "benachrichtigungs_statuses"."id";
+ALTER SEQUENCE "benachrichtigungs_typs_id_seq" OWNED BY "benachrichtigungs_typs"."id";
+ALTER SEQUENCE "bereich_tagesverteilers_id_seq" OWNED BY "bereich_tagesverteilers"."id";
+ALTER SEQUENCE "bereich_wochenverteilers_id_seq" OWNED BY "bereich_wochenverteilers"."id";
+ALTER SEQUENCE "bereiches_id_seq" OWNED BY "bereiches"."id";
+ALTER SEQUENCE "channel_room_users_id_seq" OWNED BY "channel_room_users"."id";
+ALTER SEQUENCE "channel_rooms_id_seq" OWNED BY "channel_rooms"."id";
+ALTER SEQUENCE "datei_typs_id_seq" OWNED BY "datei_typs"."id";
+ALTER SEQUENCE "dateis_id_seq" OWNED BY "dateis"."id";
+ALTER SEQUENCE "dienstbedarves_id_seq" OWNED BY "dienstbedarves"."id";
+ALTER SEQUENCE "dienstbedarveshistory_id_seq" OWNED BY "dienstbedarveshistory"."id";
+ALTER SEQUENCE "diensteinteilungs_id_seq" OWNED BY "diensteinteilungs"."id";
+ALTER SEQUENCE "diensteinteilungs_versions_id_seq" OWNED BY "diensteinteilungs_versions"."id";
+ALTER SEQUENCE "dienstfreigabe_versions_id_seq" OWNED BY "dienstfreigabe_versions"."id";
+ALTER SEQUENCE "dienstfreigabes_id_seq" OWNED BY "dienstfreigabes"."id";
+ALTER SEQUENCE "dienstgruppes_id_seq" OWNED BY "dienstgruppes"."id";
+ALTER SEQUENCE "dienstkategorie_teams_id_seq" OWNED BY "dienstkategorie_teams"."id";
+ALTER SEQUENCE "dienstkategories_id_seq" OWNED BY "dienstkategories"."id";
+ALTER SEQUENCE "dienstkategoriethemas_id_seq" OWNED BY "dienstkategoriethemas"."id";
+ALTER SEQUENCE "dienstplan_custom_counters_id_seq" OWNED BY "dienstplan_custom_counters"."id";
+ALTER SEQUENCE "dienstplan_custom_felds_id_seq" OWNED BY "dienstplan_custom_felds"."id";
+ALTER SEQUENCE "dienstplan_paths_id_seq" OWNED BY "dienstplan_paths"."id";
+ALTER SEQUENCE "dienstplanbedarves_id_seq" OWNED BY "dienstplanbedarves"."id";
+ALTER SEQUENCE "dienstplaner_user_farbgruppens_id_seq" OWNED BY "dienstplaner_user_farbgruppens"."id";
+ALTER SEQUENCE "dienstplaner_user_settings_id_seq" OWNED BY "dienstplaner_user_settings"."id";
+ALTER SEQUENCE "dienstplaners_teams_id_seq" OWNED BY "dienstplaners_teams"."id";
+ALTER SEQUENCE "dienstplaners_verteiler_vorlagens_id_seq" OWNED BY "dienstplaners_verteiler_vorlagens"."id";
+ALTER SEQUENCE "dienstplans_id_seq" OWNED BY "dienstplans"."id";
+ALTER SEQUENCE "dienstplanstatuses_id_seq" OWNED BY "dienstplanstatuses"."id";
+ALTER SEQUENCE "dienstratings_id_seq" OWNED BY "dienstratings"."id";
+ALTER SEQUENCE "diensts_id_seq" OWNED BY "diensts"."id";
+ALTER SEQUENCE "dienstverteilungstyps_id_seq" OWNED BY "dienstverteilungstyps"."id";
+ALTER SEQUENCE "dienstwunsches_id_seq" OWNED BY "dienstwunsches"."id";
+ALTER SEQUENCE "einteilung_rotations_id_seq" OWNED BY "einteilung_rotations"."id";
+ALTER SEQUENCE "einteilung_versions_id_seq" OWNED BY "einteilung_versions"."id";
+ALTER SEQUENCE "einteilungskontexts_id_seq" OWNED BY "einteilungskontexts"."id";
+ALTER SEQUENCE "einteilungsstatuses_id_seq" OWNED BY "einteilungsstatuses"."id";
+ALTER SEQUENCE "feiertages_id_seq" OWNED BY "feiertages"."id";
+ALTER SEQUENCE "freigabestatuses_id_seq" OWNED BY "freigabestatuses"."id";
+ALTER SEQUENCE "freigabetyps_id_seq" OWNED BY "freigabetyps"."id";
+ALTER SEQUENCE "freistellungs_id_seq" OWNED BY "freistellungs"."id";
+ALTER SEQUENCE "funktions_id_seq" OWNED BY "funktions"."id";
+ALTER SEQUENCE "geraetebereiches_id_seq" OWNED BY "geraetebereiches"."id";
+ALTER SEQUENCE "geraeteklasses_id_seq" OWNED BY "geraeteklasses"."id";
+ALTER SEQUENCE "geraetepasses_id_seq" OWNED BY "geraetepasses"."id";
+ALTER SEQUENCE "geraets_id_seq" OWNED BY "geraets"."id";
+ALTER SEQUENCE "gruppes_id_seq" OWNED BY "gruppes"."id";
+ALTER SEQUENCE "hains_tasks_id_seq" OWNED BY "hains_tasks"."id";
+ALTER SEQUENCE "jahresbilanzs_id_seq" OWNED BY "jahresbilanzs"."id";
+ALTER SEQUENCE "kalendermarkierungs_id_seq" OWNED BY "kalendermarkierungs"."id";
+ALTER SEQUENCE "kalenderwoches_id_seq" OWNED BY "kalenderwoches"."id";
+ALTER SEQUENCE "kontingent_po_diensts_id_seq" OWNED BY "kontingent_po_diensts"."id";
+ALTER SEQUENCE "kontingents_id_seq" OWNED BY "kontingents"."id";
+ALTER SEQUENCE "kostenstelles_id_seq" OWNED BY "kostenstelles"."id";
+ALTER SEQUENCE "links_id_seq" OWNED BY "links"."id";
+ALTER SEQUENCE "mailer_addresses_id_seq" OWNED BY "mailer_addresses"."id";
+ALTER SEQUENCE "mailer_ccs_id_seq" OWNED BY "mailer_ccs"."id";
+ALTER SEQUENCE "mailer_contexts_id_seq" OWNED BY "mailer_contexts"."id";
+ALTER SEQUENCE "mailer_tos_id_seq" OWNED BY "mailer_tos"."id";
+ALTER SEQUENCE "merkmal_options_id_seq" OWNED BY "merkmal_options"."id";
+ALTER SEQUENCE "merkmals_id_seq" OWNED BY "merkmals"."id";
+ALTER SEQUENCE "mitarbeiter_default_eingeteilts_id_seq" OWNED BY "mitarbeiter_default_eingeteilts"."id";
+ALTER SEQUENCE "mitarbeitermerkmals_id_seq" OWNED BY "mitarbeitermerkmals"."id";
+ALTER SEQUENCE "mitarbeiters_id_seq" OWNED BY "mitarbeiters"."id";
+ALTER SEQUENCE "nef_fahrts_id_seq" OWNED BY "nef_fahrts"."id";
+ALTER SEQUENCE "nicht_einteilen_absprachens_id_seq" OWNED BY "nicht_einteilen_absprachens"."id";
+ALTER SEQUENCE "nicht_einteilen_standort_themen_id_seq" OWNED BY "nicht_einteilen_standort_themen"."id";
+ALTER SEQUENCE "note_categories_id_seq" OWNED BY "note_categories"."id";
+ALTER SEQUENCE "notes_id_seq" OWNED BY "notes"."id";
+ALTER SEQUENCE "notes_histories_id_seq" OWNED BY "notes_histories"."id";
+ALTER SEQUENCE "notfallmedizin_registers_id_seq" OWNED BY "notfallmedizin_registers"."id";
+ALTER SEQUENCE "notfallmedizin_statuses_id_seq" OWNED BY "notfallmedizin_statuses"."id";
+ALTER SEQUENCE "oauth_access_grants_id_seq" OWNED BY "oauth_access_grants"."id";
+ALTER SEQUENCE "oauth_access_tokens_id_seq" OWNED BY "oauth_access_tokens"."id";
+ALTER SEQUENCE "oauth_access_tokens_new_id_seq" OWNED BY "oauth_access_tokens_new"."id";
+ALTER SEQUENCE "oauth_applications_id_seq" OWNED BY "oauth_applications"."id";
+ALTER SEQUENCE "oauth_authorization_codes_id_seq" OWNED BY "oauth_authorization_codes"."id";
+ALTER SEQUENCE "oauth_clients_id_seq" OWNED BY "oauth_clients"."id";
+ALTER SEQUENCE "oauth_refresh_tokens_id_seq" OWNED BY "oauth_refresh_tokens"."id";
+ALTER SEQUENCE "parametersets_id_seq" OWNED BY "parametersets"."id";
+ALTER SEQUENCE "plan_tabs_id_seq" OWNED BY "plan_tabs"."id";
+ALTER SEQUENCE "planintervals_id_seq" OWNED BY "planintervals"."id";
+ALTER SEQUENCE "planparameters_id_seq" OWNED BY "planparameters"."id";
+ALTER SEQUENCE "po_diensts_id_seq" OWNED BY "po_diensts"."id";
+ALTER SEQUENCE "schichts_id_seq" OWNED BY "schichts"."id";
+ALTER SEQUENCE "standorts_id_seq" OWNED BY "standorts"."id";
+ALTER SEQUENCE "stundennachweis_id_seq" OWNED BY "stundennachweis"."id";
+ALTER SEQUENCE "stundennachweis_statuses_id_seq" OWNED BY "stundennachweis_statuses"."id";
+ALTER SEQUENCE "tagesverteiler_layouts_id_seq" OWNED BY "tagesverteiler_layouts"."id";
+ALTER SEQUENCE "tagesverteiler_user_settings_id_seq" OWNED BY "tagesverteiler_user_settings"."id";
+ALTER SEQUENCE "tagesverteilers_id_seq" OWNED BY "tagesverteilers"."id";
+ALTER SEQUENCE "tagkategories_id_seq" OWNED BY "tagkategories"."id";
+ALTER SEQUENCE "team_funktions_id_seq" OWNED BY "team_funktions"."id";
+ALTER SEQUENCE "team_kw_krankpuffer_versions_id_seq" OWNED BY "team_kw_krankpuffer_versions"."id";
+ALTER SEQUENCE "team_kw_krankpuffers_id_seq" OWNED BY "team_kw_krankpuffers"."id";
+ALTER SEQUENCE "teams_id_seq" OWNED BY "teams"."id";
+ALTER SEQUENCE "telefonlistes_id_seq" OWNED BY "telefonlistes"."id";
+ALTER SEQUENCE "themas_id_seq" OWNED BY "themas"."id";
+ALTER SEQUENCE "user_versions_id_seq" OWNED BY "user_versions"."id";
+ALTER SEQUENCE "users_id_seq" OWNED BY "users"."id";
+ALTER SEQUENCE "users_gruppes_id_seq" OWNED BY "users_gruppes"."id";
+ALTER SEQUENCE "version_associations_id_seq" OWNED BY "version_associations"."id";
+ALTER SEQUENCE "versions_id_seq" OWNED BY "versions"."id";
+ALTER SEQUENCE "verteiler_tagesverteilers_id_seq" OWNED BY "verteiler_tagesverteilers"."id";
+ALTER SEQUENCE "verteiler_vorlagens_id_seq" OWNED BY "verteiler_vorlagens"."id";
+ALTER SEQUENCE "verteilungsoverrides_id_seq" OWNED BY "verteilungsoverrides"."id";
+ALTER SEQUENCE "vertrag_versions_id_seq" OWNED BY "vertrag_versions"."id";
+ALTER SEQUENCE "vertrags_id_seq" OWNED BY "vertrags"."id";
+ALTER SEQUENCE "vertrags_arbeitszeits_id_seq" OWNED BY "vertrags_arbeitszeits"."id";
+ALTER SEQUENCE "vertrags_phases_id_seq" OWNED BY "vertrags_phases"."id";
+ALTER SEQUENCE "vertrags_variantes_id_seq" OWNED BY "vertrags_variantes"."id";
+ALTER SEQUENCE "vertragsgruppes_id_seq" OWNED BY "vertragsgruppes"."id";
+ALTER SEQUENCE "vertragsstuves_id_seq" OWNED BY "vertragsstuves"."id";
+ALTER SEQUENCE "vertragstyps_id_seq" OWNED BY "vertragstyps"."id";
+ALTER SEQUENCE "vorlages_id_seq" OWNED BY "vorlages"."id";
+ALTER SEQUENCE "wochenbilanzs_id_seq" OWNED BY "wochenbilanzs"."id";
+ALTER SEQUENCE "zeitraumkategories_id_seq" OWNED BY "zeitraumkategories"."id";
+ALTER SEQUENCE "zeitraumregels_id_seq" OWNED BY "zeitraumregels"."id";
 
 -- CreateIndex
 CREATE INDEX "index_abwesentheitenueberblick_counters_on_mitarbeiter_id" ON "abwesentheitenueberblick_counters"("mitarbeiter_id");
