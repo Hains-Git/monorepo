@@ -32,7 +32,6 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
-
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
@@ -83,3 +82,11 @@ url      = env("DATABASE_URL")
 `npx prisma format` -> Formatiert die Datei
 `npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
 `npx prisma generate` -> Generient den client, damit man die Modelle in typesript vorhanden sind.
+
+Production:
+Falls bei `npm run migrate:prod` folgender Fehler auftritt:
+
+> [!WARNING]
+> The database schema is not empty. Read more about how to baseline an existing production database: https://pris.ly/d/migrate-baseline
+
+Dann erst `npx prisma migrate resolve --applied 0_init` ausführen und anschließend `npm run migrate:prod`

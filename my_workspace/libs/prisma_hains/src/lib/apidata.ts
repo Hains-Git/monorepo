@@ -123,7 +123,7 @@ async function getPublicVorlagesIdsByTeams(teamIds: number[]) {
 }
 
 async function getMonatsplanungSettings(user: any, isAdmin: boolean, canAcces: boolean) {
-  if (!user) return {};
+  if (!user?.account_info) return {};
   const teamIds = user.dienstplaners_teams.map((team: any) => team.team_id);
   const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
 
@@ -268,7 +268,8 @@ async function getAllApiData(userId: number) {
     }
   });
 
-  if (!user) return '';
+  console.log('user', user);
+  if (!user?.account_info) return '';
 
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
   const isAdmin = userGroupsNames.includes('HAINS Admins');

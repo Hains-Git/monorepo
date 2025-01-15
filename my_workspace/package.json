@@ -5,7 +5,8 @@
   "scripts": {
     "migration:create": "npx prisma migrate dev --create-only",
     "migrate": "npx prisma migrate dev",
-    "migrate:prod": "npx prisma migrate deploy"
+    "migrate:prod": "npx prisma migrate deploy",
+    "prisma:check": "npx prisma format && npx prisma validate && npx prisma generate"
   },
   "private": true,
   "dependencies": {
