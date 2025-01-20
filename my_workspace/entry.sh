@@ -14,7 +14,7 @@ npx prisma generate --watch &
 echo "Show open Ports after prisma generate"
 lsof -i -P -n -U
 
-rm /tmp/f53b52ad6d21cceb72df/fp160.sock
+rm /tmp/f53b52ad6d21cceb72df/fp161.sock
 
 # Development
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose
