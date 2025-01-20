@@ -114,7 +114,15 @@ async function getEinteilungen(id: number, windowAnfang: Date, windowEnde: Date)
         }
       ],
       mitarbeiters: {
-        platzhalter: false
+        OR: [
+          {
+            platzhalter: false
+          },
+          {
+            platzhalter: true,
+            aktiv: true
+          }
+        ]
       }
     },
     orderBy: [
@@ -137,7 +145,15 @@ async function getMitarbeiters(compute = true, as_ids = false) {
   const mitarbeiter = as_ids
     ? await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false
+          OR: [
+            {
+              platzhalter: false
+            },
+            {
+              platzhalter: true,
+              aktiv: true
+            }
+          ]
         },
         select: {
           id: true
@@ -148,7 +164,15 @@ async function getMitarbeiters(compute = true, as_ids = false) {
       })
     : await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false
+          OR: [
+            {
+              platzhalter: false
+            },
+            {
+              platzhalter: true,
+              aktiv: true
+            }
+          ]
         },
         include: {
           account_infos: true,
