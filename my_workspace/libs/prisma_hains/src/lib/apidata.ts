@@ -127,7 +127,7 @@ async function getMonatsplanungSettings(user: any) {
   const canAcces =
     userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
 
-  const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
+  const mitarbeiterId = user?.account_info?.mitarbeiter_id || 0;
 
   const res = {
     vorlagen: <any[]>[],
