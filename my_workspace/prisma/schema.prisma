@@ -64,6 +64,7 @@ model abwesentheitenueberblicks {
   updated_at     DateTime      @db.Timestamp(6)
   vu             Int?
   bu             Int?
+  soll_tzu       Int?          @default(0)
   mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ed4202ea8e")
 
   @@index([mitarbeiter_id], map: "index_abwesentheitenueberblicks_on_mitarbeiter_id")
