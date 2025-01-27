@@ -2018,6 +2018,7 @@ model users {
   oauth_access_tokens_new           oauth_access_tokens_new[]
   oauth_refresh_tokens              oauth_refresh_tokens[]
   users_gruppes                     users_gruppes[]
+  account_info                      account_infos?
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }

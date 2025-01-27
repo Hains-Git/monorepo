@@ -174,7 +174,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
           ]
         },
         include: {
-          account_infos: true,
+          account_info: true,
           dienstratings: true,
           vertrags: true
         },
