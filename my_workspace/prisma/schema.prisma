@@ -65,7 +65,8 @@ model abwesentheitenueberblicks {
   updated_at     DateTime      @db.Timestamp(6)
   vu             Int?
   bu             Int?
-  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id])
+  soll_tzu       Int?          @default(0)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ed4202ea8e")
 
   @@index([mitarbeiter_id], map: "index_abwesentheitenueberblicks_on_mitarbeiter_id")
 }
@@ -1720,6 +1721,7 @@ model po_diensts {
   weak_parallel_conflict                                             Boolean                             @default(false)
   pep_name                                                           String                              @default("") @db.VarChar
   pep_color                                                          String                              @default("") @db.VarChar
+  as_abwesenheit                                                     Boolean                             @default(false)
   abwesentheitenueberblick_counters                                  abwesentheitenueberblick_counters[]
   antragstyps_antragstyps_alternative_po_dienst_idTopo_diensts       antragstyps[]                       @relation("antragstyps_alternative_po_dienst_idTopo_diensts")
   antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
