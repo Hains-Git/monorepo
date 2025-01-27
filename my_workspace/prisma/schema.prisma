@@ -106,6 +106,7 @@ model account_infos {
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
   mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
+  user                users?        @relation(fields: [user_id], references: [id])
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
 }
