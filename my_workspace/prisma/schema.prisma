@@ -96,8 +96,8 @@ model account_infos {
   adresseLand         String?       @db.VarChar(30)
   aktivAb             DateTime?     @db.Timestamp(6)
   aktivBis            DateTime?     @db.Timestamp(6)
-  mitarbeiter_id      Int?
-  user_id             Int?
+  mitarbeiter_id      Int?          @unique
+  user_id             Int?          @unique
   geburtsdatum        DateTime?     @db.Date
   teilzeit            String?       @db.VarChar
   funktion            String?       @db.VarChar
@@ -1377,7 +1377,7 @@ model mitarbeiters {
   abwesentheitenueberblick_counters                            abwesentheitenueberblick_counters[]
   abwesentheitenueberblick_settings                            abwesentheitenueberblick_settings[]
   abwesentheitenueberblicks                                    abwesentheitenueberblicks[]
-  account_infos                                                account_infos[]
+  account_info                                                 account_infos?
   antraege_histories                                           antraege_histories[]
   antraeges                                                    antraeges[]
   arbeitszeit_absprachens                                      arbeitszeit_absprachens[]
@@ -2022,7 +2022,6 @@ model users {
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model users_gruppes {
   user_id   Int
   gruppe_id Int

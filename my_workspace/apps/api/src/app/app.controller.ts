@@ -13,6 +13,7 @@ export class AppController {
 
   @Get('apidata')
   getApiData(@Query() query: { user_id: string }) {
+    console.log('Hallo', query);
     return this.appService.getApiData(Number(query?.user_id));
   }
 
