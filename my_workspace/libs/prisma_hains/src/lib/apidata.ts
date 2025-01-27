@@ -360,7 +360,7 @@ async function getAllApiData(userId: number) {
         ]
       },
       include: {
-        account_infos: true,
+        account_info: true,
         dienstfreigabes: true,
         dienstratings: true,
         vertrags: {
