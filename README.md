@@ -36,42 +36,88 @@ Innerhalb des hains_monorepo Containers ausführen!
 
 # Prisma
 
-## Prisma Schema
+### Mastering Prisma Migrations from start
 
-- changing schema and adding just relations no need for migration.
-- just run `npx prisma generate` or docker restart
+- https://www.youtube.com/watch?v=_-YCDwm9M7M
 
-### Prisma pull DB
+Bei einer bestehenden Datenbank muss folgendes ausgefuehrt werden damit die migrations durchgehen.
 
-- `npx prisma db pull`
+1.  `npx prisma db pull`
+    > pulled das schema der Datenbank und fuegt es in die prisma.schema ein.
+    > Wichtig dabei ist es, das diese Datei vorhanden ist mit folgendem content:
 
-  > Jedoch sollte im prisma ordner zuerst die Datei schem.prisma erstellt sein mit folgendem Content.
+```prisma
+generator client {
+provider = "prisma-client-js"
+}
 
-  ```prisma
-  generator client {
-  provider = "prisma-client-js"
-  }
+datasource db {
+provider = "postgresql"
+url      = env("DATABASE_URL")
+}
+```
 
-  datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  }
-  ```
-
-- Dann in den Container den Befehl ausfuehren `npx prisma db pull`
-
-### Prisma Migrations
-
-- `prisma migrate dev --name bigint_to_int`
-  > LOESCHT DIE DATEN IN DER DATENBANK!!! DANGER!!!
-
-### Migration richtig ausfuehren!!:
-
-> Info Bei jeder Migration die 0 => 1,2,3,4,.. hoch zaehlen!
+2. Es muss eine Migration angelegt werden, die jedoch nicht ausgefuehrt wird, damit die history der migrations passt.
+   > Wichtig keine Änderungen an dem schema durchführen!
 
 - `mkdir -p prisma/migrations/0_init`
-- `npx prisma migrate diff \
---from-empty \
---to-schema-datamodel prisma/schema.prisma \
---script > prisma/migrations/0_init/migration.sql`
-- Im docker container run `npx prisma migrate resolve --applied 0_init`
+- `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql`
+- `npx prisma migrate resolve --applied 0_init`
+- `npx prisma db push`
+
+3. BigInt zu Int ändern.
+
+> [!IMPORTANT]
+> byte_size, einsatznummer -> Bleibt bei BigInt
+
+4. Danach sollten Aenderungen am schema moeglich sein.
+
+- Schema anpassen
+- Tasks ausfuehren -> format, validate und generate.
+- Migration erstellen: -> `npm run migration:create`
+  Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
+  sql kann ueberprueft werden und dnach ausgefuehrt werden.
+  In der SQL können die SERIAL durch INTEGER verändert werden.
+- Migration ausfuehren: -> `npm run migrate`
+
+`npx prisma format` -> Formatiert die Datei
+`npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
+`npx prisma generate` -> Generient den client, damit man die Modelle in typesript vorhanden sind.
+
+Production:
+Falls bei `npm run migrate:prod` folgender Fehler auftritt:
+
+> [!WARNING]
+> The database schema is not empty. Read more about how to baseline an existing production database: https://pris.ly/d/migrate-baseline
+
+Dann erst `npx prisma migrate resolve --applied 0_init` ausführen und anschließend `npm run migrate:prod`
+
+> [!WARNING]
+> Wenn der Datentyp SERIAL erzeugt wird, kann dieser falls es eine existente Tabelle ist ggf. einfach zu INTEGER geändert werden.
+> Dazu kann in der Datenbank unter sequences überprüft werden ob die passende SEQUENCE schon existiert.
+> Ansonsten sollte folgender Code genutzt werden:
+
+```SQL
+CREATE SEQUENCE "abwesentheitenueberblick_counters_id_sq" AS INTEGER;
+-- AlterTable
+ALTER TABLE "abwesentheitenueberblick_counters" DROP CONSTRAINT "abwesentheitenueberblick_counters_pkey",
+ALTER COLUMN "id" SET DATA TYPE INTEGER, -- SERIAL -> INTEGER
+...
+ADD CONSTRAINT "abwesentheitenueberblick_counters_pkey" PRIMARY KEY ("id");
+ALTER SEQUENCE "abwesentheitenueberblick_counters_id_sq" OWNED BY "abwesentheitenueberblick_counters"."id";
+```
+
+### Initialization Prisma for existing Migrations
+
+Für die erste Initialisierung wird wie folgt vorgegangen:
+
+- `npx prisma migrate resolve --applied 0_init`
+- Ggf. Datenbank Duplikate entfernen:
+  - mitarbeiter_id 33 in AccountInfos -> 147 kann gelöscht werden
+  - account_info_id 731 in Users -> user: 654 account_info_id zu 643 ändern
+  - user_id 171 in AccountInfos -> Accountinfo löschen
+  - user_id 195 in AccountInfos -> user 195 existiert nicht, user_id entfernen
+- Falls `npm run migrate:prod` in entry.sh vorhanden
+  - docker restart hains_monorepo
+- ansonsten:
+  - `npm run migrate:prod`

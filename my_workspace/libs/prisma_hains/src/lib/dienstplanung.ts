@@ -1,6 +1,6 @@
-import { Prisma, PrismaClient, dienstplans, parametersets, planparameters } from '@prisma/client';
+import { dienstplans, parametersets, planparameters } from '@prisma/client';
 
-import { prismaHains } from './prisma-hains';
+import { prismaDb } from './prisma-hains';
 import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYear, subDays } from 'date-fns';
 
 import { format, lastDayOfMonth } from 'date-fns';
@@ -8,8 +8,7 @@ import PlanerDate from './planerdate/planerdate';
 import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';
-
-let prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'>;
+import { getAllPlanungsinfo } from './crud/planungsinfo';
 
 type Dienstplan = {
   parametersets:
@@ -175,7 +174,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
           ]
         },
         include: {
-          account_infos: true,
+          account_info: true,
           dienstratings: true,
           vertrags: true
         },
@@ -241,7 +240,20 @@ async function getRotationen(compute = true, anfang: Date, ende: Date) {
           teams: true
         }
       },
-      mitarbeiters: true
+      mitarbeiters: {
+        include: {
+          vertrags: {
+            include: {
+              vertragstyps: {
+                include: {
+                  vertragsgruppes: true
+                }
+              },
+              vertrags_phases: true
+            }
+          }
+        }
+      }
     }
   });
   return rotationen;
@@ -713,10 +725,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
 }
 
 export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean) {
-  const db = prismaHains();
-  prismaDb = db;
-
-  const dienstplan: Dienstplan | null = await prismaDb.dienstplans.findFirst({
+  const dienstplan = await prismaDb.dienstplans.findFirst({
     where: {
       id: Number(dpl_id) || 0
     },
@@ -735,6 +744,7 @@ export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean)
 
   const { anfang, ende, anfang_frame, ende_frame } = get_dpl_anfang_ende(dienstplan);
   const data = await loadBasics(anfang_frame, ende_frame, dienstplan, loadVorschlaege);
+  const planungsinfos = await getAllPlanungsinfo(anfang, ende);
 
   if (!data) {
     return '';
@@ -757,6 +767,7 @@ export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean)
     sys: dienstplan?.sys,
     recompute: false,
     updated_at: dienstplan?.updated_at,
+    planungsinfos,
     ...data
   };
 }
