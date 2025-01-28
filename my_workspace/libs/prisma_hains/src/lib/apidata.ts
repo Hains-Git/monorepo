@@ -268,7 +268,10 @@ async function getAllApiData(userId: number) {
     }
   });
 
-  if (!user?.account_info) return '';
+  if (!user?.account_info) {
+    console.log('User.account_info not found', userId, user);
+    return '';
+  }
 
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
   const isAdmin = userGroupsNames.includes('HAINS Admins');
