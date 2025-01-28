@@ -1,23 +1,10 @@
 import { format } from 'date-fns';
-import { prismaHains } from '../prisma-hains';
+import { prismaDb } from '../prisma-hains';
 import { checkDate } from './zeitraumkategorie';
 
 class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-  private static MONTHS = [
-    'Jan',
-    'Feb',
-    'Mär',
-    'Apr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Okt',
-    'Nov',
-    'Dez',
-  ];
+  private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
   private static feiertage: Record<string, any> = {};
   private static last_week: Record<string, number> = {};
@@ -51,7 +38,7 @@ class PlanerDate {
   by_dienst: Record<string, any>;
   by_mitarbeiter: Record<string, any>;
   kws_vormonat: any[];
-  static prismaDb = prismaHains();
+  static prismaDb = prismaDb;
 
   constructor(date: Date, week_counter = 0, zeitraumkategorien: any[] = []) {
     this.einteilungen = {};
@@ -89,7 +76,7 @@ class PlanerDate {
           name: _feiertag.name,
           day: _feiertag.tag,
           month: _feiertag.monat,
-          full_date: _feiertag.datum,
+          full_date: _feiertag.datum
         };
         this.celebrate = 'feiertag';
       }
@@ -116,14 +103,14 @@ class PlanerDate {
           name: 'Neujahr',
           day: 1,
           month: 1,
-          full_date: `${yearStr}-01-01`,
+          full_date: `${yearStr}-01-01`
         },
         {
           name: 'Heilige Drei Könige',
           day: 6,
           month: 1,
-          full_date: `${yearStr}-01-06`,
-        },
+          full_date: `${yearStr}-01-06`
+        }
       ],
       '2': [],
       '3': [],
@@ -133,8 +120,8 @@ class PlanerDate {
           name: 'Tag der Arbeit',
           day: 1,
           month: 5,
-          full_date: `${yearStr}-05-01`,
-        },
+          full_date: `${yearStr}-05-01`
+        }
       ],
       '6': [],
       '7': [],
@@ -145,43 +132,43 @@ class PlanerDate {
           name: 'Tag der deutschen Einheit',
           day: 3,
           month: 10,
-          full_date: `${yearStr}-10-03`,
-        },
+          full_date: `${yearStr}-10-03`
+        }
       ],
       '11': [
         {
           name: 'Allerheiligen',
           day: 1,
           month: 11,
-          full_date: `${yearStr}-11-01`,
-        },
+          full_date: `${yearStr}-11-01`
+        }
       ],
       '12': [
         {
           name: 'Heiligabend',
           day: 24,
           month: 12,
-          full_date: `${yearStr}-12-24`,
+          full_date: `${yearStr}-12-24`
         },
         {
           name: 'Erster Weihnachtstag',
           day: 25,
           month: 12,
-          full_date: `${yearStr}-12-25`,
+          full_date: `${yearStr}-12-25`
         },
         {
           name: 'Zweiter Weihnachtstag',
           day: 26,
           month: 12,
-          full_date: `${yearStr}-12-26`,
+          full_date: `${yearStr}-12-26`
         },
         {
           name: 'Silvester',
           day: 31,
           month: 12,
-          full_date: `${yearStr}-12-31`,
-        },
-      ],
+          full_date: `${yearStr}-12-31`
+        }
+      ]
     };
 
     /*
@@ -199,20 +186,18 @@ class PlanerDate {
       'Christi Himmelfahrt': 39,
       Pfingstsonntag: 49,
       Pfingstmontag: 50,
-      Fronleichnam: 60,
+      Fronleichnam: 60
     };
 
     const ostern = PlanerDate.osterSonntag(year);
 
     for (const [name, differenz] of Object.entries(tagesDifferenzen)) {
-      const osterDatum = new Date(
-        ostern.getTime() + differenz * 24 * 60 * 60 * 1000
-      );
+      const osterDatum = new Date(ostern.getTime() + differenz * 24 * 60 * 60 * 1000);
       const feiertag = {
         name: name,
         day: osterDatum.getDate(),
         month: osterDatum.getMonth() + 1,
-        full_date: osterDatum.toISOString().split('T')[0],
+        full_date: osterDatum.toISOString().split('T')[0]
       };
       const monthKey = feiertag.month.toString();
       if (!PlanerDate.feiertage[yearStr][monthKey]) {
@@ -229,8 +214,8 @@ class PlanerDate {
           datum: feiertag.full_date,
           created_at: now,
           updated_at: now,
-          jahr: osterDatum.getFullYear(),
-        },
+          jahr: osterDatum.getFullYear()
+        }
       });
     }
   }
@@ -251,8 +236,8 @@ class PlanerDate {
     const yearStr = date.getFullYear();
     const exist = await PlanerDate.prismaDb.feiertages.findFirst({
       where: {
-        jahr: yearStr,
-      },
+        jahr: yearStr
+      }
     });
 
     if (!exist) {
@@ -261,8 +246,8 @@ class PlanerDate {
 
     const feiertag = await PlanerDate.prismaDb.feiertages.findFirst({
       where: {
-        datum: date,
-      },
+        datum: date
+      }
     });
 
     return feiertag || '';
@@ -296,23 +281,12 @@ class PlanerDate {
     // January 4 is always in week 1.
     const week1 = new Date(date.getFullYear(), 0, 4);
     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-    return (
-      1 +
-      Math.round(
-        ((date.getTime() - week1.getTime()) / 86400000 -
-          3 +
-          ((week1.getDay() + 6) % 7)) /
-          7
-      )
-    );
+    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
   }
 
   private getDayOfYear(date: Date): number {
     const start = new Date(date.getFullYear(), 0, 0);
-    const diff =
-      date.getTime() -
-      start.getTime() +
-      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+    const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
   }
