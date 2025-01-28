@@ -36,6 +36,18 @@ Innerhalb des hains_monorepo Containers ausführen!
 
 # Prisma
 
+### Initialization Prisma Migrations
+
+Für die erste Initialisierung wird wie folgt vorgegangen:
+
+- `npx prisma migrate resolve --applied 0_init`
+- Datenbank Duplikate entfernen:
+  - mitarbeiter_id 33 in AccountInfos -> 147 kann gelöscht werden
+  - account_info_id 731 in Users -> user: 654 account_info_id zu 643 ändern
+  - user_id 171 in AccountInfos -> Accountinfo löschen
+  - user_id 195 in AccountInfos -> user 195 existiert nicht, user_id entfernen
+- docker restart hains_monorepo oder `npm run migrate:prod`
+
 ### Mastering Prisma Migrations
 
 - https://www.youtube.com/watch?v=_-YCDwm9M7M
