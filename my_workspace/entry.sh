@@ -11,9 +11,8 @@ rm /tmp/f53b52ad6d21cceb72df/fp253.sock
 
 npm install --force
 
-npx prisma format
-npx prisma validate
-npx prisma generate
+npm run prisma:check
+# npm run migrate:prod
 
 # Development
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose
