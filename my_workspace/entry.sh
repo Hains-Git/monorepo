@@ -4,11 +4,9 @@ echo "Starting entry.sh in Path: $(pwd)"
 apt-get update
 apt-get install -y lsof
 echo "Show open Ports"
-lsof -i -P -n
+lsof -i -P -n -U
+# export NX_DAEMON=true
 
-export NX_DAEMON=true
-
-rm /tmp/f53b52ad6d21cceb72df/fp252.sock
 rm /tmp/f53b52ad6d21cceb72df/fp253.sock
 
 npm install --force
@@ -21,7 +19,7 @@ npx prisma generate
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose
 
 echo "Show open Ports after nx run-many"
-lsof -i -P -n
+lsof -i -P -n -U
 
 # Production
 # echo "Start build"

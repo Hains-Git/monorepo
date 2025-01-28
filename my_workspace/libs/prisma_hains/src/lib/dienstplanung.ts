@@ -1,3 +1,5 @@
+import { dienstplans, parametersets, planparameters } from '@prisma/client';
+
 import { prismaDb } from './prisma-hains';
 import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYear, subDays } from 'date-fns';
 
@@ -7,6 +9,14 @@ import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';
 import { getAllPlanungsinfo } from './crud/planungsinfo';
+
+type Dienstplan = {
+  parametersets:
+    | ({
+        planparameters: planparameters[];
+      } & parametersets)
+    | null;
+} & dienstplans;
 
 function getDataByHash(data: any, key = 'id') {
   return data.reduce((hash: any, value: any) => {
@@ -30,11 +40,11 @@ function check_anfang_ende(dienstplan: any) {
   return { anfang, ende };
 }
 
-function get_dpl_anfang_ende(dienstplan: any) {
+function get_dpl_anfang_ende(dienstplan: Dienstplan) {
   const { anfang, ende } = check_anfang_ende(dienstplan);
   const relevant_timeframe_size = dienstplan?.parametersets?.planparameters?.[0]?.relevant_timeframe_size;
-  const anfang_frame = subDays(anfang, relevant_timeframe_size);
-  const ende_frame = addDays(ende, relevant_timeframe_size);
+  const anfang_frame = subDays(anfang, relevant_timeframe_size || 0);
+  const ende_frame = addDays(ende, relevant_timeframe_size || 0);
   return {
     anfang,
     ende,
@@ -103,7 +113,15 @@ async function getEinteilungen(id: number, windowAnfang: Date, windowEnde: Date)
         }
       ],
       mitarbeiters: {
-        platzhalter: false
+        OR: [
+          {
+            platzhalter: false
+          },
+          {
+            platzhalter: true,
+            aktiv: true
+          }
+        ]
       }
     },
     orderBy: [
@@ -126,7 +144,15 @@ async function getMitarbeiters(compute = true, as_ids = false) {
   const mitarbeiter = as_ids
     ? await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false
+          OR: [
+            {
+              platzhalter: false
+            },
+            {
+              platzhalter: true,
+              aktiv: true
+            }
+          ]
         },
         select: {
           id: true
@@ -137,13 +163,19 @@ async function getMitarbeiters(compute = true, as_ids = false) {
       })
     : await prismaDb.mitarbeiters.findMany({
         where: {
-          platzhalter: false
+          OR: [
+            {
+              platzhalter: false
+            },
+            {
+              platzhalter: true,
+              aktiv: true
+            }
+          ]
         },
         include: {
-          account_infos: true,
+          account_info: true,
           dienstratings: true,
-          // qualifizierte_freigaben: true,
-          // vertrags_phases: true,
           vertrags: true
         },
         orderBy: {
@@ -631,19 +663,20 @@ async function computeDates(props: any) {
   computeWuensche(wuenschArr, dates, dienstkategoreieDienste);
 }
 
-async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
-  const bedarfs_eintraege = await getBedarfe(dienstplan?.dienstplanbedarf_id);
+async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienstplan, loadVorschlaege: boolean) {
+  const dplBedarfId = dienstplan?.dienstplanbedarf_id || 0;
+  const bedarfs_eintraege = await getBedarfe(dplBedarfId);
   if (Object.keys(bedarfs_eintraege).length === 0) {
     return false;
   }
   const dates = await createDateGridReact(anfangFrame, endeFrame);
-  const einteilungen = await getEinteilungen(64, anfangFrame, endeFrame);
+  const einteilungen = await getEinteilungen(loadVorschlaege ? dienstplan.id : 0, anfangFrame, endeFrame);
   const dienste = await getPoDienste();
   const mitarbeiter = await getMitarbeiters(true, true);
   const dienstkategorien = await getDienstkategories();
   const wuensche = await getWuensche(anfangFrame, endeFrame);
   const rotationenArr = await getRotationen(true, anfangFrame, endeFrame);
-  const schichten = await getSchichten(dienstplan?.dienstplanbedarf_id);
+  const schichten = await getSchichten(dplBedarfId);
   const bedarf = await getDienstbedarfe(anfangFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(dienste, bedarfs_eintraege);
   const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
@@ -691,7 +724,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: any) {
   };
 }
 
-export async function getDienstplanung(dpl_id: number) {
+export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean) {
   const dienstplan = await prismaDb.dienstplans.findFirst({
     where: {
       id: Number(dpl_id) || 0
@@ -710,7 +743,7 @@ export async function getDienstplanung(dpl_id: number) {
   }
 
   const { anfang, ende, anfang_frame, ende_frame } = get_dpl_anfang_ende(dienstplan);
-  const data = await loadBasics(anfang_frame, ende_frame, dienstplan);
+  const data = await loadBasics(anfang_frame, ende_frame, dienstplan, loadVorschlaege);
   const planungsinfos = await getAllPlanungsinfo(anfang, ende);
 
   if (!data) {

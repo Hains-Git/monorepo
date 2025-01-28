@@ -5,12 +5,12 @@ import { createOrUpdatePlanungsinfo } from '@my-workspace/prisma_hains';
 
 @Injectable()
 export class AppService {
-  async getDienstplanung(dienstplanId) {
-    const data = await getDienstplanung(dienstplanId);
+  async getDienstplanung(dienstplanId: number, loadVorschlaege: boolean) {
+    const data = await getDienstplanung(dienstplanId, loadVorschlaege);
     return data;
   }
-  async getApiData(userId) {
-    const data = await getAllApiData(Number(userId));
+  async getApiData(userId: number) {
+    const data = await getAllApiData(userId);
     return data;
   }
   async savePlanungsComment(body) {

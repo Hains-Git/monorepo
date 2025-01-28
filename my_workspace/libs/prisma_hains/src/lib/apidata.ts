@@ -43,14 +43,17 @@ async function transformMitarbeiter(mitarbeiter: any) {
   mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe: any) => freigabe.freigabetyp_id);
   mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map((dienstfreigabe: any) => dienstfreigabe.id);
   mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map((dienstrating: any) => dienstrating.id);
-  mitarbeiter['vertragphasen_ids'] = mitarbeiter.vertrags.reduce((vertragsPhasenIds: any, vertrag: any) => {
-    const phasenIds = vertrag.vertrags_phases.map((phase: any) => phase.id);
-    if (phasenIds.length) {
-      vertragsPhasenIds.push(...phasenIds);
-    }
-    return vertragsPhasenIds;
-  }, []);
-  mitarbeiter['vertrags'] = mitarbeiter.vertrags.map((vertrag: any) => vertrag.id);
+  mitarbeiter['vertragphasen_ids'] = [];
+  mitarbeiter['vertrags_arbeitszeits_ids'] = [];
+  mitarbeiter['vertrags'] = mitarbeiter.vertrags.map((vertrag: any) => {
+    vertrag.vertrags_phases?.forEach?.((phase: any) => {
+      mitarbeiter['vertragphasen_ids'].push(phase.id);
+    });
+    vertrag.vertrags_arbeitszeits?.forEach?.((arbeitszeit: any) => {
+      mitarbeiter['vertrags_arbeitszeits_ids'].push(arbeitszeit.id);
+    });
+    return vertrag.id;
+  });
   return mitarbeiter;
 }
 
@@ -119,22 +122,17 @@ async function getPublicVorlagesIdsByTeams(teamIds: number[]) {
   return publicVorlagen.map((v) => v.id || 0) || [];
 }
 
-async function getMonatsplanungSettings(user: any) {
-  if (!user) return {};
+async function getMonatsplanungSettings(user: any, isAdmin: boolean, canAcces: boolean) {
+  if (!user?.account_info) return {};
   const teamIds = user.dienstplaners_teams.map((team: any) => team.team_id);
-  const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
-  const isAdmin = userGroupsNames.includes('HAINS Admins');
-  const canAcces =
-    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
-
-  const mitarbeiterId = user?.account_info?.mitarbeiter_id || 0;
+  const mitarbeiterId = user.account_info.mitarbeiter_id || 0;
 
   const res = {
     vorlagen: <any[]>[],
     dienstplan_custom_felder: <any[]>[],
     dienstplan_custom_counter: <any[]>[],
-    dienstplan_settings: {
-      user_settings: user.dienstplaner_user_settings,
+    dienstplaner_settings: {
+      user_settings: user.dienstplaner_user_settings?.[0] || {},
       farbgruppen: user.dienstplaner_user_farbgruppens
     }
   };
@@ -215,8 +213,6 @@ function getAnfang(absprache: any) {
   result.setFullYear(new Date().getFullYear());
   if (absprache.von) {
     result = absprache.von;
-  } else if (absprache.vertragsPhase?.von) {
-    result = absprache.vertragsPhase.von;
   } else if (absprache.zeitraumKategorie?.anfang) {
     result = absprache.zeitraumKategorie.anfang;
   }
@@ -229,8 +225,6 @@ function getEnde(absprache: any) {
 
   if (absprache.bis) {
     result = absprache.bis;
-  } else if (absprache.vertragsPhase?.bis) {
-    result = absprache.vertragsPhase.bis;
   } else if (absprache.zeitraumKategorie?.ende) {
     result = absprache.zeitraumKategorie.ende;
   }
@@ -273,6 +267,16 @@ async function getAllApiData(userId: number) {
       include: { gruppes: true }
     }
   });
+
+  if (!user?.account_info) {
+    console.log('User.account_info not found', userId, user);
+    return '';
+  }
+
+  const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
+  const isAdmin = userGroupsNames.includes('HAINS Admins');
+  const canAcces =
+    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
 
   const bereicheArr = await getApiDataByKey('bereiches', {});
   const poDiensteArr = await getApiDataByKey('po_diensts', {
@@ -347,13 +351,25 @@ async function getAllApiData(userId: number) {
   res['mitarbeiters'] = await processAsyncData(
     'id',
     await getApiDataByKey('mitarbeiters', {
+      where: {
+        OR: [
+          {
+            platzhalter: false
+          },
+          {
+            platzhalter: true,
+            aktiv: true
+          }
+        ]
+      },
       include: {
-        account_infos: true,
+        account_info: true,
         dienstfreigabes: true,
         dienstratings: true,
         vertrags: {
           include: {
-            vertrags_phases: true
+            vertrags_phases: true,
+            vertrags_arbeitszeits: true
           }
         }
       }
@@ -361,7 +377,7 @@ async function getAllApiData(userId: number) {
     [transformMitarbeiter]
   );
   res['monatsplan_ansichten'] = MONATSPLAN_ANSICHTEN;
-  res['monatsplanung_settings'] = await getMonatsplanungSettings(user);
+  res['monatsplanung_settings'] = await getMonatsplanungSettings(user, isAdmin, canAcces);
   res['nicht_einteilen_absprachen'] = processData(
     'mitarbeiter_id',
     await getApiDataByKey('nicht_einteilen_absprachens', {
@@ -380,7 +396,7 @@ async function getAllApiData(userId: number) {
   );
   // res['nicht_einteilen_absprachen'] = {};
   res['po_dienste'] = poDienste;
-  res['publicvorlagen'] = await getPublicVorlagen(user);
+  res['publicvorlagen'] = isAdmin ? {} : await getPublicVorlagen(user);
   res['ratings'] = processData('id', await getApiDataByKey('dienstratings'));
 
   res['standorte'] = processData('id', await getApiDataByKey('standorts'));
@@ -399,6 +415,8 @@ async function getAllApiData(userId: number) {
   res['themen'] = processData('id', await getApiDataByKey('themas'));
   res['vertraege'] = processData('id', await getApiDataByKey('vertrags'));
   res['vertragsphasen'] = processData('id', await getApiDataByKey('vertrags_phases'));
+  res['vertrags_arbeitszeiten'] = processData('id', await getApiDataByKey('vertrags_arbeitszeits'));
+  res['vertragsstufen'] = processData('id', await getApiDataByKey('vertragsstuves'));
   const vertragsvarianten = await getApiDataByKey('vertrags_variantes');
   res['vertragstyp_varianten'] = vertragsvarianten.reduce((hashObj: any, vertragsvariante: any) => {
     const key = vertragsvariante.vertragstyp_id;

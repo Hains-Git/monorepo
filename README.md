@@ -3,7 +3,7 @@
 - Zum Starten der Umgebung muss hains_docker gestartet sein (dadurch ist die Datenbank erreichbar).
 - Es braucht eine ./my_workspace/.env.
   - Diese enthält die Datenbank-Verbindung:
-    DATABASE_URL="postgresql://USER:PW@postgres:5432/DB_NAME?schema=public"
+    DATABASE_URL=postgresql://USER:PW@postgres:5432/DB_NAME?schema=public
   - USER, PW und DB_NAME entsprechend ersetzen!
 
 ### Befehle:
@@ -32,7 +32,6 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
-
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
@@ -78,8 +77,32 @@ url      = env("DATABASE_URL")
 - Migration erstellen: -> `npm run migration:create`
   Es wird eine Migration unter prisma/migrations/datum_name/migration.sql
   sql kann ueberprueft werden und dnach ausgefuehrt werden.
+  In der SQL können die SERIAL durch INTEGER verändert werden.
 - Migration ausfuehren: -> `npm run migrate`
 
 `npx prisma format` -> Formatiert die Datei
 `npx prisma validate` -> Validiert die Datei auf moegliche Fehler.
 `npx prisma generate` -> Generient den client, damit man die Modelle in typesript vorhanden sind.
+
+Production:
+Falls bei `npm run migrate:prod` folgender Fehler auftritt:
+
+> [!WARNING]
+> The database schema is not empty. Read more about how to baseline an existing production database: https://pris.ly/d/migrate-baseline
+
+Dann erst `npx prisma migrate resolve --applied 0_init` ausführen und anschließend `npm run migrate:prod`
+
+> [!WARNING]
+> Wenn der Datentyp SERIAL erzeugt wird, kann dieser falls es eine existente Tabelle ist ggf. einfach zu INTEGER geändert werden.
+> Dazu kann in der Datenbank unter sequences überprüft werden ob die passende SEQUENCE schon existiert.
+> Ansonsten sollte folgender Code genutzt werden:
+
+```SQL
+CREATE SEQUENCE "abwesentheitenueberblick_counters_id_sq" AS INTEGER;
+-- AlterTable
+ALTER TABLE "abwesentheitenueberblick_counters" DROP CONSTRAINT "abwesentheitenueberblick_counters_pkey",
+ALTER COLUMN "id" SET DATA TYPE INTEGER, -- SERIAL -> INTEGER
+...
+ADD CONSTRAINT "abwesentheitenueberblick_counters_pkey" PRIMARY KEY ("id");
+ALTER SEQUENCE "abwesentheitenueberblick_counters_id_sq" OWNED BY "abwesentheitenueberblick_counters"."id";
+```

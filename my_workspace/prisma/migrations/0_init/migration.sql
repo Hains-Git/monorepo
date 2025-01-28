@@ -1,21 +1,21 @@
 -- CreateTable
 CREATE TABLE "abwesentheiten_spaltens" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "po_dienst_id" INTEGER,
+    "po_dienst_id" BIGINT,
 
     CONSTRAINT "abwesentheiten_spaltens_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_counters" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "planname" VARCHAR,
     "description" VARCHAR,
     "von" DATE,
@@ -28,13 +28,12 @@ CREATE TABLE "abwesentheitenueberblick_counters" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_settings" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "visible_columns" VARCHAR[] DEFAULT ARRAY[]::VARCHAR[],
     "visible_team_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "mitarbeitersId" INTEGER,
     "data_sorting" VARCHAR DEFAULT '',
 
     CONSTRAINT "abwesentheitenueberblick_settings_pkey" PRIMARY KEY ("id")
@@ -42,8 +41,8 @@ CREATE TABLE "abwesentheitenueberblick_settings" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblicks" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "jahr" INTEGER,
     "ug" INTEGER DEFAULT 30,
     "u" INTEGER DEFAULT 30,
@@ -59,13 +58,14 @@ CREATE TABLE "abwesentheitenueberblicks" (
     "updated_at" TIMESTAMP(6) NOT NULL,
     "vu" INTEGER,
     "bu" INTEGER,
+    "soll_tzu" INTEGER DEFAULT 0,
 
     CONSTRAINT "abwesentheitenueberblicks_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "account_infos" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "old_user_id" INTEGER,
     "comments" TEXT,
     "nameKurz" VARCHAR(255) DEFAULT '',
@@ -89,8 +89,8 @@ CREATE TABLE "account_infos" (
     "adresseLand" VARCHAR(30),
     "aktivAb" TIMESTAMP(6),
     "aktivBis" TIMESTAMP(6),
-    "mitarbeiter_id" INTEGER,
-    "user_id" INTEGER,
+    "mitarbeiter_id" BIGINT,
+    "user_id" BIGINT,
     "geburtsdatum" DATE,
     "teilzeit" VARCHAR,
     "funktion" VARCHAR,
@@ -104,7 +104,7 @@ CREATE TABLE "account_infos" (
 
 -- CreateTable
 CREATE TABLE "active_admin_comments" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "namespace" VARCHAR,
     "body" TEXT,
     "resource_type" VARCHAR,
@@ -119,7 +119,7 @@ CREATE TABLE "active_admin_comments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_attachments" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR NOT NULL,
     "record_type" VARCHAR NOT NULL,
     "record_id" INTEGER NOT NULL,
@@ -131,7 +131,7 @@ CREATE TABLE "active_storage_attachments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_blobs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "key" VARCHAR NOT NULL,
     "filename" VARCHAR NOT NULL,
     "content_type" VARCHAR,
@@ -145,7 +145,7 @@ CREATE TABLE "active_storage_blobs" (
 
 -- CreateTable
 CREATE TABLE "admin_users" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "email" VARCHAR(50) NOT NULL DEFAULT '',
     "encrypted_password" VARCHAR NOT NULL DEFAULT '',
     "reset_password_token" VARCHAR(160),
@@ -159,15 +159,15 @@ CREATE TABLE "admin_users" (
 
 -- CreateTable
 CREATE TABLE "allgemeine_vorlages" (
-    "id" SERIAL NOT NULL,
-    "vorlage_id" INTEGER,
-    "dienstplan_path_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "vorlage_id" BIGINT,
+    "dienstplan_path_id" BIGINT,
     "publishable" BOOLEAN DEFAULT false,
     "filepattern" VARCHAR DEFAULT '',
     "order" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "pdf_zusatz_dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "pdf_zusatz_dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
     "freitext" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "allgemeine_vorlages_pkey" PRIMARY KEY ("id")
@@ -175,10 +175,10 @@ CREATE TABLE "allgemeine_vorlages" (
 
 -- CreateTable
 CREATE TABLE "antraege_histories" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "antraege_id" INTEGER,
-    "antragsstatus_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "antraege_id" BIGINT,
+    "antragsstatus_id" BIGINT,
     "weiteres" VARCHAR,
     "kommentar" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -189,10 +189,10 @@ CREATE TABLE "antraege_histories" (
 
 -- CreateTable
 CREATE TABLE "antraeges" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "antragstyp_id" INTEGER,
-    "antragsstatus_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "antragstyp_id" BIGINT,
+    "antragsstatus_id" BIGINT,
     "start" DATE,
     "ende" DATE,
     "abgesprochen" VARCHAR,
@@ -205,7 +205,7 @@ CREATE TABLE "antraeges" (
 
 -- CreateTable
 CREATE TABLE "antragsstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -216,14 +216,14 @@ CREATE TABLE "antragsstatuses" (
 
 -- CreateTable
 CREATE TABLE "antragstyps" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "po_dienst_id" INTEGER,
-    "we_holiday_po_dienst_id" INTEGER,
-    "check_alternative_po_dienst_id" INTEGER,
-    "alternative_po_dienst_id" INTEGER,
+    "po_dienst_id" BIGINT,
+    "we_holiday_po_dienst_id" BIGINT,
+    "check_alternative_po_dienst_id" BIGINT,
+    "alternative_po_dienst_id" BIGINT,
 
     CONSTRAINT "antragstyps_pkey" PRIMARY KEY ("id")
 );
@@ -240,21 +240,21 @@ CREATE TABLE "ar_internal_metadata" (
 
 -- CreateTable
 CREATE TABLE "arbeitsplatzs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR DEFAULT '',
-    "bereich_id" INTEGER,
+    "bereich_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "standort_id" INTEGER,
+    "standort_id" BIGINT,
 
     CONSTRAINT "arbeitsplatzs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "arbeitszeit_absprachens" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "zeitraumkategorie_id" INTEGER NOT NULL,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "zeitraumkategorie_id" BIGINT NOT NULL,
     "von" DATE,
     "bis" DATE,
     "arbeitszeit_von" TIME(6) NOT NULL,
@@ -267,7 +267,7 @@ CREATE TABLE "arbeitszeit_absprachens" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeittyps" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -284,7 +284,7 @@ CREATE TABLE "arbeitszeittyps" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeitverteilungs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "dauer" INTEGER,
     "verteilung" TIME[],
@@ -292,9 +292,9 @@ CREATE TABLE "arbeitszeitverteilungs" (
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "std" DECIMAL(6,2) DEFAULT 0,
-    "dienstgruppe_id" INTEGER,
+    "dienstgruppe_id" BIGINT,
     "pre_std" DECIMAL(6,2) DEFAULT 0,
-    "pre_dienstgruppe_id" INTEGER,
+    "pre_dienstgruppe_id" BIGINT,
     "pre_ueberschneidung_minuten" INTEGER NOT NULL DEFAULT 30,
 
     CONSTRAINT "arbeitszeitverteilungs_pkey" PRIMARY KEY ("id")
@@ -302,12 +302,12 @@ CREATE TABLE "arbeitszeitverteilungs" (
 
 -- CreateTable
 CREATE TABLE "automatische_einteilungens" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "von" DATE,
     "bis" DATE,
-    "zeitraumkategorie_id" INTEGER,
+    "zeitraumkategorie_id" BIGINT,
     "days" INTEGER DEFAULT 0,
 
     CONSTRAINT "automatische_einteilungens_pkey" PRIMARY KEY ("id")
@@ -315,43 +315,43 @@ CREATE TABLE "automatische_einteilungens" (
 
 -- CreateTable
 CREATE TABLE "bedarfs_eintrags" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "tag" DATE,
-    "dienstplanbedarf_id" INTEGER,
-    "po_dienst_id" INTEGER,
-    "dienstbedarf_id" INTEGER,
-    "dienstverteilungstyp_id" INTEGER,
-    "bereich_id" INTEGER,
+    "dienstplanbedarf_id" BIGINT,
+    "po_dienst_id" BIGINT,
+    "dienstbedarf_id" BIGINT,
+    "dienstverteilungstyp_id" BIGINT,
+    "bereich_id" BIGINT,
     "verteilungscode" VARCHAR,
     "is_block" BOOLEAN DEFAULT false,
-    "first_entry" INTEGER,
+    "first_entry" BIGINT,
     "min" INTEGER DEFAULT 1,
     "opt" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "ausgleich_tage" INTEGER DEFAULT 0,
-    "kostenstelle_id" INTEGER DEFAULT 2,
+    "kostenstelle_id" BIGINT DEFAULT 2,
 
     CONSTRAINT "bedarfs_eintrags_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "mitarbeiter_kommentar" VARCHAR,
     "hains_task_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "benachrichtigungs_status_id" INTEGER DEFAULT 1,
-    "mitarbeiter_rating" INTEGER,
+    "benachrichtigungs_status_id" BIGINT DEFAULT 1,
+    "mitarbeiter_rating" BIGINT,
 
     CONSTRAINT "benachrichtigungs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -362,7 +362,7 @@ CREATE TABLE "benachrichtigungs_statuses" (
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_typs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "respond" BOOLEAN DEFAULT false,
     "status_optionen" INTEGER[],
@@ -378,10 +378,10 @@ CREATE TABLE "benachrichtigungs_typs" (
 
 -- CreateTable
 CREATE TABLE "bereich_tagesverteilers" (
-    "id" SERIAL NOT NULL,
-    "tagesverteiler_id" INTEGER,
-    "bereich_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "tagesverteiler_id" BIGINT,
+    "bereich_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -392,9 +392,9 @@ CREATE TABLE "bereich_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereich_wochenverteilers" (
-    "id" SERIAL NOT NULL,
-    "bereich_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "bereich_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "color_bg" VARCHAR DEFAULT '#ffffff',
     "color_hl" VARCHAR DEFAULT '#ffffff',
     "order" INTEGER,
@@ -407,7 +407,7 @@ CREATE TABLE "bereich_wochenverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereiches" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "info" TEXT,
@@ -415,7 +415,7 @@ CREATE TABLE "bereiches" (
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
     "planname" TEXT,
-    "bereiches_id" INTEGER,
+    "bereiches_id" BIGINT,
     "verteiler_frei" BOOLEAN DEFAULT false,
 
     CONSTRAINT "bereiches_pkey" PRIMARY KEY ("id")
@@ -423,9 +423,9 @@ CREATE TABLE "bereiches" (
 
 -- CreateTable
 CREATE TABLE "channel_room_users" (
-    "id" SERIAL NOT NULL,
-    "channel_room_id" INTEGER,
-    "user_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "channel_room_id" BIGINT,
+    "user_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "subscription" INTEGER NOT NULL DEFAULT 0,
@@ -436,7 +436,7 @@ CREATE TABLE "channel_room_users" (
 
 -- CreateTable
 CREATE TABLE "channel_rooms" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR NOT NULL DEFAULT '',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -446,7 +446,7 @@ CREATE TABLE "channel_rooms" (
 
 -- CreateTable
 CREATE TABLE "datei_typs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -456,7 +456,7 @@ CREATE TABLE "datei_typs" (
 
 -- CreateTable
 CREATE TABLE "dateis" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "ersteller_id" INTEGER,
@@ -470,19 +470,19 @@ CREATE TABLE "dateis" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarves" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "min" INTEGER,
-    "po_dienst_id" INTEGER,
-    "bereich_id" INTEGER,
+    "po_dienst_id" BIGINT,
+    "bereich_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "end_date" DATE,
-    "dienstverteilungstyp_id" INTEGER,
+    "dienstverteilungstyp_id" BIGINT,
     "verteilungscode" VARCHAR,
     "opt" INTEGER,
-    "arbeitszeitverteilung_id" INTEGER,
-    "zeitraumkategories_id" INTEGER,
-    "kostenstelle_id" INTEGER DEFAULT 2,
+    "arbeitszeitverteilung_id" BIGINT,
+    "zeitraumkategories_id" BIGINT,
+    "kostenstelle_id" BIGINT DEFAULT 2,
     "ignore_in_urlaubssaldo" BOOLEAN DEFAULT false,
 
     CONSTRAINT "dienstbedarves_pkey" PRIMARY KEY ("id")
@@ -490,32 +490,32 @@ CREATE TABLE "dienstbedarves" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarveshistory" (
-    "id" SERIAL NOT NULL,
-    "dienstbedarf_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "dienstbedarf_id" BIGINT,
     "min" INTEGER,
     "opt" INTEGER,
-    "arbeitszeitverteilungs_id" INTEGER,
+    "arbeitszeitverteilungs_id" BIGINT,
 
     CONSTRAINT "dienstbedarveshistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "einteilungsstatus_id" INTEGER,
-    "po_dienst_id" INTEGER,
-    "dienstplan_id" INTEGER,
+    "einteilungsstatus_id" BIGINT,
+    "po_dienst_id" BIGINT,
+    "dienstplan_id" BIGINT,
     "reason" VARCHAR,
     "number" INTEGER,
     "tag" DATE,
-    "einteilungskontext_id" INTEGER,
+    "einteilungskontext_id" BIGINT,
     "doppeldienst_id" INTEGER DEFAULT 0,
     "schicht_nummern" INTEGER[] DEFAULT ARRAY[0]::INTEGER[],
     "arbeitsplatz_id" INTEGER DEFAULT 1,
-    "bereich_id" INTEGER,
+    "bereich_id" BIGINT,
     "context_comment" VARCHAR DEFAULT '',
     "info_comment" VARCHAR DEFAULT '',
     "is_optional" BOOLEAN DEFAULT false,
@@ -525,7 +525,7 @@ CREATE TABLE "diensteinteilungs" (
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs_versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -538,7 +538,7 @@ CREATE TABLE "diensteinteilungs_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabe_versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -551,23 +551,23 @@ CREATE TABLE "dienstfreigabe_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabes" (
-    "id" SERIAL NOT NULL,
-    "freigabetyp_id" INTEGER,
-    "mitarbeiter_id" INTEGER,
-    "freigabestatus_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "freigabetyp_id" BIGINT,
+    "mitarbeiter_id" BIGINT,
+    "freigabestatus_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "user_id" INTEGER,
-    "standort_id" INTEGER,
+    "user_id" BIGINT,
+    "standort_id" BIGINT,
 
     CONSTRAINT "dienstfreigabes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstgruppes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
-    "dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "use_in_publish" BOOLEAN NOT NULL DEFAULT false,
@@ -581,9 +581,9 @@ CREATE TABLE "dienstgruppes" (
 
 -- CreateTable
 CREATE TABLE "dienstkategorie_teams" (
-    "id" SERIAL NOT NULL,
-    "dienstkategorie_id" INTEGER,
-    "team_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "dienstkategorie_id" BIGINT,
+    "team_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -592,7 +592,7 @@ CREATE TABLE "dienstkategorie_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstkategories" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -608,9 +608,9 @@ CREATE TABLE "dienstkategories" (
 
 -- CreateTable
 CREATE TABLE "dienstkategoriethemas" (
-    "id" SERIAL NOT NULL,
-    "dienstkategorie_id" INTEGER,
-    "thema_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "dienstkategorie_id" BIGINT,
+    "thema_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -619,11 +619,11 @@ CREATE TABLE "dienstkategoriethemas" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_counters" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR DEFAULT 'Zähler',
     "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "mitarbeiter_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "dienstplan_custom_feld_id" INTEGER,
+    "mitarbeiter_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "dienstplan_custom_feld_id" BIGINT,
     "beschreibung" TEXT DEFAULT '',
     "cell_id" VARCHAR DEFAULT '',
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -642,10 +642,10 @@ CREATE TABLE "dienstplan_custom_counters" (
     "count" VARCHAR DEFAULT 'Einteilungen',
     "funktion" VARCHAR DEFAULT '',
     "feiertage" VARCHAR DEFAULT 'auch',
-    "mitarbeiterteam_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "mitarbeiterfunktionen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "diensteteam_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "wochentage" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "mitarbeiterteam_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "mitarbeiterfunktionen_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "diensteteam_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "wochentage" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
     "empty_as_regeldienst" BOOLEAN DEFAULT false,
 
     CONSTRAINT "dienstplan_custom_counters_pkey" PRIMARY KEY ("id")
@@ -653,23 +653,23 @@ CREATE TABLE "dienstplan_custom_counters" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_felds" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "ansicht_id" INTEGER DEFAULT 0,
-    "vorlage_id" INTEGER,
+    "vorlage_id" BIGINT,
     "row" BOOLEAN DEFAULT true,
-    "index" INTEGER DEFAULT 0,
+    "index" BIGINT DEFAULT 0,
     "name" VARCHAR DEFAULT 'Neue Zeile',
-    "count_all_typ" INTEGER DEFAULT 0,
+    "count_all_typ" BIGINT DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "custom_counter_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "custom_counter_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
 
     CONSTRAINT "dienstplan_custom_felds_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplan_paths" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "path" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -677,8 +677,8 @@ CREATE TABLE "dienstplan_paths" (
     "offset_to_now" INTEGER DEFAULT 0,
     "nr_versions" INTEGER DEFAULT 0,
     "plan_pattern" VARCHAR DEFAULT '',
-    "planinterval_id" INTEGER,
-    "plan_tab_id" INTEGER,
+    "planinterval_id" BIGINT,
+    "plan_tab_id" BIGINT,
     "name" VARCHAR NOT NULL DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
     "begin_on_monday" BOOLEAN DEFAULT false,
@@ -689,24 +689,24 @@ CREATE TABLE "dienstplan_paths" (
 
 -- CreateTable
 CREATE TABLE "dienstplanbedarves" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "anfang" DATE,
     "ende" DATE,
-    "dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
 
     CONSTRAINT "dienstplanbedarves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_farbgruppens" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT,
     "color" VARCHAR DEFAULT '#000000',
-    "pos" INTEGER DEFAULT 1,
-    "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "dienstkategorien_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "pos" BIGINT DEFAULT 1,
+    "dienste_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "dienstkategorien_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "show" BOOLEAN DEFAULT true,
@@ -716,8 +716,8 @@ CREATE TABLE "dienstplaner_user_farbgruppens" (
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_settings" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT,
     "abwesend" BOOLEAN DEFAULT true,
     "mehrfacheinteilung" BOOLEAN DEFAULT true,
     "ueberschneidung" BOOLEAN DEFAULT true,
@@ -746,9 +746,9 @@ CREATE TABLE "dienstplaner_user_settings" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_teams" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER,
-    "team_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT,
+    "team_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -757,9 +757,9 @@ CREATE TABLE "dienstplaners_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_verteiler_vorlagens" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER,
-    "vorlage_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT,
+    "vorlage_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -768,24 +768,24 @@ CREATE TABLE "dienstplaners_verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "dienstplans" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
-    "parameterset_id" INTEGER,
+    "parameterset_id" BIGINT,
     "anfang" DATE,
     "ende" DATE,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "beschreibung" VARCHAR,
-    "dienstplanstatus_id" INTEGER,
+    "dienstplanstatus_id" BIGINT,
     "sys" BOOLEAN DEFAULT false,
-    "dienstplanbedarf_id" INTEGER,
+    "dienstplanbedarf_id" BIGINT,
 
     CONSTRAINT "dienstplans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplanstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -798,9 +798,9 @@ CREATE TABLE "dienstplanstatuses" (
 
 -- CreateTable
 CREATE TABLE "dienstratings" (
-    "id" SERIAL NOT NULL,
-    "po_dienst_id" INTEGER,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "po_dienst_id" BIGINT,
+    "mitarbeiter_id" BIGINT,
     "rating" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -810,7 +810,7 @@ CREATE TABLE "dienstratings" (
 
 -- CreateTable
 CREATE TABLE "diensts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "datum" TIMESTAMP(6),
     "dienstname" VARCHAR(255),
     "kommentar" TEXT,
@@ -824,7 +824,7 @@ CREATE TABLE "diensts" (
 
 -- CreateTable
 CREATE TABLE "dienstverteilungstyps" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -836,10 +836,10 @@ CREATE TABLE "dienstverteilungstyps" (
 
 -- CreateTable
 CREATE TABLE "dienstwunsches" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "tag" DATE,
-    "dienstkategorie_id" INTEGER,
+    "dienstkategorie_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -848,9 +848,9 @@ CREATE TABLE "dienstwunsches" (
 
 -- CreateTable
 CREATE TABLE "einteilung_rotations" (
-    "id" SERIAL NOT NULL,
-    "kontingent_id" INTEGER,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "kontingent_id" BIGINT,
+    "mitarbeiter_id" BIGINT,
     "mitarbeiter_planname" VARCHAR,
     "prioritaet" INTEGER,
     "von" DATE,
@@ -868,7 +868,7 @@ CREATE TABLE "einteilung_rotations" (
 
 -- CreateTable
 CREATE TABLE "einteilung_versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -886,7 +886,7 @@ CREATE TABLE "einteilung_versions" (
 
 -- CreateTable
 CREATE TABLE "einteilungskontexts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -894,13 +894,15 @@ CREATE TABLE "einteilungskontexts" (
     "updated_at" TIMESTAMP(6) NOT NULL,
     "tagesverteiler" BOOLEAN DEFAULT false,
     "default" BOOLEAN DEFAULT false,
+    "ersatz" BOOLEAN DEFAULT false,
+    "einspringen" BOOLEAN DEFAULT false,
 
     CONSTRAINT "einteilungskontexts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "einteilungsstatuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "public" BOOLEAN DEFAULT false,
@@ -916,7 +918,7 @@ CREATE TABLE "einteilungsstatuses" (
 
 -- CreateTable
 CREATE TABLE "feiertages" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "key" VARCHAR,
     "datum" DATE,
@@ -932,7 +934,7 @@ CREATE TABLE "feiertages" (
 
 -- CreateTable
 CREATE TABLE "freigabestatuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -947,7 +949,7 @@ CREATE TABLE "freigabestatuses" (
 
 -- CreateTable
 CREATE TABLE "freigabetyps" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "planname" VARCHAR,
     "beschreibung" TEXT,
@@ -960,8 +962,8 @@ CREATE TABLE "freigabetyps" (
 
 -- CreateTable
 CREATE TABLE "freistellungs" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "mitarbeiter_planname" VARCHAR(255),
     "plandatum" TIMESTAMP(6),
     "einteilung" VARCHAR(255),
@@ -973,7 +975,7 @@ CREATE TABLE "freistellungs" (
 
 -- CreateTable
 CREATE TABLE "funktions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
@@ -981,14 +983,14 @@ CREATE TABLE "funktions" (
     "prio" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "team_id" INTEGER,
+    "team_id" BIGINT,
 
     CONSTRAINT "funktions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "geraetebereiches" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -999,7 +1001,7 @@ CREATE TABLE "geraetebereiches" (
 
 -- CreateTable
 CREATE TABLE "geraeteklasses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "beschreibung" VARCHAR,
@@ -1011,11 +1013,11 @@ CREATE TABLE "geraeteklasses" (
 
 -- CreateTable
 CREATE TABLE "geraetepasses" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "einweiser" VARCHAR,
     "einweisungsdatum" DATE,
-    "geraet_id" INTEGER,
+    "geraet_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "herstellereinweisung" BOOLEAN DEFAULT false,
@@ -1026,11 +1028,11 @@ CREATE TABLE "geraetepasses" (
 
 -- CreateTable
 CREATE TABLE "geraets" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "hersteller" VARCHAR,
     "typ" VARCHAR,
-    "geraeteklasse_id" INTEGER,
+    "geraeteklasse_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "in_use" BOOLEAN DEFAULT true,
@@ -1041,7 +1043,7 @@ CREATE TABLE "geraets" (
 
 -- CreateTable
 CREATE TABLE "gruppes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255),
     "resource_id" INTEGER,
     "resource_type" VARCHAR(255),
@@ -1053,15 +1055,15 @@ CREATE TABLE "gruppes" (
 
 -- CreateTable
 CREATE TABLE "hains_tasks" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "als_popup" BOOLEAN,
     "gruppe_id" INTEGER,
-    "mitarbeiter_ids" INTEGER[],
-    "benachrichtigungs_typ_id" INTEGER,
+    "mitarbeiter_ids" BIGINT[],
+    "benachrichtigungs_typ_id" BIGINT,
     "send_notification" BOOLEAN DEFAULT false,
     "benachrichtigungs_text" TEXT,
     "benachrichtigungs_titel" VARCHAR,
@@ -1070,7 +1072,7 @@ CREATE TABLE "hains_tasks" (
     "alle_mitarbeiter" BOOLEAN DEFAULT false,
     "dienst_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "link" VARCHAR,
-    "zeitraumkategorie_id" INTEGER,
+    "zeitraumkategorie_id" BIGINT,
     "wiederholen" BOOLEAN DEFAULT false,
     "funktions_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "last_day" DATE,
@@ -1082,8 +1084,8 @@ CREATE TABLE "hains_tasks" (
 
 -- CreateTable
 CREATE TABLE "jahresbilanzs" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "plusstunden" DECIMAL(6,2) DEFAULT 0,
     "ueberstunden" DECIMAL(6,2) DEFAULT 0,
     "urlaubstage" INTEGER DEFAULT 0,
@@ -1097,7 +1099,7 @@ CREATE TABLE "jahresbilanzs" (
 
 -- CreateTable
 CREATE TABLE "kalendermarkierungs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "category" VARCHAR,
     "name" VARCHAR,
     "color" VARCHAR,
@@ -1113,7 +1115,7 @@ CREATE TABLE "kalendermarkierungs" (
 
 -- CreateTable
 CREATE TABLE "kalenderwoches" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "jahr" INTEGER NOT NULL,
     "kw" INTEGER NOT NULL,
     "montag" DATE NOT NULL,
@@ -1129,9 +1131,9 @@ CREATE TABLE "kalenderwoches" (
 
 -- CreateTable
 CREATE TABLE "kontingent_po_diensts" (
-    "id" SERIAL NOT NULL,
-    "kontingent_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "kontingent_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "eingeteilt_count_factor" INTEGER NOT NULL DEFAULT 1,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1142,15 +1144,15 @@ CREATE TABLE "kontingent_po_diensts" (
 
 -- CreateTable
 CREATE TABLE "kontingents" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "kommentar" TEXT,
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
     "position" INTEGER,
     "kurzname" VARCHAR,
-    "thema_ids" INTEGER[],
-    "team_id" INTEGER DEFAULT 8,
+    "thema_ids" BIGINT[],
+    "team_id" BIGINT DEFAULT 8,
     "default" BOOLEAN DEFAULT false,
     "sonderrotation" BOOLEAN DEFAULT false,
     "show_all_rotations" BOOLEAN DEFAULT false,
@@ -1160,7 +1162,7 @@ CREATE TABLE "kontingents" (
 
 -- CreateTable
 CREATE TABLE "kostenstelles" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "nummer" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1171,7 +1173,7 @@ CREATE TABLE "kostenstelles" (
 
 -- CreateTable
 CREATE TABLE "links" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "url" VARCHAR,
@@ -1183,7 +1185,7 @@ CREATE TABLE "links" (
 
 -- CreateTable
 CREATE TABLE "mailer_addresses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "addresse" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1194,9 +1196,9 @@ CREATE TABLE "mailer_addresses" (
 
 -- CreateTable
 CREATE TABLE "mailer_ccs" (
-    "id" SERIAL NOT NULL,
-    "mailer_context_id" INTEGER,
-    "mailer_addresse_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mailer_context_id" BIGINT,
+    "mailer_addresse_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1205,12 +1207,12 @@ CREATE TABLE "mailer_ccs" (
 
 -- CreateTable
 CREATE TABLE "mailer_contexts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "context" VARCHAR NOT NULL DEFAULT '',
     "subject" VARCHAR NOT NULL DEFAULT '',
     "body" TEXT NOT NULL DEFAULT '',
-    "from_id" INTEGER,
-    "reply_to_id" INTEGER,
+    "from_id" BIGINT,
+    "reply_to_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1219,9 +1221,9 @@ CREATE TABLE "mailer_contexts" (
 
 -- CreateTable
 CREATE TABLE "mailer_tos" (
-    "id" SERIAL NOT NULL,
-    "mailer_context_id" INTEGER,
-    "mailer_addresse_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mailer_context_id" BIGINT,
+    "mailer_addresse_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1230,8 +1232,8 @@ CREATE TABLE "mailer_tos" (
 
 -- CreateTable
 CREATE TABLE "merkmal_options" (
-    "id" SERIAL NOT NULL,
-    "merkmal_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "merkmal_id" BIGINT,
     "wert" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1241,7 +1243,7 @@ CREATE TABLE "merkmal_options" (
 
 -- CreateTable
 CREATE TABLE "merkmals" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "can_edit" BOOLEAN,
@@ -1254,9 +1256,9 @@ CREATE TABLE "merkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiter_default_eingeteilts" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "po_dienst_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "po_dienst_id" BIGINT,
     "year" INTEGER NOT NULL,
     "eingeteilt" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1267,9 +1269,9 @@ CREATE TABLE "mitarbeiter_default_eingeteilts" (
 
 -- CreateTable
 CREATE TABLE "mitarbeitermerkmals" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "merkmal_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "merkmal_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "wert" VARCHAR,
@@ -1280,7 +1282,7 @@ CREATE TABLE "mitarbeitermerkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiters" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255) DEFAULT '',
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
@@ -1294,7 +1296,7 @@ CREATE TABLE "mitarbeiters" (
     "zeit_kommentar" VARCHAR,
     "abwesend" BOOLEAN DEFAULT false,
     "pass_count" INTEGER DEFAULT 0,
-    "funktion_id" INTEGER DEFAULT 6,
+    "funktion_id" BIGINT DEFAULT 6,
     "personalnummer" VARCHAR DEFAULT '',
 
     CONSTRAINT "mitarbeiters_pkey" PRIMARY KEY ("id")
@@ -1302,8 +1304,8 @@ CREATE TABLE "mitarbeiters" (
 
 -- CreateTable
 CREATE TABLE "nef_fahrts" (
-    "id" SERIAL NOT NULL,
-    "notfallmedizin_register_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "notfallmedizin_register_id" BIGINT,
     "fahrtnummer" INTEGER,
     "datum" DATE,
     "einsatznummer" BIGINT,
@@ -1318,9 +1320,9 @@ CREATE TABLE "nef_fahrts" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_absprachens" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER NOT NULL,
-    "zeitraumkategorie_id" INTEGER NOT NULL,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT NOT NULL,
+    "zeitraumkategorie_id" BIGINT NOT NULL,
     "von" DATE,
     "bis" DATE,
 
@@ -1329,17 +1331,17 @@ CREATE TABLE "nicht_einteilen_absprachens" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_standort_themen" (
-    "id" SERIAL NOT NULL,
-    "absprache_id" INTEGER NOT NULL,
-    "standort_id" INTEGER NOT NULL,
-    "thema_id" INTEGER NOT NULL,
+    "id" BIGSERIAL NOT NULL,
+    "absprache_id" BIGINT NOT NULL,
+    "standort_id" BIGINT NOT NULL,
+    "thema_id" BIGINT NOT NULL,
 
     CONSTRAINT "nicht_einteilen_standort_themen_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "note_categories" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "category" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1349,25 +1351,25 @@ CREATE TABLE "note_categories" (
 
 -- CreateTable
 CREATE TABLE "notes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "notiz" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "ersteller_id" INTEGER,
+    "mitarbeiter_id" BIGINT,
+    "ersteller_id" BIGINT,
     "private_note" BOOLEAN DEFAULT false,
     "title" VARCHAR,
-    "note_category_id" INTEGER,
+    "note_category_id" BIGINT,
 
     CONSTRAINT "notes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "notes_histories" (
-    "id" SERIAL NOT NULL,
-    "note_id" INTEGER,
-    "mitarbeiter_id" INTEGER,
-    "ersteller_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "note_id" BIGINT,
+    "mitarbeiter_id" BIGINT,
+    "ersteller_id" BIGINT,
     "private_note" BOOLEAN,
     "notiz" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1378,8 +1380,8 @@ CREATE TABLE "notes_histories" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_registers" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "titel" VARCHAR DEFAULT '',
     "anrede" VARCHAR DEFAULT '',
     "nasim" BOOLEAN DEFAULT false,
@@ -1398,7 +1400,7 @@ CREATE TABLE "notfallmedizin_registers" (
     "freigabe_date" DATE,
     "pruefung" DATE,
     "hospitation" DATE,
-    "notfallmedizin_status_id" INTEGER DEFAULT 1,
+    "notfallmedizin_status_id" BIGINT DEFAULT 1,
     "mails_send" BOOLEAN DEFAULT true,
     "aktiv" BOOLEAN DEFAULT true,
 
@@ -1407,7 +1409,7 @@ CREATE TABLE "notfallmedizin_registers" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1427,7 +1429,7 @@ CREATE TABLE "notfallmedizin_statuses" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_grants" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "resource_owner_id" INTEGER NOT NULL,
     "application_id" INTEGER NOT NULL,
     "token" VARCHAR(255) NOT NULL,
@@ -1442,7 +1444,7 @@ CREATE TABLE "oauth_access_grants" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_tokens" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "resource_owner_id" INTEGER,
     "application_id" INTEGER,
     "token" VARCHAR(255) NOT NULL,
@@ -1456,23 +1458,8 @@ CREATE TABLE "oauth_access_tokens" (
 );
 
 -- CreateTable
-CREATE TABLE "oauth_access_tokens_new" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "client_id" VARCHAR(255) NOT NULL,
-    "refresh_token_id" INTEGER NOT NULL,
-    "token" VARCHAR(255) NOT NULL,
-    "scopes" TEXT[],
-    "created_at" TIMESTAMP(6) NOT NULL,
-    "updated_at" TIMESTAMP(6) NOT NULL,
-    "expires_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "oauth_access_tokens_new_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "oauth_applications" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "uid" VARCHAR(255) NOT NULL,
     "secret" VARCHAR(255) NOT NULL,
@@ -1486,46 +1473,8 @@ CREATE TABLE "oauth_applications" (
 );
 
 -- CreateTable
-CREATE TABLE "oauth_authorization_codes" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "client_id" TEXT NOT NULL,
-    "code" TEXT NOT NULL,
-    "expires_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "oauth_authorization_codes_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "oauth_clients" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "client_id" VARCHAR(255) NOT NULL,
-    "scopes" TEXT[],
-    "created_at" TIMESTAMP(6) NOT NULL,
-    "updated_at" TIMESTAMP(6) NOT NULL,
-    "client_secret" TEXT NOT NULL,
-
-    CONSTRAINT "oauth_clients_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "oauth_refresh_tokens" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
-    "client_id" VARCHAR(255) NOT NULL,
-    "token" VARCHAR(255) NOT NULL,
-    "scopes" TEXT[],
-    "created_at" TIMESTAMP(6) NOT NULL,
-    "updated_at" TIMESTAMP(6) NOT NULL,
-    "expires_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "oauth_refresh_tokens_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "parametersets" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -1542,7 +1491,7 @@ CREATE TABLE "parametersets" (
 
 -- CreateTable
 CREATE TABLE "plan_tabs" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
 
@@ -1551,7 +1500,7 @@ CREATE TABLE "plan_tabs" (
 
 -- CreateTable
 CREATE TABLE "planintervals" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "typ" VARCHAR DEFAULT '',
 
     CONSTRAINT "planintervals_pkey" PRIMARY KEY ("id")
@@ -1559,11 +1508,11 @@ CREATE TABLE "planintervals" (
 
 -- CreateTable
 CREATE TABLE "planparameters" (
-    "id" SERIAL NOT NULL,
-    "parameterset_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "parameterset_id" BIGINT,
     "num_threads" INTEGER,
     "relevant_timeframe_size" INTEGER,
-    "einteilungsstatus_id" INTEGER,
+    "einteilungsstatus_id" BIGINT,
     "default_rating" INTEGER,
     "debugging" BOOLEAN,
     "reuse_bedarf" BOOLEAN,
@@ -1580,7 +1529,7 @@ CREATE TABLE "planparameters" (
 
 -- CreateTable
 CREATE TABLE "po_diensts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1590,13 +1539,13 @@ CREATE TABLE "po_diensts" (
     "freigabetypen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "preset" BOOLEAN DEFAULT false,
     "sys" BOOLEAN DEFAULT false,
-    "thema_ids" INTEGER[],
+    "thema_ids" BIGINT[],
     "aufwand" INTEGER DEFAULT 0,
     "aneasy_name" VARCHAR DEFAULT '',
     "order" INTEGER DEFAULT 0,
     "priorisiere_wunsch" BOOLEAN DEFAULT false,
-    "team_id" INTEGER DEFAULT 8,
-    "kostenstelle_id" INTEGER DEFAULT 1,
+    "team_id" BIGINT DEFAULT 8,
+    "kostenstelle_id" BIGINT DEFAULT 1,
     "stundennachweis_urlaub" BOOLEAN DEFAULT false,
     "stundennachweis_krank" BOOLEAN DEFAULT false,
     "stundennachweis_sonstig" BOOLEAN DEFAULT false,
@@ -1611,6 +1560,7 @@ CREATE TABLE "po_diensts" (
     "weak_parallel_conflict" BOOLEAN NOT NULL DEFAULT false,
     "pep_name" VARCHAR NOT NULL DEFAULT '',
     "pep_color" VARCHAR NOT NULL DEFAULT '',
+    "as_abwesenheit" BOOLEAN DEFAULT false,
 
     CONSTRAINT "po_diensts_pkey" PRIMARY KEY ("id")
 );
@@ -1624,11 +1574,11 @@ CREATE TABLE "schema_migrations" (
 
 -- CreateTable
 CREATE TABLE "schichts" (
-    "id" SERIAL NOT NULL,
-    "bedarfs_eintrag_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "bedarfs_eintrag_id" BIGINT,
     "anfang" TIMESTAMP(6),
     "ende" TIMESTAMP(6),
-    "arbeitszeittyp_id" INTEGER,
+    "arbeitszeittyp_id" BIGINT,
     "schicht_nummer" INTEGER DEFAULT 1,
     "arbeitszeit" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1639,7 +1589,7 @@ CREATE TABLE "schichts" (
 
 -- CreateTable
 CREATE TABLE "standorts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "adresse" TEXT,
@@ -1657,9 +1607,9 @@ CREATE TABLE "standorts" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
-    "kostenstelle_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "kostenstelle_id" BIGINT,
     "tag" DATE,
     "von" TIME(6),
     "bis" TIME(6),
@@ -1673,7 +1623,7 @@ CREATE TABLE "stundennachweis" (
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "von_einteilung" INTEGER DEFAULT -1,
-    "stundennachweis_status_id" INTEGER DEFAULT 1,
+    "stundennachweis_status_id" BIGINT DEFAULT 1,
     "vollarbeit" BOOLEAN DEFAULT true,
     "pause" TIME(6) DEFAULT '00:00:00'::time without time zone,
     "rufbereitschaft_von" TIME[] DEFAULT '{00:00:00}'::time without time zone[],
@@ -1685,7 +1635,7 @@ CREATE TABLE "stundennachweis" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis_statuses" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "confirmed" BOOLEAN,
     "submitted" BOOLEAN,
@@ -1697,22 +1647,22 @@ CREATE TABLE "stundennachweis_statuses" (
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_layouts" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "device" VARCHAR,
     "rows" INTEGER,
     "cols" INTEGER,
     "grid" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "verteiler_vorlagen_id" INTEGER,
+    "verteiler_vorlagen_id" BIGINT,
 
     CONSTRAINT "tagesverteiler_layouts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_user_settings" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT,
     "funktion_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "funktion_box" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1725,7 +1675,7 @@ CREATE TABLE "tagesverteiler_user_settings" (
 
 -- CreateTable
 CREATE TABLE "tagesverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "color" VARCHAR,
     "planname" VARCHAR,
@@ -1737,7 +1687,7 @@ CREATE TABLE "tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "tagkategories" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1747,9 +1697,9 @@ CREATE TABLE "tagkategories" (
 
 -- CreateTable
 CREATE TABLE "team_funktions" (
-    "id" SERIAL NOT NULL,
-    "team_id" INTEGER,
-    "funktion_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "team_id" BIGINT,
+    "funktion_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1758,7 +1708,7 @@ CREATE TABLE "team_funktions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffer_versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1771,9 +1721,9 @@ CREATE TABLE "team_kw_krankpuffer_versions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffers" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "kw" INTEGER NOT NULL DEFAULT 0,
-    "team_id" INTEGER,
+    "team_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "puffer" INTEGER NOT NULL DEFAULT 0,
@@ -1783,11 +1733,11 @@ CREATE TABLE "team_kw_krankpuffers" (
 
 -- CreateTable
 CREATE TABLE "teams" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "kostenstelle_id" INTEGER DEFAULT 2,
+    "kostenstelle_id" BIGINT DEFAULT 2,
     "default" BOOLEAN DEFAULT false,
     "krank_puffer" INTEGER NOT NULL DEFAULT 0,
     "verteiler_default" BOOLEAN DEFAULT false,
@@ -1797,7 +1747,7 @@ CREATE TABLE "teams" (
 
 -- CreateTable
 CREATE TABLE "telefonlistes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "mitarbeiter" VARCHAR,
@@ -1810,7 +1760,7 @@ CREATE TABLE "telefonlistes" (
 
 -- CreateTable
 CREATE TABLE "themas" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "color" VARCHAR,
@@ -1821,8 +1771,18 @@ CREATE TABLE "themas" (
 );
 
 -- CreateTable
+CREATE TABLE "urlaubssaldo_abspraches" (
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
+    "von" DATE,
+    "bis" DATE,
+
+    CONSTRAINT "urlaubssaldo_abspraches_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "user_versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1840,7 +1800,7 @@ CREATE TABLE "user_versions" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR(255),
     "uid" INTEGER,
     "login" VARCHAR(255),
@@ -1875,15 +1835,13 @@ CREATE TABLE "users" (
 
 -- CreateTable
 CREATE TABLE "users_gruppes" (
-    "user_id" INTEGER NOT NULL,
-    "gruppe_id" INTEGER NOT NULL,
-
-    CONSTRAINT "users_gruppes_pkey" PRIMARY KEY ("user_id","gruppe_id")
+    "user_id" BIGINT,
+    "gruppe_id" BIGINT
 );
 
 -- CreateTable
 CREATE TABLE "version_associations" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "version_id" INTEGER,
     "foreign_key_name" VARCHAR NOT NULL,
     "foreign_key_id" INTEGER,
@@ -1894,7 +1852,7 @@ CREATE TABLE "version_associations" (
 
 -- CreateTable
 CREATE TABLE "versions" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1909,7 +1867,7 @@ CREATE TABLE "versions" (
 
 -- CreateTable
 CREATE TABLE "verteiler_tagesverteilers" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "raw_json" TEXT,
     "datum" TIMESTAMP(6),
     "version" VARCHAR,
@@ -1921,11 +1879,11 @@ CREATE TABLE "verteiler_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "verteiler_vorlagens" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR NOT NULL DEFAULT 'Vorlage',
     "beschreibung" VARCHAR NOT NULL DEFAULT '',
     "typ" VARCHAR NOT NULL DEFAULT 'wochenverteiler',
-    "dienstplan_path_id" INTEGER,
+    "dienstplan_path_id" BIGINT,
     "order" INTEGER NOT NULL DEFAULT 0,
     "bereiche_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
@@ -1939,10 +1897,10 @@ CREATE TABLE "verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "verteilungsoverrides" (
-    "id" SERIAL NOT NULL,
-    "parameterset_id" INTEGER,
-    "dienstbedarf_id" INTEGER,
-    "dienstverteilungstyp_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "parameterset_id" BIGINT,
+    "dienstbedarf_id" BIGINT,
+    "dienstverteilungstyp_id" BIGINT,
     "verteilungscode" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1965,11 +1923,11 @@ CREATE TABLE "vertrag_versions" (
 
 -- CreateTable
 CREATE TABLE "vertrags" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragstyp_id" INTEGER,
+    "vertragstyp_id" BIGINT,
     "anfang" DATE,
     "ende" DATE,
     "unbefristet" BOOLEAN DEFAULT false,
@@ -1994,8 +1952,8 @@ CREATE TABLE "vertrags_arbeitszeits" (
 
 -- CreateTable
 CREATE TABLE "vertrags_phases" (
-    "id" SERIAL NOT NULL,
-    "vertrag_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "vertrag_id" BIGINT,
     "von" DATE,
     "bis" DATE,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -2007,10 +1965,10 @@ CREATE TABLE "vertrags_phases" (
 
 -- CreateTable
 CREATE TABLE "vertrags_variantes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "von" DATE,
     "bis" DATE,
-    "vertragstyp_id" INTEGER,
+    "vertragstyp_id" BIGINT,
     "name" VARCHAR,
     "wochenstunden" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -2022,9 +1980,9 @@ CREATE TABLE "vertrags_variantes" (
 
 -- CreateTable
 CREATE TABLE "vertragsgruppes" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
-    "vertragstyp_id" INTEGER,
+    "vertragstyp_id" BIGINT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -2033,21 +1991,21 @@ CREATE TABLE "vertragsgruppes" (
 
 -- CreateTable
 CREATE TABLE "vertragsstuves" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "stufe" INTEGER,
     "nach_jahren" INTEGER,
     "monatsgehalt" DECIMAL(15,2),
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragsgruppe_id" INTEGER,
-    "vertrags_variante_id" INTEGER,
+    "vertragsgruppe_id" BIGINT,
+    "vertrags_variante_id" BIGINT,
 
     CONSTRAINT "vertragsstuves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "vertragstyps" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2057,13 +2015,13 @@ CREATE TABLE "vertragstyps" (
 
 -- CreateTable
 CREATE TABLE "vorlages" (
-    "id" SERIAL NOT NULL,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "mitarbeiter_id" BIGINT,
     "name" VARCHAR,
     "dienste" INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "team_id" INTEGER,
+    "team_id" BIGINT,
     "funktionen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "ansicht_id" INTEGER DEFAULT 0,
     "position" INTEGER NOT NULL DEFAULT 0,
@@ -2073,9 +2031,9 @@ CREATE TABLE "vorlages" (
 
 -- CreateTable
 CREATE TABLE "wochenbilanzs" (
-    "id" SERIAL NOT NULL,
-    "kalenderwoche_id" INTEGER,
-    "mitarbeiter_id" INTEGER,
+    "id" BIGSERIAL NOT NULL,
+    "kalenderwoche_id" BIGINT,
+    "mitarbeiter_id" BIGINT,
     "geplante_arbeitszeit" DECIMAL(6,2) DEFAULT 0,
     "geplante_rufbereitschaftszeit" DECIMAL(6,2) DEFAULT 0,
     "geplante_bereitschaftszeit" DECIMAL(6,2) DEFAULT 0,
@@ -2092,10 +2050,10 @@ CREATE TABLE "wochenbilanzs" (
 
 -- CreateTable
 CREATE TABLE "zeitraumkategories" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "zeitraumregel_id" INTEGER,
+    "zeitraumregel_id" BIGINT,
     "prio" INTEGER,
     "anfang" DATE,
     "ende" DATE,
@@ -2110,7 +2068,7 @@ CREATE TABLE "zeitraumkategories" (
 
 -- CreateTable
 CREATE TABLE "zeitraumregels" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2131,9 +2089,6 @@ CREATE INDEX "index_abwesentheitenueberblick_settings_on_mitarbeiter_id" ON "abw
 
 -- CreateIndex
 CREATE INDEX "index_abwesentheitenueberblicks_on_mitarbeiter_id" ON "abwesentheitenueberblicks"("mitarbeiter_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "account_infos_user_id_key" ON "account_infos"("user_id");
 
 -- CreateIndex
 CREATE INDEX "index_account_infos_on_mitarbeiter_id" ON "account_infos"("mitarbeiter_id");
@@ -2523,19 +2478,7 @@ CREATE UNIQUE INDEX "index_oauth_access_tokens_on_refresh_token" ON "oauth_acces
 CREATE INDEX "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens"("resource_owner_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "oauth_access_tokens_new_token_key" ON "oauth_access_tokens_new"("token");
-
--- CreateIndex
 CREATE UNIQUE INDEX "index_oauth_applications_on_uid" ON "oauth_applications"("uid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "oauth_authorization_codes_code_key" ON "oauth_authorization_codes"("code");
-
--- CreateIndex
-CREATE UNIQUE INDEX "oauth_clients_client_id_key" ON "oauth_clients"("client_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "oauth_refresh_tokens_token_key" ON "oauth_refresh_tokens"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "index_parametersets_on_email" ON "parametersets"("email");
@@ -2596,6 +2539,9 @@ CREATE INDEX "index_team_kw_krankpuffers_on_team_id" ON "team_kw_krankpuffers"("
 
 -- CreateIndex
 CREATE INDEX "index_teams_on_kostenstelle_id" ON "teams"("kostenstelle_id");
+
+-- CreateIndex
+CREATE INDEX "index_urlaubssaldo_abspraches_on_mitarbeiter_id" ON "urlaubssaldo_abspraches"("mitarbeiter_id");
 
 -- CreateIndex
 CREATE INDEX "index_user_versions_on_item_type_and_item_id" ON "user_versions"("item_type", "item_id");
@@ -2682,449 +2628,449 @@ CREATE INDEX "index_wochenbilanzs_on_mitarbeiter_id" ON "wochenbilanzs"("mitarbe
 CREATE INDEX "index_zeitraumkategories_on_zeitraumregel_id" ON "zeitraumkategories"("zeitraumregel_id");
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "abwesentheitenueberblick_counters_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "fk_rails_336f14c2e2" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "abwesentheitenueberblick_counters_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "abwesentheitenueberblick_counters" ADD CONSTRAINT "fk_rails_daea018e64" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "abwesentheitenueberblicks" ADD CONSTRAINT "abwesentheitenueberblicks_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "abwesentheitenueberblick_settings" ADD CONSTRAINT "fk_rails_3d45bd1bd3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "account_infos" ADD CONSTRAINT "account_infos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "abwesentheitenueberblicks" ADD CONSTRAINT "fk_rails_ed4202ea8e" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "account_infos" ADD CONSTRAINT "fk_rails_58245fd0a4" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "allgemeine_vorlages_dienstplan_path_id_fkey" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "fk_rails_01e0e49755" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "allgemeine_vorlages_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "allgemeine_vorlages" ADD CONSTRAINT "fk_rails_0c44f45c22" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_antraege_id_fkey" FOREIGN KEY ("antraege_id") REFERENCES "antraeges"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_6b4c176fee" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_antragsstatus_id_fkey" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_702e44afb0" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraege_histories" ADD CONSTRAINT "antraege_histories_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraege_histories" ADD CONSTRAINT "fk_rails_d2c22a9e1a" FOREIGN KEY ("antraege_id") REFERENCES "antraeges"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_antragsstatus_id_fkey" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_0101e13655" FOREIGN KEY ("antragsstatus_id") REFERENCES "antragsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_antragstyp_id_fkey" FOREIGN KEY ("antragstyp_id") REFERENCES "antragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_a5f48af37e" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antraeges" ADD CONSTRAINT "antraeges_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antraeges" ADD CONSTRAINT "fk_rails_f887e40996" FOREIGN KEY ("antragstyp_id") REFERENCES "antragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_alternative_po_dienst_id_fkey" FOREIGN KEY ("alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_3734c17d7f" FOREIGN KEY ("check_alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_check_alternative_po_dienst_id_fkey" FOREIGN KEY ("check_alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_5dd7757f25" FOREIGN KEY ("we_holiday_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_8ac569efac" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "antragstyps" ADD CONSTRAINT "antragstyps_we_holiday_po_dienst_id_fkey" FOREIGN KEY ("we_holiday_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "antragstyps" ADD CONSTRAINT "fk_rails_a43ad8c57f" FOREIGN KEY ("alternative_po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "arbeitsplatzs_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "fk_rails_1029690348" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "arbeitsplatzs_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "arbeitsplatzs" ADD CONSTRAINT "fk_rails_4ce8e3dfb0" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "arbeitszeit_absprachens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "fk_rails_3d5cc996a1" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "arbeitszeit_absprachens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "arbeitszeit_absprachens" ADD CONSTRAINT "fk_rails_4a9339ea11" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "arbeitszeitverteilungs_dienstgruppe_id_fkey" FOREIGN KEY ("dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "fk_rails_7b802cfd89" FOREIGN KEY ("dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "arbeitszeitverteilungs_pre_dienstgruppe_id_fkey" FOREIGN KEY ("pre_dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "arbeitszeitverteilungs" ADD CONSTRAINT "fk_rails_fe777cf5f2" FOREIGN KEY ("pre_dienstgruppe_id") REFERENCES "dienstgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_03e173cb8b" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_2286cd78f3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "automatische_einteilungens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "automatische_einteilungens" ADD CONSTRAINT "fk_rails_3651daf545" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_00545eb639" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstbedarf_id_fkey" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_08c867c460" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstplanbedarf_id_fkey" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_0f89581c7b" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_aa2e3d95aa" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e18eeada6a" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e8f3cb8e16" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "benachrichtigungs_benachrichtigungs_status_id_fkey" FOREIGN KEY ("benachrichtigungs_status_id") REFERENCES "benachrichtigungs_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "fk_rails_2d4826acc2" FOREIGN KEY ("benachrichtigungs_status_id") REFERENCES "benachrichtigungs_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "benachrichtigungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "fk_rails_d72e570086" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_082f661ba0" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_c9d75975f6" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "bereich_tagesverteilers_tagesverteiler_id_fkey" FOREIGN KEY ("tagesverteiler_id") REFERENCES "tagesverteilers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bereich_tagesverteilers" ADD CONSTRAINT "fk_rails_fdf23f3f87" FOREIGN KEY ("tagesverteiler_id") REFERENCES "tagesverteilers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "bereich_wochenverteilers_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "fk_rails_2430b21746" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "bereich_wochenverteilers_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "bereich_wochenverteilers" ADD CONSTRAINT "fk_rails_ef32afba54" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "channel_room_users" ADD CONSTRAINT "channel_room_users_channel_room_id_fkey" FOREIGN KEY ("channel_room_id") REFERENCES "channel_rooms"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_07d9c65830" FOREIGN KEY ("channel_room_id") REFERENCES "channel_rooms"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "channel_room_users" ADD CONSTRAINT "channel_room_users_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_fa37f889bb" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_arbeitszeitverteilung_id_fkey" FOREIGN KEY ("arbeitszeitverteilung_id") REFERENCES "arbeitszeitverteilungs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_05b1cdbc7e" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_2b3b1e6b71" FOREIGN KEY ("arbeitszeitverteilung_id") REFERENCES "arbeitszeitverteilungs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_434a8ef988" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_495258659a" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_9ae4035ecf" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstbedarves" ADD CONSTRAINT "dienstbedarves_zeitraumkategories_id_fkey" FOREIGN KEY ("zeitraumkategories_id") REFERENCES "zeitraumkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_a8c5f3913d" FOREIGN KEY ("zeitraumkategories_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_bereich_id_fkey" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_0c69b8191a" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_dienstplan_id_fkey" FOREIGN KEY ("dienstplan_id") REFERENCES "dienstplans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_2a437cd8da" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_einteilungsstatus_id_fkey" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_37afbd5ac9" FOREIGN KEY ("dienstplan_id") REFERENCES "dienstplans"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_8d2ed7f2ce" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_f7e8479926" FOREIGN KEY ("bereich_id") REFERENCES "bereiches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_freigabestatus_id_fkey" FOREIGN KEY ("freigabestatus_id") REFERENCES "freigabestatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_3a9471d624" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_freigabetyp_id_fkey" FOREIGN KEY ("freigabetyp_id") REFERENCES "freigabetyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_7c27a8ab72" FOREIGN KEY ("freigabetyp_id") REFERENCES "freigabetyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_8328bf76e2" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_ab3f7cd811" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "dienstfreigabes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstfreigabes" ADD CONSTRAINT "fk_rails_b201a8e9f5" FOREIGN KEY ("freigabestatus_id") REFERENCES "freigabestatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "dienstkategorie_teams_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "fk_rails_10d49ef0f8" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "dienstkategorie_teams_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstkategorie_teams" ADD CONSTRAINT "fk_rails_8c261f9aef" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "dienstkategoriethemas_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "fk_rails_27dd54d2f6" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "dienstkategoriethemas_thema_id_fkey" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstkategoriethemas" ADD CONSTRAINT "fk_rails_a1ff9468f4" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_custom_counters" ADD CONSTRAINT "dienstplan_custom_counters_dienstplan_custom_feld_id_fkey" FOREIGN KEY ("dienstplan_custom_feld_id") REFERENCES "dienstplan_custom_felds"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplan_custom_counters" ADD CONSTRAINT "fk_rails_cc48ac5d4f" FOREIGN KEY ("dienstplan_custom_feld_id") REFERENCES "dienstplan_custom_felds"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_custom_felds" ADD CONSTRAINT "dienstplan_custom_felds_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplan_custom_felds" ADD CONSTRAINT "fk_rails_3b768fab84" FOREIGN KEY ("vorlage_id") REFERENCES "vorlages"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "dienstplan_paths_plan_tab_id_fkey" FOREIGN KEY ("plan_tab_id") REFERENCES "plan_tabs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "fk_rails_1ef594e615" FOREIGN KEY ("planinterval_id") REFERENCES "planintervals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "dienstplan_paths_planinterval_id_fkey" FOREIGN KEY ("planinterval_id") REFERENCES "planintervals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplan_paths" ADD CONSTRAINT "fk_rails_5a0e779422" FOREIGN KEY ("plan_tab_id") REFERENCES "plan_tabs"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaner_user_farbgruppens" ADD CONSTRAINT "dienstplaner_user_farbgruppens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaner_user_farbgruppens" ADD CONSTRAINT "fk_rails_d0e228908c" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaner_user_settings" ADD CONSTRAINT "dienstplaner_user_settings_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaner_user_settings" ADD CONSTRAINT "fk_rails_0e9ce655bd" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "dienstplaners_teams_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "fk_rails_75274a3398" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "dienstplaners_teams_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaners_teams" ADD CONSTRAINT "fk_rails_ae25869849" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "dienstplaners_verteiler_vorlagens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "fk_rails_4924e39a88" FOREIGN KEY ("vorlage_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "dienstplaners_verteiler_vorlagens_vorlage_id_fkey" FOREIGN KEY ("vorlage_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplaners_verteiler_vorlagens" ADD CONSTRAINT "fk_rails_9e9354836f" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_dienstplanbedarf_id_fkey" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_36027a91b3" FOREIGN KEY ("dienstplanbedarf_id") REFERENCES "dienstplanbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_dienstplanstatus_id_fkey" FOREIGN KEY ("dienstplanstatus_id") REFERENCES "dienstplanstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_55a766d44f" FOREIGN KEY ("dienstplanstatus_id") REFERENCES "dienstplanstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstplans" ADD CONSTRAINT "dienstplans_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstplans" ADD CONSTRAINT "fk_rails_5f55bd1d2e" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstratings" ADD CONSTRAINT "dienstratings_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstratings" ADD CONSTRAINT "fk_rails_514befc444" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstratings" ADD CONSTRAINT "dienstratings_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstratings" ADD CONSTRAINT "fk_rails_661abcf60e" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstwunsches" ADD CONSTRAINT "dienstwunsches_dienstkategorie_id_fkey" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstwunsches" ADD CONSTRAINT "fk_rails_0839dc09ce" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "dienstwunsches" ADD CONSTRAINT "dienstwunsches_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "dienstwunsches" ADD CONSTRAINT "fk_rails_28e8d817f4" FOREIGN KEY ("dienstkategorie_id") REFERENCES "dienstkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "einteilung_rotations_kontingent_id_fkey" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "fk_rails_0754d2d566" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "einteilung_rotations_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "einteilung_rotations" ADD CONSTRAINT "fk_rails_5eeae3bb85" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "freistellungs" ADD CONSTRAINT "freistellungs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "freistellungs" ADD CONSTRAINT "fk_rails_f7bfd583fd" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "funktions" ADD CONSTRAINT "funktions_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "funktions" ADD CONSTRAINT "fk_rails_1a9f2cf982" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "geraetepasses" ADD CONSTRAINT "geraetepasses_geraet_id_fkey" FOREIGN KEY ("geraet_id") REFERENCES "geraets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "geraetepasses" ADD CONSTRAINT "fk_rails_01560b5637" FOREIGN KEY ("geraet_id") REFERENCES "geraets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "geraetepasses" ADD CONSTRAINT "geraetepasses_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "geraetepasses" ADD CONSTRAINT "fk_rails_e3a3b73828" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "geraets" ADD CONSTRAINT "geraets_geraeteklasse_id_fkey" FOREIGN KEY ("geraeteklasse_id") REFERENCES "geraeteklasses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "geraets" ADD CONSTRAINT "fk_rails_87c8fbadfa" FOREIGN KEY ("geraeteklasse_id") REFERENCES "geraeteklasses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "jahresbilanzs" ADD CONSTRAINT "jahresbilanzs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "jahresbilanzs" ADD CONSTRAINT "fk_rails_5221012030" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "kontingent_po_diensts_kontingent_id_fkey" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "fk_rails_3d72be3049" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "kontingent_po_diensts_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "kontingent_po_diensts" ADD CONSTRAINT "fk_rails_e01ed6b5a5" FOREIGN KEY ("kontingent_id") REFERENCES "kontingents"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "kontingents" ADD CONSTRAINT "kontingents_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "kontingents" ADD CONSTRAINT "fk_rails_99108947ac" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_ccs" ADD CONSTRAINT "mailer_ccs_mailer_addresse_id_fkey" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_ccs" ADD CONSTRAINT "fk_rails_6fb0b59cad" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_ccs" ADD CONSTRAINT "mailer_ccs_mailer_context_id_fkey" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_ccs" ADD CONSTRAINT "fk_rails_75d69d0976" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_contexts" ADD CONSTRAINT "mailer_contexts_from_id_fkey" FOREIGN KEY ("from_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_contexts" ADD CONSTRAINT "fk_rails_35af776dcd" FOREIGN KEY ("from_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_contexts" ADD CONSTRAINT "mailer_contexts_reply_to_id_fkey" FOREIGN KEY ("reply_to_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_contexts" ADD CONSTRAINT "fk_rails_d9811e872a" FOREIGN KEY ("reply_to_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_tos" ADD CONSTRAINT "mailer_tos_mailer_addresse_id_fkey" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_tos" ADD CONSTRAINT "fk_rails_08dc607943" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mailer_tos" ADD CONSTRAINT "mailer_tos_mailer_context_id_fkey" FOREIGN KEY ("mailer_context_id") REFERENCES "mailer_contexts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mailer_tos" ADD CONSTRAINT "fk_rails_3324b483bd" FOREIGN KEY ("mailer_addresse_id") REFERENCES "mailer_addresses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "merkmal_options" ADD CONSTRAINT "merkmal_options_merkmal_id_fkey" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "merkmal_options" ADD CONSTRAINT "fk_rails_e746e9188c" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "mitarbeiter_default_eingeteilts_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "fk_rails_893ef3958e" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "mitarbeiter_default_eingeteilts_po_dienst_id_fkey" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mitarbeiter_default_eingeteilts" ADD CONSTRAINT "fk_rails_8dc3d88f3b" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "mitarbeitermerkmals_merkmal_id_fkey" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "fk_rails_41412590af" FOREIGN KEY ("merkmal_id") REFERENCES "merkmals"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "mitarbeitermerkmals_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mitarbeitermerkmals" ADD CONSTRAINT "fk_rails_c1efcdc64d" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "mitarbeiters" ADD CONSTRAINT "mitarbeiters_funktion_id_fkey" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mitarbeiters" ADD CONSTRAINT "fk_rails_5006408ec6" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nef_fahrts" ADD CONSTRAINT "nef_fahrts_notfallmedizin_register_id_fkey" FOREIGN KEY ("notfallmedizin_register_id") REFERENCES "notfallmedizin_registers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "nef_fahrts" ADD CONSTRAINT "fk_rails_be395c9f8e" FOREIGN KEY ("notfallmedizin_register_id") REFERENCES "notfallmedizin_registers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "nicht_einteilen_absprachens_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "fk_rails_c13db17963" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "nicht_einteilen_absprachens_zeitraumkategorie_id_fkey" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "nicht_einteilen_absprachens" ADD CONSTRAINT "fk_rails_f981032257" FOREIGN KEY ("zeitraumkategorie_id") REFERENCES "zeitraumkategories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_absprache_id_fkey" FOREIGN KEY ("absprache_id") REFERENCES "nicht_einteilen_absprachens"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_44fd8a9177" FOREIGN KEY ("absprache_id") REFERENCES "nicht_einteilen_absprachens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_standort_id_fkey" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_77f147e42b" FOREIGN KEY ("standort_id") REFERENCES "standorts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "nicht_einteilen_standort_themen_thema_id_fkey" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "nicht_einteilen_standort_themen" ADD CONSTRAINT "fk_rails_fd8449d811" FOREIGN KEY ("thema_id") REFERENCES "themas"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notes" ADD CONSTRAINT "notes_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notes" ADD CONSTRAINT "fk_rails_660860a381" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notes" ADD CONSTRAINT "notes_note_category_id_fkey" FOREIGN KEY ("note_category_id") REFERENCES "note_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notes" ADD CONSTRAINT "fk_rails_e70fa12604" FOREIGN KEY ("note_category_id") REFERENCES "note_categories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_ersteller_id_fkey" FOREIGN KEY ("ersteller_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_22a7972a2b" FOREIGN KEY ("note_id") REFERENCES "notes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_2de2e64c38" FOREIGN KEY ("ersteller_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notes_histories" ADD CONSTRAINT "notes_histories_note_id_fkey" FOREIGN KEY ("note_id") REFERENCES "notes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notes_histories" ADD CONSTRAINT "fk_rails_863d1cabe1" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "notfallmedizin_registers_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_7e6262d50a" FOREIGN KEY ("notfallmedizin_status_id") REFERENCES "notfallmedizin_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "notfallmedizin_registers_notfallmedizin_status_id_fkey" FOREIGN KEY ("notfallmedizin_status_id") REFERENCES "notfallmedizin_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_8497fb4436" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_refresh_token_id_fkey" FOREIGN KEY ("refresh_token_id") REFERENCES "oauth_refresh_tokens"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "planparameters" ADD CONSTRAINT "fk_rails_024b3ff545" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "planparameters" ADD CONSTRAINT "fk_rails_ca3ff20b34" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "oauth_refresh_tokens" ADD CONSTRAINT "oauth_refresh_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "po_diensts" ADD CONSTRAINT "fk_rails_4223136f27" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "planparameters" ADD CONSTRAINT "planparameters_einteilungsstatus_id_fkey" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "po_diensts" ADD CONSTRAINT "fk_rails_6ac1abf20e" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "planparameters" ADD CONSTRAINT "planparameters_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "schichts" ADD CONSTRAINT "fk_rails_b62a6b1ca3" FOREIGN KEY ("arbeitszeittyp_id") REFERENCES "arbeitszeittyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "po_diensts" ADD CONSTRAINT "po_diensts_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "schichts" ADD CONSTRAINT "fk_rails_bd78a44984" FOREIGN KEY ("bedarfs_eintrag_id") REFERENCES "bedarfs_eintrags"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "po_diensts" ADD CONSTRAINT "po_diensts_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_05b269d564" FOREIGN KEY ("stundennachweis_status_id") REFERENCES "stundennachweis_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "schichts" ADD CONSTRAINT "schichts_arbeitszeittyp_id_fkey" FOREIGN KEY ("arbeitszeittyp_id") REFERENCES "arbeitszeittyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_745ff2de6c" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "schichts" ADD CONSTRAINT "schichts_bedarfs_eintrag_id_fkey" FOREIGN KEY ("bedarfs_eintrag_id") REFERENCES "bedarfs_eintrags"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "stundennachweis" ADD CONSTRAINT "fk_rails_f7210f061b" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "tagesverteiler_layouts" ADD CONSTRAINT "fk_rails_9293af7154" FOREIGN KEY ("verteiler_vorlagen_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "team_funktions" ADD CONSTRAINT "fk_rails_0043aa77c2" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "stundennachweis" ADD CONSTRAINT "stundennachweis_stundennachweis_status_id_fkey" FOREIGN KEY ("stundennachweis_status_id") REFERENCES "stundennachweis_statuses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "team_funktions" ADD CONSTRAINT "fk_rails_bec8e126a9" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "tagesverteiler_layouts" ADD CONSTRAINT "tagesverteiler_layouts_verteiler_vorlagen_id_fkey" FOREIGN KEY ("verteiler_vorlagen_id") REFERENCES "verteiler_vorlagens"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "team_kw_krankpuffers" ADD CONSTRAINT "fk_rails_5eded83672" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "team_funktions" ADD CONSTRAINT "team_funktions_funktion_id_fkey" FOREIGN KEY ("funktion_id") REFERENCES "funktions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "teams" ADD CONSTRAINT "fk_rails_9d14807ce7" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "team_funktions" ADD CONSTRAINT "team_funktions_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "urlaubssaldo_abspraches" ADD CONSTRAINT "fk_rails_cdbde270f4" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "team_kw_krankpuffers" ADD CONSTRAINT "team_kw_krankpuffers_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "users_gruppes" ADD CONSTRAINT "fk_rails_0c3453aa77" FOREIGN KEY ("gruppe_id") REFERENCES "gruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "teams" ADD CONSTRAINT "teams_kostenstelle_id_fkey" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "users_gruppes" ADD CONSTRAINT "fk_rails_cec3e4ee8f" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "users_gruppes" ADD CONSTRAINT "users_gruppes_gruppe_id_fkey" FOREIGN KEY ("gruppe_id") REFERENCES "gruppes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "verteiler_vorlagens" ADD CONSTRAINT "fk_rails_02b7f85cbd" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "users_gruppes" ADD CONSTRAINT "users_gruppes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_171044f6f2" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "verteiler_vorlagens" ADD CONSTRAINT "verteiler_vorlagens_dienstplan_path_id_fkey" FOREIGN KEY ("dienstplan_path_id") REFERENCES "dienstplan_paths"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_4383eac96c" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_dienstbedarf_id_fkey" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "fk_rails_e75f8ddeae" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_dienstverteilungstyp_id_fkey" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags" ADD CONSTRAINT "fk_rails_b20fe19842" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "verteilungsoverrides" ADD CONSTRAINT "verteilungsoverrides_parameterset_id_fkey" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags" ADD CONSTRAINT "fk_rails_f2cec23b66" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertrags" ADD CONSTRAINT "vertrags_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags_arbeitszeits" ADD CONSTRAINT "fk_rails_8e47624856" FOREIGN KEY ("vertrag_id") REFERENCES "vertrags"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertrags" ADD CONSTRAINT "vertrags_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags_phases" ADD CONSTRAINT "fk_rails_4db5fece40" FOREIGN KEY ("vertrag_id") REFERENCES "vertrags"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertrags_phases" ADD CONSTRAINT "vertrags_phases_vertrag_id_fkey" FOREIGN KEY ("vertrag_id") REFERENCES "vertrags"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags_phases" ADD CONSTRAINT "fk_rails_f9b8646f70" FOREIGN KEY ("vertragsstufe_id") REFERENCES "vertragsstuves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertrags_variantes" ADD CONSTRAINT "vertrags_variantes_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertrags_variantes" ADD CONSTRAINT "fk_rails_e70c474827" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertragsgruppes" ADD CONSTRAINT "vertragsgruppes_vertragstyp_id_fkey" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertragsgruppes" ADD CONSTRAINT "fk_rails_26cb34c5df" FOREIGN KEY ("vertragstyp_id") REFERENCES "vertragstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertragsstuves" ADD CONSTRAINT "vertragsstuves_vertrags_variante_id_fkey" FOREIGN KEY ("vertrags_variante_id") REFERENCES "vertrags_variantes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertragsstuves" ADD CONSTRAINT "fk_rails_75bdf87379" FOREIGN KEY ("vertragsgruppe_id") REFERENCES "vertragsgruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vertragsstuves" ADD CONSTRAINT "vertragsstuves_vertragsgruppe_id_fkey" FOREIGN KEY ("vertragsgruppe_id") REFERENCES "vertragsgruppes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vertragsstuves" ADD CONSTRAINT "fk_rails_91403e2823" FOREIGN KEY ("vertrags_variante_id") REFERENCES "vertrags_variantes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vorlages" ADD CONSTRAINT "vorlages_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vorlages" ADD CONSTRAINT "fk_rails_176adae085" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "vorlages" ADD CONSTRAINT "vorlages_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vorlages" ADD CONSTRAINT "fk_rails_69e32bd9f7" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "wochenbilanzs_kalenderwoche_id_fkey" FOREIGN KEY ("kalenderwoche_id") REFERENCES "kalenderwoches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "fk_rails_4e802b69e3" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "wochenbilanzs_mitarbeiter_id_fkey" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "wochenbilanzs" ADD CONSTRAINT "fk_rails_eb52f30dad" FOREIGN KEY ("kalenderwoche_id") REFERENCES "kalenderwoches"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "zeitraumkategories" ADD CONSTRAINT "zeitraumkategories_zeitraumregel_id_fkey" FOREIGN KEY ("zeitraumregel_id") REFERENCES "zeitraumregels"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "zeitraumkategories" ADD CONSTRAINT "fk_rails_cf637e5e41" FOREIGN KEY ("zeitraumregel_id") REFERENCES "zeitraumregels"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 

@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "planungsinformations" (
     "id" SERIAL NOT NULL,
-    "tag" DATE,
+    "tag" DATE NOT NULL,
     "po_dienst_id" INTEGER,
     "bereich_id" INTEGER,
     "kommentar" TEXT NOT NULL,
