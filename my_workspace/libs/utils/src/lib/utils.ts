@@ -1,3 +1,7 @@
+import { addWeeks, subWeeks } from 'date-fns';
+
+type HashObjType<T> = Record<string | number, T | T[]>;
+
 /**
  * Processes an array of data items and maps them to a hash object based on a specified key.
  *
@@ -7,8 +11,6 @@
  * @param isInArray - A flag to indicate whether the values in the hash object should be placed in a  array.
  * @returns A hash object where each key is an id from the data array, and the value is the processed data item.
  */
-type HashObjType<T> = Record<string | number, T | T[]>;
-
 export function processData<T>(
   hashKey: keyof T = 'id' as keyof T,
   dataArr: T[],
@@ -123,4 +125,20 @@ export function mapIdToKeys<T extends Record<string, any>, K extends keyof T = k
     },
     {} as Record<T[K] & (string | number), Partial<Record<K | 'obj', T[]>>> // Initialize correctly
   );
+}
+
+export function _subWeeks(date: Date | string, weeks: number) {
+  let parseDate = date;
+  if (typeof date === 'string') {
+    parseDate = new Date(date);
+  }
+  return subWeeks(parseDate, weeks);
+}
+
+export function _addWeeks(date: Date | string, weeks: number) {
+  let parseDate = date;
+  if (typeof date === 'string') {
+    parseDate = new Date(date);
+  }
+  return addWeeks(parseDate, weeks);
 }

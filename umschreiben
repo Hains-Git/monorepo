@@ -1,0 +1,77 @@
+  def get_einteilungen_ohne_bedarf
+    if init 
+      aw_counter_po_dienst = addCountsValue(counter_by_user)
+
+      res[:settings] = settings
+      res[:counters] = hash_by_key(counter_by_user)
+      res[:abwesentheiten] = {year => aw_hash}
+      res[:aw_counter_po_dienst] = aw_counter_po_dienst
+      res[:aw_column_names] = hash_by_key(aw_column_names, :db_key)
+    else
+      if direction == "past"
+        date_start = (Date.parse(date_view) - 6.weeks)
+        date_end = Date.parse(date_view)
+      else
+        date_start = Date.parse(date_view)
+        date_end = (Date.parse(date_view) + 6.weeks)
+      end
+    end
+
+    de = Diensteinteilung.ohne_bedarf(date_start, date_end)
+
+    dates = {}
+    (date_start..date_end).each do |day|
+      create_dates(day, dates)
+    end
+
+    kalendermarkierung = Kalendermarkierung
+      .where(
+        "start >= ? AND ende <= ? OR start <= ? AND ende <= ? OR start >= ? AND ende >= ?",
+        date_start, date_end, date_start, date_end, date_start, date_end
+      )
+    res[:einteilungen] = de
+    res[:dates] = dates
+    res[:urlaubssaldi] = {}
+    res[:kalendermarkierung] = kalendermarkierung
+    respond_with(res)
+  end
+
+
+    def get_einteilungen_ohne_bedarf_by_po_dienst(von, bis, po_dienst_ids)
+      de = Diensteinteilung.ohne_bedarf(von, bis, true, true, po_dienst_ids)
+    end
+
+  def self.ohne_bedarf(von, bis, counts = true, is_public = true, po_dienst_ids = nil, mitarbeiter_ids = nil)
+    date_start = von.is_a?(String) ? Date.parse(von) : von
+    date_end = bis.is_a?(String) ? Date.parse(bis) : bis
+    dp_anfang = date_start.beginning_of_month
+    dp_ende = date_end.end_of_month
+    de = Diensteinteilung.find_by_sql ["
+      WITH RankedResults AS (
+        SELECT de.*,
+        ROW_NUMBER() OVER (PARTITION BY de.tag, de.po_dienst_id, de.mitarbeiter_id ORDER BY de.updated_at DESC) AS RowNum
+        FROM public.diensteinteilungs AS de
+        LEFT JOIN public.dienstbedarves AS db ON db.po_dienst_id = de.po_dienst_id
+        JOIN public.po_diensts AS po ON de.po_dienst_id = po.id
+        JOIN public.einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
+        JOIN public.mitarbeiters AS m ON m.id = de.mitarbeiter_id
+        WHERE #{mitarbeiter_ids.nil? ? 'm.aktiv = true AND m.platzhalter != true' : "m.id IN (#{mitarbeiter_ids.join(',')})"}
+        #{po_dienst_ids.nil? ? '' : "AND de.po_dienst_id IN (#{po_dienst_ids.join(',')})"}
+        AND de.tag >= '#{date_start}' AND de.tag <= '#{date_end}'
+        AND de.dienstplan_id IN (
+          SELECT dp.id FROM public.dienstplans AS dp
+          WHERE (dp.anfang <= '#{dp_anfang}' AND dp.ende >= '#{dp_anfang}')
+          OR (dp.anfang <= '#{dp_ende}' AND dp.ende >= '#{dp_ende}')
+          OR (dp.anfang >= '#{dp_anfang}' AND dp.ende <= '#{dp_ende}')
+          OR (dp.anfang IS NULL AND dp.ende IS NULL)
+        )
+        AND es.public = #{is_public} AND es.counts = #{counts}
+        AND db.id IS NULL
+      )
+      SELECT *
+      FROM RankedResults
+      WHERE RowNum = 1
+      ORDER BY mitarbeiter_id, tag;
+    "]
+    de
+  end
