@@ -9,6 +9,7 @@ import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';
 import { getAllPlanungsinfo } from './crud/planungsinfo';
+import { getZeitraumkategorienInterval } from './utils/crud_helper';
 
 type Dienstplan = {
   parametersets:
@@ -74,16 +75,7 @@ function dateCommercial(year: number, week: number, day: number): Date {
 
 async function getZeitraumkategorien(anfang: Date, ende: Date) {
   const zeitraumkategorien = await prismaDb.zeitraumkategories.findMany({
-    where: {
-      AND: [
-        {
-          OR: [{ anfang: null }, { anfang: { gte: anfang } }]
-        },
-        {
-          OR: [{ ende: null }, { ende: { lt: ende } }]
-        }
-      ]
-    },
+    where: getZeitraumkategorienInterval(anfang, ende),
     orderBy: {
       prio: 'desc'
     }
@@ -293,18 +285,11 @@ async function getSchichten(dienstplanbedarf_id: number) {
   }, {});
 }
 
-async function getDienstbedarfe(date: Date) {
+async function getDienstbedarfe(anfang: Date, ende: Date) {
   const dienstbedarfe = await prismaDb.dienstbedarves.findMany({
     where: {
-      OR: [{ end_date: { gt: date } }, { end_date: null }],
-      zeitraumkategories: {
-        OR: [{ anfang: { lte: date } }, { anfang: null }],
-        AND: [
-          {
-            OR: [{ ende: { gte: date } }, { ende: null }]
-          }
-        ]
-      }
+      OR: [{ end_date: { gt: anfang } }, { end_date: null }],
+      zeitraumkategories: getZeitraumkategorienInterval(anfang, ende)
     },
     orderBy: [{ po_diensts: { order: 'asc' } }, { bereich_id: 'asc' }, { zeitraumkategories: { prio: 'asc' } }]
   });
@@ -677,7 +662,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
   const wuensche = await getWuensche(anfangFrame, endeFrame);
   const rotationenArr = await getRotationen(true, anfangFrame, endeFrame);
   const schichten = await getSchichten(dplBedarfId);
-  const bedarf = await getDienstbedarfe(anfangFrame);
+  const bedarf = await getDienstbedarfe(anfangFrame, endeFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(dienste, bedarfs_eintraege);
   const { kws, wochenbilanzen } = await getWochenbilanzen(dienstplan);
 
