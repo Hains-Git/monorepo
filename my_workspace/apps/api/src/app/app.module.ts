@@ -7,12 +7,16 @@ import { PrismaModule } from './prisma/prisma.module';
 import { GlobalAuthGuard } from './guards/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 
+import { AbwesenheitenController } from './abwesenheiten/abwesenheiten.controller';
+import { AbwesenheitenService } from './abwesenheiten/abwesenheiten.service';
+
 @Module({
   // imports: [AuthModule, PrismaModule],
   imports: [PrismaModule],
-  controllers: [AppController],
+  controllers: [AppController, AbwesenheitenController],
   providers: [
-    AppService
+    AppService,
+    AbwesenheitenService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard

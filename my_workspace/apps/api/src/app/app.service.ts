@@ -9,12 +9,13 @@ export class AppService {
     const data = await getDienstplanung(dienstplanId, loadVorschlaege);
     return data;
   }
+
   async getApiData(userId: number) {
     const data = await getAllApiData(userId);
     return data;
   }
+
   async savePlanungsComment(body) {
-    console.log('App;Service:savePlanungsComment', body);
     const params = {
       tag: new Date(body.tag),
       po_dienst_id: body.po_dienst_id,
