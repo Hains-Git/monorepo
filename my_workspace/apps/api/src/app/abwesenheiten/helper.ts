@@ -1,8 +1,7 @@
 import { abwesentheitenueberblick_counters, diensteinteilungs } from '@prisma/client';
 
-import { processData, processAsyncData } from '@my-workspace/utils';
-
-import { getEinteilungenOhneBedarf } from '@my-workspace/prisma_hains';
+import { getEinteilungenOhneBedarf, PlanerDate } from '@my-workspace/prisma_hains';
+import { formatDate, getISOWeek, isMonday } from 'date-fns';
 
 type TParams = {
   von: Date;
@@ -58,4 +57,20 @@ export async function addCountsValue(counters: abwesentheitenueberblick_counters
     return accumulator;
   }, Promise.resolve({})); // Start with a resolved Promise containing an empty object
   return data;
+}
+
+type TParams1 = {
+  day: Date;
+  dates: object;
+};
+
+export function createDates({ day, dates }: TParams1) {
+  let weekCounter = getISOWeek(day) + 1;
+
+  if (isMonday(day)) {
+    weekCounter = getISOWeek(day);
+  }
+  const formatedDay = formatDate(day, 'yyyy-MM-dd');
+  dates[formatedDay] = new PlanerDate(day, weekCounter);
+  return dates;
 }

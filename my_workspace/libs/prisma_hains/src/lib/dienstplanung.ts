@@ -4,7 +4,8 @@ import { prismaDb } from './prisma-hains';
 import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYear, subDays } from 'date-fns';
 
 import { format, lastDayOfMonth } from 'date-fns';
-import PlanerDate from './planerdate/planerdate';
+import { PlanerDate } from './planerdate/planerdate';
+// import { PlanerDate } from '@my-workspace/utils';
 import { checkWeek } from './utils/feiertag';
 
 import { processData, mapIdToKeys } from '@my-workspace/utils';

@@ -1,23 +1,5 @@
-import PlanerDate from './planerdate';
-import {
-  addDays,
-  getDay,
-  getWeek,
-  isEqual,
-  isBefore,
-  isAfter,
-  getYear,
-  getMonth,
-  getDaysInMonth,
-  addMonths,
-  subDays,
-  endOfMonth,
-  subWeeks,
-  isWithinInterval,
-  isSameDay,
-  lastDayOfMonth,
-  isValid,
-} from 'date-fns';
+import { PlanerDate } from './planerdate';
+import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
 
 interface RegelcodeHash {
   is_bedarf: boolean;
@@ -40,18 +22,14 @@ const ZEITRAUMREGELN_REGEX = {
   monat: /^m([1-9])$|^m1([0-2])$/,
   kalenderwoche: /^kw[1-9]$|^kw[1-4][0-9]$|^kw5[0-3]$/,
   wochentag: /^Mo$|^Di$|^Mi$|^Do$|^Fr$|^Sa$|^So$/,
-  clear: /^_|_$/,
+  clear: /^_|_$/
 };
 
 function isPlanerDate(date: Date | PlanerDate) {
   return date instanceof PlanerDate;
 }
 
-function shouldCheckDate(
-  date: Date | PlanerDate,
-  zeitraumAnfang: Date,
-  zeitraumEnde: Date
-): boolean {
+function shouldCheckDate(date: Date | PlanerDate, zeitraumAnfang: Date, zeitraumEnde: Date): boolean {
   let thisStart = true;
   let thisEnd = true;
 
@@ -102,7 +80,7 @@ function splitRegelcode(regelcode: string) {
     isNicht: false,
     isAuch: false,
     isNur: false,
-    hasFeiertag: false,
+    hasFeiertag: false
   };
 
   if (!hash.isBedarf) {
@@ -130,19 +108,12 @@ function splitRegelcode(regelcode: string) {
     }
 
     const feiertageStr = hash.feiertage.replace(ZEITRAUMREGELN_REGEX.clear, '');
-    const wochentageStr = hash.wochentage.replace(
-      ZEITRAUMREGELN_REGEX.clear,
-      ''
-    );
+    const wochentageStr = hash.wochentage.replace(ZEITRAUMREGELN_REGEX.clear, '');
     const wochenStr = hash.wochen.replace(ZEITRAUMREGELN_REGEX.clear, '');
     const monateStr = hash.monate.replace(ZEITRAUMREGELN_REGEX.clear, '');
 
-    hash.feiertageR = feiertageStr.length
-      ? feiertageStr.split('_').filter(Boolean)
-      : [];
-    hash.wochentageR = wochentageStr.length
-      ? wochentageStr.split('_').filter(Boolean)
-      : [];
+    hash.feiertageR = feiertageStr.length ? feiertageStr.split('_').filter(Boolean) : [];
+    hash.wochentageR = wochentageStr.length ? wochentageStr.split('_').filter(Boolean) : [];
     hash.wochenR = wochenStr.length ? wochenStr.split('_').filter(Boolean) : [];
     hash.monateR = monateStr.length ? monateStr.split('_').filter(Boolean) : [];
 
@@ -155,19 +126,12 @@ function splitRegelcode(regelcode: string) {
   return hash;
 }
 
-function checkKalenderwochen(
-  regeln: string[],
-  date: Date | PlanerDate
-): boolean {
-  const currentWeek = isPlanerDate(date)
-    ? date.week
-    : getWeek(date, { weekStartsOn: 1 });
+function checkKalenderwochen(regeln: string[], date: Date | PlanerDate): boolean {
+  const currentWeek = isPlanerDate(date) ? date.week : getWeek(date, { weekStartsOn: 1 });
   let result = regeln.includes(`kw${currentWeek}`);
 
   if (result) {
-    const lastWeek = isPlanerDate(date)
-      ? date.last_week
-      : getWeek(subWeeks(date, 1), { weekStartsOn: 1 });
+    const lastWeek = isPlanerDate(date) ? date.last_week : getWeek(subWeeks(date, 1), { weekStartsOn: 1 });
 
     if (regeln.includes('#extra')) {
       result = lastWeek === 53;
@@ -206,41 +170,22 @@ function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
           isFeiertag = hash.isNicht;
         } else {
           // Note: Holidays seem to need to be passed as a string, otherwise some are not recognized
-          const checkFeiertagValue = hash.feiertageR.includes(
-            date.feiertag.name.toLowerCase()
-          );
+          const checkFeiertagValue = hash.feiertageR.includes(date.feiertag.name.toLowerCase());
           isFeiertag = hash.isNicht ? !checkFeiertagValue : checkFeiertagValue;
         }
       }
 
-      const monthNr = isPlanerDate(date)
-        ? date.month_nr
-        : (date as Date).getMonth() + 1;
+      const monthNr = isPlanerDate(date) ? date.month_nr : (date as Date).getMonth() + 1;
 
-      const isKw =
-        !regelcode.includes('#fkw') || checkKalenderwochen(hash.wochenR, date);
-      const isMonth =
-        !regelcode.includes('#fm') || hash.monateR.includes(`m${monthNr}`);
-      const isWochentag =
-        !regelcode.includes('#wr') || hash.wochentageR.includes(date.week_day);
+      const isKw = !regelcode.includes('#fkw') || checkKalenderwochen(hash.wochenR, date);
+      const isMonth = !regelcode.includes('#fm') || hash.monateR.includes(`m${monthNr}`);
+      const isWochentag = !regelcode.includes('#wr') || hash.wochentageR.includes(date.week_day);
       const isStart = isKw && isMonth && isWochentag;
 
       if (hash.isAuch || !hash.hasFeiertag) {
-        isBedarf = checkMonatstag(
-          regelcode,
-          hash.monatstage,
-          date,
-          hash.monateR,
-          isStart || isFeiertag
-        );
+        isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart || isFeiertag);
       } else if ((hash.isNur && isFeiertag) || (hash.isNicht && isFeiertag)) {
-        isBedarf = checkMonatstag(
-          regelcode,
-          hash.monatstage,
-          date,
-          hash.monateR,
-          isStart && isFeiertag
-        );
+        isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart && isFeiertag);
       }
     }
   }
@@ -255,25 +200,15 @@ function checkMonatstag(
   monateR: string[],
   isStart: boolean
 ): boolean {
-  return regelcode.includes('#tr')
-    ? checkTagRhythmus(monatstage, date, monateR, isStart)
-    : isStart;
+  return regelcode.includes('#tr') ? checkTagRhythmus(monatstage, date, monateR, isStart) : isStart;
 }
 
-function checkTagRhythmus(
-  regeln: string,
-  date: PlanerDate | Date,
-  monate: string[],
-  start: boolean
-): boolean {
+function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: string[], start: boolean): boolean {
   let isRhythmus = start;
 
   if (isRhythmus) {
     // Remove clear markers and split the rules
-    let tagRegeln = regeln
-      .replace(ZEITRAUMREGELN_REGEX.clear, '')
-      .split('_')
-      .filter(Boolean);
+    let tagRegeln = regeln.replace(ZEITRAUMREGELN_REGEX.clear, '').split('_').filter(Boolean);
     const jedenMonatAbStart = tagRegeln.includes('#neu');
     const jedenMonatBisEnde = tagRegeln.includes('#ende');
 
@@ -294,21 +229,15 @@ function checkTagRhythmus(
     const currentYear = currentDate.getFullYear();
 
     // Determine start and end months from input
-    const startMonth = monate.length
-      ? parseInt(monate[0].replace('m', ''), 10)
-      : 0;
-    const endMonth = monate.length
-      ? parseInt(monate[monate.length - 1].replace('m', ''), 10)
-      : 11;
+    const startMonth = monate.length ? parseInt(monate[0].replace('m', ''), 10) : 0;
+    const endMonth = monate.length ? parseInt(monate[monate.length - 1].replace('m', ''), 10) : 11;
 
     // Calculate valid start and end dates
     const startDatum = checkValidDate(currentYear, startMonth, startTag);
     const endDatum = checkValidDate(currentYear, endMonth, endTag);
 
     // Determine the initial check date
-    let checkDatum = jedenMonatAbStart
-      ? checkValidDate(currentYear, currentMonth, startTag)
-      : startDatum;
+    let checkDatum = jedenMonatAbStart ? checkValidDate(currentYear, currentMonth, startTag) : startDatum;
 
     // Check if it matches the rhythm initially
     isRhythmus = wiederholung === 0 && isSameDay(currentDate, checkDatum);
@@ -316,11 +245,7 @@ function checkTagRhythmus(
     if (wiederholung > 0) {
       const isInRange = currentDate >= startDatum && currentDate <= endDatum;
       if (isInRange) {
-        let thisEndDatum = checkValidDate(
-          checkDatum.getFullYear(),
-          checkDatum.getMonth(),
-          endTag
-        );
+        let thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
 
         while (checkDatum <= endDatum && checkDatum <= currentDate) {
           isRhythmus = isEqual(currentDate, checkDatum);
@@ -334,17 +259,9 @@ function checkTagRhythmus(
           checkDatum = newCheckDatum;
 
           if (isNewMonth) {
-            thisEndDatum = checkValidDate(
-              checkDatum.getFullYear(),
-              checkDatum.getMonth(),
-              endTag
-            );
+            thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
             if (jedenMonatAbStart) {
-              checkDatum = checkValidDate(
-                checkDatum.getFullYear(),
-                checkDatum.getMonth(),
-                startTag
-              );
+              checkDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), startTag);
             }
           }
         }

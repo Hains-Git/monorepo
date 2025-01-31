@@ -1,8 +1,9 @@
-import { format } from 'date-fns';
-import { prismaDb } from '../prisma-hains';
+import { format, formatDate } from 'date-fns';
+// import { prismaDb } from '../prisma-hains';
 import { checkDate } from './zeitraumkategorie';
+import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '../crud/planerdate';
 
-class PlanerDate {
+export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
@@ -38,7 +39,7 @@ class PlanerDate {
   by_dienst: Record<string, any>;
   by_mitarbeiter: Record<string, any>;
   kws_vormonat: any[];
-  static prismaDb = prismaDb;
+  // static prismaDb = prismaDb;
 
   constructor(date: Date, week_counter = 0, zeitraumkategorien: any[] = []) {
     this.einteilungen = {};
@@ -205,18 +206,15 @@ class PlanerDate {
       }
       PlanerDate.feiertage[yearStr][monthKey].push(feiertag);
 
-      const now = new Date();
-      await PlanerDate.prismaDb.feiertages.create({
-        data: {
-          name: feiertag.name,
-          tag: feiertag.day,
-          monat: feiertag.month,
-          datum: feiertag.full_date,
-          created_at: now,
-          updated_at: now,
-          jahr: osterDatum.getFullYear()
-        }
-      });
+      const data = {
+        name: feiertag.name,
+        tag: feiertag.day,
+        monat: feiertag.month,
+        datum: new Date(formatDate(osterDatum, 'yyyy-MM-dd')),
+        jahr: osterDatum.getFullYear()
+      };
+
+      await createPlanerDate(data);
     }
   }
 
@@ -234,21 +232,13 @@ class PlanerDate {
 
   static async getFeiertag(date: Date) {
     const yearStr = date.getFullYear();
-    const exist = await PlanerDate.prismaDb.feiertages.findFirst({
-      where: {
-        jahr: yearStr
-      }
-    });
+    const exist = await existFeiertagEntryByYear(yearStr);
 
     if (!exist) {
       await PlanerDate.calcFeiertage(yearStr);
     }
 
-    const feiertag = await PlanerDate.prismaDb.feiertages.findFirst({
-      where: {
-        datum: date
-      }
-    });
+    const feiertag = await getPlanerDateFeiertage(date);
 
     return feiertag || '';
   }
@@ -291,5 +281,3 @@ class PlanerDate {
     return Math.floor(diff / oneDay);
   }
 }
-
-export default PlanerDate;

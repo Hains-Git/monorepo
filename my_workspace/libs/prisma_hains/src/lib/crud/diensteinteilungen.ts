@@ -46,7 +46,11 @@ export async function getEinteilungenOhneBedarf({
     AND es.public = ${isPublic} AND es.counts = ${counts}
     AND db.id IS NULL
   )
-  SELECT *
+  SELECT id,
+  mitarbeiter_id, einteilungsstatus_id, po_dienst_id, tag,
+  updated_at, created_at, dienstplan_id, reason, number,
+  einteilungskontext_id, doppeldienst_id, schicht_nummern,
+  arbeitsplatz_id, bereich_id, context_comment, info_comment, is_optional
   FROM RankedResults
   WHERE RowNum = 1
   ORDER BY mitarbeiter_id, tag

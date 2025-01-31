@@ -6,18 +6,17 @@ import {
   getAbwesenheitenByYear,
   getAbwesenheitenCounters,
   getAllAbwesenheitenSpalten,
-  getEinteilungenOhneBedarf
+  getEinteilungenOhneBedarf,
+  getKalenderMarkierungByDateRange
 } from '@my-workspace/prisma_hains';
 
-import { addCountsValue } from './helper';
+import { addCountsValue, createDates } from './helper';
+import { eachDayOfInterval } from 'date-fns';
 
 @Injectable()
 export class AbwesenheitenService {
   async getAbwesenheitsData(body) {
     const result = {};
-    const all_column_keys = [];
-    const settings = {};
-    let awCounterPoDienst = {};
 
     const dateView = body.date_view;
     const leftSideDate = body.left_side_date;
@@ -35,13 +34,13 @@ export class AbwesenheitenService {
       const awColumnNames = await getAllAbwesenheitenSpalten();
       const abwesentheiten = await getAbwesenheitenByYear(year);
       const awHash = processData('mitarbeiter_id', abwesentheiten);
-      awCounterPoDienst = addCountsValue(counters);
+      const awCounterPoDienst = await addCountsValue(counters);
 
       result['settings'] = userSettingsAbwesenheiten;
-      result['counters'] = counters;
+      result['counters'] = processData('id', counters);
       result['abwesentheiten'] = { [year]: awHash };
       result['aw_counter_po_dienst'] = awCounterPoDienst;
-      result['awColumnNames'] = processData('db_key', awColumnNames);
+      result['aw_column_names'] = processData('db_key', awColumnNames);
     } else {
       if (direction === 'past') {
         dateStart = _subWeeks(dateView, 6);
@@ -53,9 +52,21 @@ export class AbwesenheitenService {
     }
 
     const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
-    result['einteilungen'] = einteilungen;
-    result['urlaubssaldi'] = {};
+    const dateRange = eachDayOfInterval({ start: dateStart, end: dateEnd });
 
-    return body;
+    const dates = {};
+
+    dateRange.forEach((day) => {
+      createDates({ day, dates });
+    });
+
+    const kalendermarkierungen = await getKalenderMarkierungByDateRange(dateStart, dateEnd);
+
+    result['einteilungen'] = einteilungen;
+    result['dates'] = dates;
+    result['urlaubssaldi'] = {};
+    result['kalendermarkierung'] = kalendermarkierungen;
+
+    return result;
   }
 }
