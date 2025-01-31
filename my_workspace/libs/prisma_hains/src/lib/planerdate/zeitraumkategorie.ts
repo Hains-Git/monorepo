@@ -38,15 +38,12 @@ function shouldCheckDate(date: Date | PlanerDate, zeitraumAnfang: Date, zeitraum
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
-
   if (zeitraumAnfang != null) {
     thisStart = fullDate >= zeitraumAnfang;
   }
-
   if (zeitraumEnde != null) {
     thisEnd = fullDate < zeitraumEnde;
   }
-
   return thisStart && thisEnd;
 }
 
@@ -143,8 +140,6 @@ function checkKalenderwochen(regeln: string[], date: Date | PlanerDate): boolean
   return result;
 }
 
-let clog: boolean;
-
 function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
   let isBedarf = false;
 
@@ -155,8 +150,6 @@ function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
   const zeitraumAnfang = zeitraumkategorie.anfang;
   const zeitraumEnde = zeitraumkategorie.ende;
   const regelcode = zeitraumkategorie.regelcode;
-
-  clog = Number(zeitraumkategorie.id) === 37 && date.id === '2024-10-23';
 
   if (shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
     const hash = splitRegelcode(regelcode);
