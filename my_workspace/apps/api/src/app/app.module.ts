@@ -9,14 +9,17 @@ import { APP_GUARD } from '@nestjs/core';
 
 import { AbwesenheitenController } from './abwesenheiten/abwesenheiten.controller';
 import { AbwesenheitenService } from './abwesenheiten/abwesenheiten.service';
+import { MitarbeiterInfoController } from './mitarbeiterinfo/mitarbeiterinfo.controller';
+import { MitarbeiterInfoService } from './mitarbeiterinfo/mitarbeiterinfo.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
   imports: [PrismaModule],
-  controllers: [AppController, AbwesenheitenController],
+  controllers: [AppController, AbwesenheitenController, MitarbeiterInfoController],
   providers: [
     AppService,
-    AbwesenheitenService
+    AbwesenheitenService,
+    MitarbeiterInfoService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard

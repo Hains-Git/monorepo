@@ -107,7 +107,7 @@ model account_infos {
   vertragsende        String?       @db.VarChar
   geburtsort          String?       @default("") @db.VarChar
   ueber_mich          String?       @db.VarChar
-  mitarbeiters        mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
+  mitarbeiter         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
   user                users?
 
   @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
@@ -497,17 +497,21 @@ model datei_typs {
   name       String?  @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
+  dateis     dateis[]
 }
 
 model dateis {
-  id           Int      @id @default(autoincrement())
-  name         String?  @db.VarChar
-  beschreibung String?  @db.VarChar
+  id           Int           @id @default(autoincrement())
+  name         String?       @db.VarChar
+  beschreibung String?       @db.VarChar
   ersteller_id Int?
   besitzer_id  Int?
-  created_at   DateTime @db.Timestamp(6)
-  updated_at   DateTime @db.Timestamp(6)
+  created_at   DateTime      @db.Timestamp(6)
+  updated_at   DateTime      @db.Timestamp(6)
   datei_typ_id Int?
+  mitarbeiters mitarbeiters? @relation(fields: [besitzer_id], references: [id])
+  user         users?        @relation(fields: [ersteller_id], references: [id])
+  datei_typ    datei_typs?   @relation(fields: [datei_typ_id], references: [id])
 
   @@index([besitzer_id], map: "index_dateis_on_besitzer_id")
   @@index([datei_typ_id], map: "index_dateis_on_datei_typ_id")
@@ -1396,7 +1400,7 @@ model mitarbeiters {
   jahresbilanzs                                                jahresbilanzs[]
   mitarbeiter_default_eingeteilts                              mitarbeiter_default_eingeteilts[]
   mitarbeitermerkmals                                          mitarbeitermerkmals[]
-  funktions                                                    funktions?                          @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5006408ec6")
+  funktion                                                     funktions?                          @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5006408ec6")
   nicht_einteilen_absprachens                                  nicht_einteilen_absprachens[]
   notes                                                        notes[]
   notes_histories_notes_histories_ersteller_idTomitarbeiters   notes_histories[]                   @relation("notes_histories_ersteller_idTomitarbeiters")
@@ -1407,6 +1411,7 @@ model mitarbeiters {
   vertrags                                                     vertrags[]
   vorlages                                                     vorlages[]
   wochenbilanzs                                                wochenbilanzs[]
+  dateis                                                       dateis[]
 
   @@index([funktion_id], map: "index_mitarbeiters_on_funktion_id")
 }
@@ -2022,6 +2027,7 @@ model users {
   oauth_refresh_tokens              oauth_refresh_tokens[]
   user_gruppes                      users_gruppes[]
   account_info                      account_infos?                      @relation(fields: [account_info_id], references: [id])
+  dateis                            dateis[]
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }

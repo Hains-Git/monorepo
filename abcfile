@@ -1,0 +1,128 @@
+  def get_all_user_data
+    res = {}
+    res[:mitarbeiter_infos] = ApplicationRecord.hash_by_key(get_mitarbeiter_infos, "id")
+    res[:vertrags_typ] = get_vertrags_typ
+    res[:mailer_contexts_deactivate] = get_mailer_contexts("Nutzer deaktivieren")
+    res[:mailer_contexts_reactivate] = get_mailer_contexts("Nutzer reaktivieren")
+    respond_with(res.to_json)
+  end
+
+    def accountInfosExcept
+      [
+        :created_at,
+        :updated_at,
+        :user_id,
+        :funktion,
+        :vertragsbeginn_ukhd,
+        :vertragsende,
+        :geburtsort,
+        :aktivAb,
+        :aktivBis,
+        :adresseLand,
+        :old_user_id,
+        :comments,
+        :teilzeit
+      ]
+    end
+
+    def mitarbeiterOnly
+      [
+        :a_seit, 
+        :aktiv, 
+        :anrechenbare_zeit,
+        :funktion_id,
+        :personalnummer,
+        :planname,
+        :name,
+        :zeit_kommentar
+      ]
+    end
+
+    def accountInfoInclude
+      {
+        :user => {
+          :only => [:email, :admin, :login, :id],
+          :include => [:gruppes]
+          # :methods => :roles
+        },
+        :mitarbeiter => {
+          :only => mitarbeiterOnly,
+          :methods => [:vk_and_vgruppe_am, :weiterbildungsjahr],
+          :include => {
+            :funktion => {
+              :except => [
+                :created_at, 
+                :updated_at
+              ]
+            },
+            :dateis => {
+              :only => [
+                :datei_typ_id,
+                :id
+              ],
+              :methods => :file_preview,
+              :include =>{ :datei_typ => {:only => :name}}
+            }
+          }
+        }
+      }
+    end
+
+  def get_mitarbeiter_infos
+    mitarbeiter_infos = AccountInfo.includes(
+      :mitarbeiter, 
+      :user,
+      :user => [ :gruppes ],
+      :mitarbeiter => [
+        :vertrags_phases,
+        :vertrags,
+        :funktion, 
+        :dateis,
+        :vertrags_arbeitszeits,
+        :dateis => [:datei_typ],
+        :vertrags_phases => [:vertrag, :vertragsgruppe, :vertragsstufe, :vertrags_variante],
+        :vertrags_arbeitszeits => [:vertrag]
+      ]
+    ).where(:mitarbeiters => {platzhalter: false}).to_a
+
+    mitarbeiter_without_account_info = Mitarbeiter.joins("
+      LEFT OUTER JOIN account_infos AS a ON a.mitarbeiter_id = mitarbeiters.id
+      ").includes(
+        :vertrags_phases,
+        :vertrags,
+        :funktion, 
+        :dateis,
+        :vertrags_arbeitszeits,
+        :dateis => [:datei_typ],
+        :vertrags_phases => [:vertrag, :vertragsgruppe, :vertragsstufe, :vertrags_variante],
+        :vertrags_arbeitszeits => [:vertrag]
+      ).where(:platzhalter => false, :aktiv => true)
+      .where("a.id IS NULL")
+
+    # Create a fake account_info for each Mitarbeiter without account_info
+    i = -1
+    mitarbeiter_without_account_info.each do |mitarbeiter|
+      account_info = AccountInfo.new
+      account_info.mitarbeiter = mitarbeiter
+      account_info.mitarbeiter_id = mitarbeiter.id
+      account_info.nameKurz = mitarbeiter.planname
+      account_info.id = i
+      mitarbeiter_infos << account_info
+      i -= 1
+    end
+
+    mitarbeiter_infos.as_json(
+      :except => accountInfosExcept,
+      :include => accountInfoInclude
+    )
+  end
+
+  def get_vertrags_typ
+    vertrags_typ = Vertragstyp.includes(:vertragsstuves, :vertragsstuves => [
+      :vertragsgruppe, :vertrags_variante, :vertragstyp
+    ]).all
+    vertrags_typ.as_json(:include => [:vertragsstuves, :vertragsstuves => {
+      :include => [:vertragsgruppe, :vertrags_variante, :vertragstyp], :methods => [:von_bis]
+    }])
+  end
+
