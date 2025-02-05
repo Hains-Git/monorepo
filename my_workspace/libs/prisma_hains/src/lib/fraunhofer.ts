@@ -1,5 +1,21 @@
+import {
+  arbeitszeittyps,
+  bedarfs_eintrags,
+  dienstfreigabes,
+  dienstkategories,
+  dienstkategoriethemas,
+  dienstplanbedarves,
+  dienstplans,
+  dienstratings,
+  dienstwunsches,
+  einteilung_rotations,
+  freigabestatuses,
+  po_diensts,
+  schichts,
+  themas
+} from '@prisma/client';
 import { prismaDb } from './prisma-hains';
-import { whereMitarbeiterAktivNoPlatzhalter } from './utils/crud_helper';
+import { getArbeitszeitInMinutenAm, getFraunhoferMitarbeiter, wherePlanBedarfIn } from './utils/crud_helper';
 
 type Einteilung = {
   MitarbeiterID: number;
@@ -59,6 +75,7 @@ type Rotation = {
 type BedarfsID = {
   Tag: Date;
   Dienst: number;
+  Bereich: number;
 };
 
 type Bedarf = {
@@ -106,6 +123,7 @@ type PlanData = {
   AuslgeichsfreiDienstID: number;
   MinPräferenz: number;
   MaxPräferenz: number;
+  msg: string;
 };
 
 export type FraunhoferNewPlan = {
@@ -114,6 +132,12 @@ export type FraunhoferNewPlan = {
   Einteilungen: Einteilung[];
   Parameter: string;
 };
+
+type DienstTypenThemen = Record<DienstTyp, number[]>;
+
+type DienstkategorieDienste = Record<number, number[]>;
+
+type FreigabetypenDienste = Record<number, Record<number, number>>;
 
 const defaultPlanData: PlanData = {
   Mitarbeiter: [],
@@ -126,127 +150,462 @@ const defaultPlanData: PlanData = {
   FixierteEinteilungen: [],
   AuslgeichsfreiDienstID: 0,
   MinPräferenz: 1,
-  MaxPräferenz: 5
+  MaxPräferenz: 5,
+  msg: ''
 };
+
+function mapThemenToDienstTypen(themen: themas[]) {
+  const dienstTypenThemen: DienstTypenThemen = {
+    Frühdienst: [],
+    Rufdienst: [],
+    Nachtdienst: [],
+    VersetzterDienst: [],
+    LangerDienst: [],
+    Frei: []
+  };
+  themen.forEach((t) => {
+    let key: DienstTyp = 'Frei';
+    const name = (t.name || '').trim().toLowerCase();
+    if (name.includes('versetzter dienst') && name.indexOf('kein') !== 0) {
+      key = 'VersetzterDienst';
+    } else if (name.includes('langer dienst') && name.indexOf('kein') !== 0) {
+      key = 'LangerDienst';
+    } else if (name.includes('nachtdienst') && name.indexOf('kein') !== 0) {
+      key = 'Nachtdienst';
+    } else if (name.includes('frühdienst') && name.indexOf('kein') !== 0) {
+      key = 'Frühdienst';
+    } else if (name.includes('rufdienst') && name.indexOf('kein') !== 0) {
+      key = 'Rufdienst';
+    }
+    dienstTypenThemen[key].push(t.id);
+  });
+  return dienstTypenThemen;
+}
+
+function getMitarbeiterRotationen(rotationen: einteilung_rotations[], tage: Date[]) {
+  return rotationen.reduce((acc: Rotationszuweisung[], r) => {
+    const kontingentId = r.kontingent_id || 0;
+    if (kontingentId < 1) return acc;
+    tage.forEach((tag) => {
+      const check = r.von && r.bis && r.von <= tag && r.bis >= tag;
+      if (!check) return;
+      acc.push({
+        Tag: tag,
+        RotationsID: kontingentId
+      });
+    });
+    return acc;
+  }, []);
+}
+
+function getMitarbeiterWuensche(
+  wuensche: ({
+    dienstkategories: dienstkategories | null;
+  } & dienstwunsches)[],
+  dienstkategorieDienste: DienstkategorieDienste
+) {
+  return wuensche.reduce(
+    (
+      acc: {
+        Wünsche: Wunsch[];
+        'K-Wünsche': Date[];
+      },
+      w
+    ) => {
+      if (!w.tag || !w.dienstkategorie_id) return acc;
+      if (w.dienstkategories?.poppix_name === 'K') {
+        acc['K-Wünsche'].push(w.tag);
+      } else {
+        acc.Wünsche.push({
+          Tag: w.tag,
+          Dienste: dienstkategorieDienste[w.dienstkategorie_id] || []
+        });
+      }
+
+      return acc;
+    },
+    {
+      Wünsche: [],
+      'K-Wünsche': []
+    }
+  );
+}
+
+function getMitarbeiterFreigaben(
+  freigaben: ({
+    freigabestatuses: freigabestatuses | null;
+  } & dienstfreigabes)[],
+  freigabetypenDienste: FreigabetypenDienste,
+  tage: Date[]
+) {
+  return freigaben.reduce((acc: Freigabe[], f) => {
+    const freigabeTypId = f.freigabetyp_id || 0;
+    if (freigabeTypId < 1 || !f.freigabestatuses?.qualifiziert) return acc;
+    // let typ: FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'nicht qualifiziert';
+    const typ: FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'überqualifiziert';
+    // if (f.freigabestatuses.name === 'erteilt, ruhend (höhere Qualifikation)') {
+    //   typ = 'überqualifiziert';
+    // }
+    const ftDienste = freigabetypenDienste[freigabeTypId];
+    if (!ftDienste) return acc;
+    Object.values(ftDienste).forEach((dId) => {
+      tage.forEach((tag) => {
+        acc.push({
+          Dienst: dId,
+          Tag: tag,
+          Freigabetyp: typ
+        });
+      });
+    });
+    return acc;
+  }, []);
+}
+
+function createDiensteAndMapInfos(
+  dienste: po_diensts[],
+  dienstTypenThemen: DienstTypenThemen,
+  dienstkategorien: ({
+    dienstkategoriethemas: dienstkategoriethemas[];
+  } & dienstkategories)[]
+) {
+  return dienste.reduce(
+    (
+      acc: {
+        diensteArr: Dienst[];
+        freigabetypenDienste: FreigabetypenDienste;
+        dienstkategorieDienste: DienstkategorieDienste;
+        kombos: po_diensts[];
+      },
+      d
+    ) => {
+      // Map Dienste to Freigabetypen
+      d.freigabetypen_ids.forEach((ft) => {
+        acc.freigabetypenDienste[ft] ||= {};
+        acc.freigabetypenDienste[ft][d.id] = d.id;
+      });
+
+      const typ: DienstTyp =
+        (Object.entries(dienstTypenThemen).find(([key, ids]) => {
+          return d.thema_ids.find((t) => ids.includes(t));
+        })?.[0] as DienstTyp) || 'Frei';
+
+      // Map Dienste to Dienstkategorien
+      dienstkategorien.forEach((dk) => {
+        const hasThemen = d.thema_ids.find((t) => dk.dienstkategoriethemas.find((dt) => dt.thema_id === t));
+        if (!hasThemen) return;
+        acc.dienstkategorieDienste[dk.id] ||= [];
+        acc.dienstkategorieDienste[dk.id].push(d.id);
+      });
+
+      if (d.weak_parallel_conflict) {
+        acc.kombos.push(d);
+      }
+
+      acc.diensteArr.push({
+        ID: d.id,
+        Name: d.planname || '',
+        Typ: typ,
+        IstRelevantFürDoppelWhopper: false
+      });
+      return acc;
+    },
+    {
+      diensteArr: [],
+      freigabetypenDienste: {},
+      dienstkategorieDienste: {},
+      kombos: []
+    }
+  );
+}
+
+function getPraeferenzen(ratings: dienstratings[], min: number, max: number) {
+  return ratings.reduce((acc: Präferenz[], r) => {
+    if (r.po_dienst_id && r.rating !== null && r.rating >= min && r.rating <= max) {
+      acc.push({
+        Dienst: r.po_dienst_id,
+        Bewertung: r.rating
+      });
+    }
+    return acc;
+  }, []);
+}
+
+function createTageAndMonths(start: Date, end: Date) {
+  const tage: Date[] = [];
+  const months: Record<string, string> = {};
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const date = new Date(d);
+    tage.push(date);
+    const [year, month] = [date.getFullYear(), date.getMonth()];
+    // 12 Uhr mittags, damit es keine Probleme mit der Zeitzone gibt
+    const firstDayStr = new Date(year, month, 1, 12).toISOString();
+    months[firstDayStr] ||= new Date(year, month + 1, 0, 12).toISOString();
+  }
+  return { tage, months };
+}
+
+async function getDienstplanPerMonth(start: Date, end: Date) {
+  const { tage, months } = createTageAndMonths(start, end);
+  const dienstplaene: ({
+    dienstplanbedarves:
+      | ({
+          bedarfs_eintrags: ({
+            schichts: ({
+              arbeitszeittyps: arbeitszeittyps | null;
+            } & schichts)[];
+            first_bedarf:
+              | ({
+                  block_bedarfe: bedarfs_eintrags[];
+                } & bedarfs_eintrags)
+              | null;
+          } & bedarfs_eintrags)[];
+        } & dienstplanbedarves)
+      | null;
+  } & dienstplans)[] = [];
+  for (const monthStart in months) {
+    const monthEnd = months[monthStart];
+    const dpl = await prismaDb.dienstplans.findFirst({
+      where: {
+        ...wherePlanBedarfIn(new Date(monthStart), new Date(monthEnd)),
+        dienstplanbedarves: {
+          isNot: null
+        }
+      },
+      include: {
+        dienstplanbedarves: {
+          include: {
+            bedarfs_eintrags: {
+              where: {
+                AND: [
+                  { tag: { gte: monthStart, lte: monthEnd } },
+                  {
+                    tag: { gte: start, lte: end }
+                  }
+                ]
+              },
+              include: {
+                schichts: {
+                  include: {
+                    arbeitszeittyps: true
+                  }
+                },
+                first_bedarf: {
+                  include: {
+                    block_bedarfe: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        {
+          anfang: 'asc'
+        },
+        {
+          ende: 'desc'
+        }
+      ]
+    });
+    if (!dpl) continue;
+    dienstplaene.push(dpl);
+  }
+
+  return { dienstplaene, tage, months };
+}
+
+const calculateBedarfArbeitszeit = (
+  schichten: ({ arbeitszeittyps: arbeitszeittyps | null } & schichts)[],
+  isWochenende = false
+) => {
+  let wochenende = isWochenende;
+  let bereitschaft = false;
+  const arbeitszeitInMinuten = schichten.reduce((acc: number, s) => {
+    if (!s.anfang || !s.ende) return acc;
+    const azt = s.arbeitszeittyps;
+    if (azt?.bereitschaft) bereitschaft = true;
+    if (azt?.arbeitszeit && s.arbeitszeit) {
+      if (!wochenende && azt?.dienstzeit) {
+        const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getHours() < 5;
+        const endTime = s.ende.toTimeString().split(' ')[0];
+        const endTimeAsNumber = parseInt(endTime.split(':').join(''), 10);
+        const endsFridayAfterNine = s.ende.getDay() === 5 && endTimeAsNumber > 210000;
+        wochenende = beginsMondayBeforeFive || endsFridayAfterNine;
+      }
+      return acc + s.arbeitszeit;
+    }
+    return acc;
+  }, 0);
+  return {
+    arbeitszeitInMinuten,
+    wochenende,
+    bereitschaft
+  };
+};
+
+const MAX_BEREITSCHAFTSDIENSTE = 7;
 
 export async function getFraunhoferPlanData(start: Date, end: Date): Promise<PlanData> {
   const result: PlanData = { ...defaultPlanData };
 
   if (!start.getTime() || !end.getTime() || start > end) {
+    result.msg = 'Ungültige Zeitspanne!';
     return result;
   }
 
   try {
-    const tage: Date[] = [];
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      tage.push(new Date(d));
+    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end);
+
+    if (!dienstplaene.length) {
+      result.msg = 'Dienstpläne existieren noch nicht!';
+      return result;
     }
-    const mitarbeiter = await prismaDb.mitarbeiters.findMany({
+
+    const addedBloecke: Record<number, boolean> = {};
+    dienstplaene.forEach((dpl) => {
+      if (!dpl?.dienstplanbedarves?.bedarfs_eintrags) return;
+      dpl.dienstplanbedarves.bedarfs_eintrags.forEach((be) => {
+        if (!be.tag || !be.po_dienst_id || !be.bereich_id || (!be.min && !be.opt)) return;
+
+        const wochentag = be.tag.getDay();
+        let istWochenendEinteilung = wochentag === 0 || wochentag === 6;
+
+        const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
+          be.schichts,
+          istWochenendEinteilung
+        );
+
+        result.Bedarfe.push({
+          ID: {
+            Tag: be.tag,
+            Dienst: be.po_dienst_id,
+            Bereich: be.bereich_id
+          },
+          Minimum: be.min || 0,
+          OptionalerZusätzlicherBedarf: be.opt || 0,
+          IstBereitschaftsdienst: bereitschaft,
+          ArbeitszeitInMinuten: arbeitszeitInMinuten,
+          Belastung: 0,
+          IstWochenendEinteilung: istWochenendEinteilung || wochenende
+        });
+
+        const firstBedarf = be.first_bedarf;
+        if (!firstBedarf || firstBedarf.block_bedarfe.length < 2 || addedBloecke[firstBedarf.id]) return;
+        addedBloecke[firstBedarf.id] = true;
+        result.Bedarfsblöcke.push({
+          Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb) => {
+            if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
+            acc.push({
+              Tag: bb.tag,
+              Dienst: bb.po_dienst_id,
+              Bereich: bb.bereich_id
+            });
+            return acc;
+          }, []),
+          AnzahlAusgleichstage: firstBedarf.ausgleich_tage || 0
+        });
+      });
+    });
+
+    const relevantTeams = await prismaDb.teams.findMany({
       where: {
-        ...whereMitarbeiterAktivNoPlatzhalter(start, end)
-      },
-      include: {
-        dienstfreigabes: {
-          include: {
-            freigabestatuses: true
-          }
-        },
-        einteilung_rotations: true,
-        dienstwunsches: {
-          include: { dienstkategories: true }
-        },
-        dienstratings: true
+        name: { in: ['OP Team'] }
+      }
+    });
+    const relevantTeamIds = relevantTeams.map((t) => t.id);
+    const mitarbeiter = await prismaDb.mitarbeiters.findMany(getFraunhoferMitarbeiter(start, end, relevantTeamIds));
+    const dienste = await prismaDb.po_diensts.findMany({
+      where: {
+        team_id: { in: relevantTeamIds }
       }
     });
 
-    const dienste = await prismaDb.po_diensts.findMany();
     const kontingente = await prismaDb.kontingents.findMany();
-    const dienstkategorien = await prismaDb.dienstkategories.findMany();
+    const dienstkategorien = await prismaDb.dienstkategories.findMany({
+      include: {
+        dienstkategoriethemas: true
+      }
+    });
+    const themen = await prismaDb.themas.findMany();
 
-    const freigabetypenDienste: {
-      [key: number]: {
-        [key: number]: number;
-      };
-    } = {};
-    const dienstkategorieDienste: {
-      [key: number]: number[];
-    } = {};
-
-    dienste.forEach((d) => {
-      // Map Dienste to Freigabetypen
-      d.freigabetypen_ids.forEach((ft) => {
-        freigabetypenDienste[ft] ||= {};
-        freigabetypenDienste[ft][d.id] = d.id;
-      });
-      dienstkategorien.forEach((dk) => {
-        // Map Dienste to Dienstkategorien
-      });
+    const fixedEinteilungen = await prismaDb.diensteinteilungs.findMany({
+      where: {
+        tag: {
+          gte: start,
+          lte: end
+        },
+        einteilungsstatuses: {
+          counts: true
+          // public: true
+        }
+      }
     });
 
-    // Map Dienste to Rotationen (Kontingente)
+    result.AuslgeichsfreiDienstID =
+      (
+        await prismaDb.po_diensts.findFirst({
+          select: { id: true },
+          where: { name: 'Ausgleichsfrei' }
+        })
+      )?.id || 0;
+
+    result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: Einteilung[], e) => {
+      if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
+        acc.push({
+          MitarbeiterID: e.mitarbeiter_id,
+          DienstID: e.po_dienst_id,
+          Tag: e.tag
+        });
+      }
+      return acc;
+    }, []);
+
     result.Rotationen = kontingente.reduce((acc: Rotation[], k) => {
-      dienste.forEach((d) => {
-        // Check if Dienst is in Kontingent
+      acc.push({
+        ID: k.id,
+        Name: k.name || '',
+        Dienste: dienste.reduce((acc: number[], d) => {
+          if (d.thema_ids.find((t) => k.thema_ids.includes(t))) acc.push(d.id);
+          return acc;
+        }, [])
       });
       return acc;
     }, []);
 
-    // Create Dienste
-    result.Dienste = dienste.map((d) => ({
-      ID: d.id,
-      Name: d.planname || '',
-      Typ: 'Frei', // TODO: Map Diensttyp
-      IstRelevantFürDoppelWhopper: false
-    }));
+    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, kombos } = createDiensteAndMapInfos(
+      dienste,
+      mapThemenToDienstTypen(themen),
+      dienstkategorien
+    );
 
-    // Create Mitarbeiter
+    result.Dienste = diensteArr;
+    while (kombos.length > 1) {
+      const dienst = kombos.pop();
+      if (!dienst) break;
+      kombos.forEach((komboDienst, i) => {
+        result.Kombidienste.push({
+          ID: i,
+          Name: `${dienst.planname || ''}_${komboDienst.planname || ''}`,
+          Dienste: [dienst.id, komboDienst.id]
+        });
+      });
+    }
+
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
       Name: m.planname || '',
-      Freigaben: m.dienstfreigabes.reduce((acc: Freigabe[], f) => {
-        const freigabeTypId = f.freigabetyp_id || 0;
-        if (freigabeTypId < 1 || !f.freigabestatuses?.qualifiziert) return acc;
-        const typ: FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'überqualifiziert';
-        const ftDienste = freigabetypenDienste[freigabeTypId];
-        if (!ftDienste) return acc;
-        Object.values(ftDienste).forEach((dId) => {
-          tage.forEach((tag) => {
-            acc.push({
-              Dienst: dId,
-              Tag: tag,
-              Freigabetyp: typ
-            });
-          });
-        });
-        return acc;
-      }, []),
+      Freigaben: getMitarbeiterFreigaben(m.dienstfreigabes, freigabetypenDienste, tage),
       KombidienstAusschlüsse: [],
-      Rotationen: m.einteilung_rotations.reduce((acc: Rotationszuweisung[], r) => {
-        // Nochmal überprüfen, ob bis inklusive oder exklusive
-        const checkStart = (r.von === null || r.von <= start) && (r.bis === null || r.bis >= start);
-        const checkEnd = (r.von === null || r.von <= end) && (r.bis === null || r.bis >= end);
-        const checkMiddle = (r.von === null || r.von >= start) && (r.bis === null || r.bis <= end);
-        const kontingentId = r.kontingent_id || 0;
-        if ((!checkStart && !checkEnd && !checkMiddle) || kontingentId < 1) return acc;
-        tage.forEach((tag) => {
-          const check = (r.von === null || r.von <= tag) && (r.bis === null || r.bis >= tag);
-          if (!check) return;
-          acc.push({
-            Tag: tag,
-            RotationsID: kontingentId
-          });
-        });
-        return acc;
-      }, []),
-      Arbeitszeit: [],
-      Wünsche: [],
-      'K-Wünsche': [],
-      Präferenzen: [],
-      MaximaleAzahlBereitschaftsdienste: 0
+      Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
+      Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getArbeitszeitInMinutenAm(m, tag) })),
+      Präferenzen: getPraeferenzen(m.dienstratings, result.MinPräferenz, result.MaxPräferenz),
+      MaximaleAzahlBereitschaftsdienste: MAX_BEREITSCHAFTSDIENSTE,
+      ...getMitarbeiterWuensche(m.dienstwunsches, dienstkategorieDienste)
     }));
   } catch (error) {
     console.error('Error in getFraunhoferPlanData:', error);
-    return { ...defaultPlanData };
+    return { ...defaultPlanData, msg: 'Es gab einen Fehler beim Laden der Daten!' };
   }
 
   return result;

@@ -1,4 +1,11 @@
-import { start } from 'repl';
+import {
+  mitarbeiters,
+  vertrags,
+  vertrags_arbeitszeits,
+  vertrags_phases,
+  vertrags_variantes,
+  vertragsstuves
+} from '@prisma/client';
 
 export const getZeitraumkategorienInterval = (anfang: Date, ende: Date) => ({
   OR: [
@@ -63,3 +70,125 @@ export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
     }
   }
 });
+
+export const whereRotationIn = (start: Date, end: Date) => ({
+  OR: [
+    { von: { lte: start }, bis: { gte: start } },
+    { von: { lte: end }, bis: { gte: end } },
+    { von: { gte: start }, bis: { lte: end } }
+  ]
+});
+
+export const wherePlanBedarfIn = (start: Date, end: Date) => ({
+  OR: [
+    { anfang: { lte: start }, ende: { gte: start } },
+    { anfang: { lte: end }, ende: { gte: end } },
+    { anfang: { gte: start }, ende: { lte: end } }
+  ]
+});
+
+export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number[]) => ({
+  where: {
+    ...whereMitarbeiterAktivNoPlatzhalter(start, end),
+    OR: [
+      {
+        einteilung_rotations: {
+          some: {
+            ...whereRotationIn(start, end),
+            kontingents: {
+              team_id: { in: teamIds }
+            }
+          }
+        }
+      },
+      {
+        einteilung_rotations: {
+          none: { ...whereRotationIn(start, end) }
+        },
+        funktions: {
+          is: {
+            team_id: { in: teamIds }
+          }
+        }
+      }
+    ]
+  },
+  include: {
+    dienstfreigabes: {
+      include: {
+        freigabestatuses: true
+      }
+    },
+    einteilung_rotations: {
+      where: {
+        ...whereRotationIn(start, end)
+      }
+    },
+    dienstwunsches: {
+      include: {
+        dienstkategories: {
+          where: {
+            poppix_name: {
+              not: '0'
+            }
+          }
+        }
+      }
+    },
+    dienstratings: true,
+    vertrags: {
+      include: {
+        vertrags_phases: {
+          include: {
+            vertragsstuves: {
+              include: {
+                vertrags_variantes: true
+              }
+            }
+          }
+        },
+        vertrags_arbeitszeits: true
+      }
+    }
+  }
+});
+
+export const getArbeitszeitInMinutenAm = (
+  mitarbeiter: {
+    vertrags: ({
+      vertrags_arbeitszeits: vertrags_arbeitszeits[];
+      vertrags_phases: ({
+        vertragsstuves:
+          | ({
+              vertrags_variantes: vertrags_variantes | null;
+            } & vertragsstuves)
+          | null;
+      } & vertrags_phases)[];
+    } & vertrags)[];
+  } & mitarbeiters,
+  tag: Date
+) => {
+  let arbeitszeit = 0;
+  mitarbeiter.vertrags.find((v) => {
+    let wochenstunden = 0;
+    if (!v.anfang || !v.ende || v.anfang > tag || v.ende < tag) return false;
+    v.vertrags_phases.find((p) => {
+      if (!p.von || !p.bis || p.von > tag || p.bis < tag) return false;
+      wochenstunden = p.vertragsstuves?.vertrags_variantes?.wochenstunden || 0;
+      return wochenstunden > 0;
+    });
+    if (!wochenstunden) return false;
+    const wochenMinuten = wochenstunden * 60;
+    return !!v.vertrags_arbeitszeits.find((a) => {
+      const vk = Number(a.vk) || 0;
+      const tageWoche = Number(a.tage_woche) || 0;
+      const notValidDate = !a.von || !a.bis || a.von > tag || a.bis < tag;
+      const notValidVK = vk <= 0 || vk > 1;
+      const notValidTageWoche = tageWoche <= 0 || tageWoche > 7;
+      if (notValidDate || notValidVK || notValidTageWoche) return false;
+      arbeitszeit = (vk * wochenMinuten) / tageWoche;
+      return true;
+    });
+  });
+  return arbeitszeit;
+};

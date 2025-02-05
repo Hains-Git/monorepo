@@ -305,21 +305,21 @@ model arbeitszeittyps {
 }
 
 model arbeitszeitverteilungs {
-  id                                                                      Int              @id @default(autoincrement())
-  name                                                                    String?          @db.VarChar
-  dauer                                                                   Int?
-  verteilung                                                              DateTime[]       @db.Time
-  zeittypen                                                               Int[]
-  created_at                                                              DateTime         @db.Timestamp(6)
-  updated_at                                                              DateTime         @db.Timestamp(6)
-  std                                                                     Decimal?         @default(0) @db.Decimal(6, 2)
-  dienstgruppe_id                                                         Int?
-  pre_std                                                                 Decimal?         @default(0) @db.Decimal(6, 2)
-  pre_dienstgruppe_id                                                     Int?
-  pre_ueberschneidung_minuten                                             Int              @default(30)
-  dienstgruppes_arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes     dienstgruppes?   @relation("arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
-  dienstgruppes_arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes dienstgruppes?   @relation("arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
-  dienstbedarves                                                          dienstbedarves[]
+  id                          Int              @id @default(autoincrement())
+  name                        String?          @db.VarChar
+  dauer                       Int?
+  verteilung                  DateTime[]       @db.Time
+  zeittypen                   Int[]
+  created_at                  DateTime         @db.Timestamp(6)
+  updated_at                  DateTime         @db.Timestamp(6)
+  std                         Decimal?         @default(0) @db.Decimal(6, 2)
+  dienstgruppe_id             Int?
+  pre_std                     Decimal?         @default(0) @db.Decimal(6, 2)
+  pre_dienstgruppe_id         Int?
+  pre_ueberschneidung_minuten Int              @default(30)
+  post_dienstgruppes          dienstgruppes?   @relation("arbeitszeitverteiler_post", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
+  pre_dienstgruppes           dienstgruppes?   @relation("arbeitszeitverteiler_pre", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
+  dienstbedarves              dienstbedarves[]
 
   @@index([dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_dienstgruppe_id")
   @@index([pre_dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_pre_dienstgruppe_id")
@@ -366,6 +366,8 @@ model bedarfs_eintrags {
   bereiches               bereiches?             @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e18eeada6a")
   dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e8f3cb8e16")
   schichts                schichts[]
+  first_bedarf            bedarfs_eintrags?      @relation("BedarfeBlock", fields: [first_entry], references: [id])
+  block_bedarfe           bedarfs_eintrags[]     @relation("BedarfeBlock")
 
   @@index([bereich_id], map: "index_bedarfs_eintrags_on_bereich_id")
   @@index([dienstbedarf_id], map: "index_bedarfs_eintrags_on_dienstbedarf_id")
@@ -629,18 +631,18 @@ model dienstfreigabes {
 }
 
 model dienstgruppes {
-  id                                                                               Int                      @id @default(autoincrement())
-  name                                                                             String?                  @db.VarChar
-  dienste                                                                          Int[]                    @default([])
-  created_at                                                                       DateTime                 @db.Timestamp(6)
-  updated_at                                                                       DateTime                 @db.Timestamp(6)
-  use_in_publish                                                                   Boolean                  @default(false)
-  publish_prio                                                                     Int                      @default(0)
-  publish_label                                                                    String                   @default("") @db.VarChar
-  publish_color_bg                                                                 String                   @default("#ffffff") @db.VarChar
-  publish_color_hl                                                                 String                   @default("#ffffff") @db.VarChar
-  arbeitszeitverteilungs_arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes     arbeitszeitverteilungs[] @relation("arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes")
-  arbeitszeitverteilungs_arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes arbeitszeitverteilungs[] @relation("arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes")
+  id                        Int                      @id @default(autoincrement())
+  name                      String?                  @db.VarChar
+  dienste                   Int[]                    @default([])
+  created_at                DateTime                 @db.Timestamp(6)
+  updated_at                DateTime                 @db.Timestamp(6)
+  use_in_publish            Boolean                  @default(false)
+  publish_prio              Int                      @default(0)
+  publish_label             String                   @default("") @db.VarChar
+  publish_color_bg          String                   @default("#ffffff") @db.VarChar
+  publish_color_hl          String                   @default("#ffffff") @db.VarChar
+  arbeitszeitverteiler_post arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_post")
+  arbeitszeitverteiler_pre  arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_pre")
 }
 
 model dienstkategorie_teams {
