@@ -643,14 +643,15 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
         const [dienstId, bereichId] = key1.split('_');
         const schichten1 = dienstObj[Number(dienstId)][Number(bereichId)];
         parallelArr.forEach((key2) => {
-        if(key1 === key2) return;
-        const [dienstId, bereichId] = key2.split('_');
-        const schichten2 = dienstObj[Number(dienstId)][Number(bereichId)];
-        schichten1.find((s) => {
-          return schichten2.find((ls) => {
-            // Falls es eine Überschneidung gibt, soll ein True zurückgegeben werden
-            // Und ein Kombidienst erstellt werden
-            return true;
+          if (key1 === key2) return;
+          const [dienstId, bereichId] = key2.split('_');
+          const schichten2 = dienstObj[Number(dienstId)][Number(bereichId)];
+          schichten1.find((s) => {
+            return schichten2.find((ls) => {
+              // Falls es eine Überschneidung gibt, soll ein True zurückgegeben werden
+              // Und ein Kombidienst erstellt werden
+              return true;
+            });
           });
         });
       });
