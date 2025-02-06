@@ -192,6 +192,7 @@ function createDiensteAndMapInfos(
         acc.freigabetypenDienste[ft][d.id] = d.id;
       });
 
+      // Get DienstTyp
       const typ: DienstTyp =
         (Object.entries(dienstTypenThemen).find(([key, ids]) => {
           return d.thema_ids.find((t) => ids.includes(t));
@@ -205,6 +206,7 @@ function createDiensteAndMapInfos(
         acc.dienstkategorieDienste[dk.id].push(d.id);
       });
 
+      // Add Dienst to DiensteArr
       acc.diensteArr.push({
         ID: d.id,
         Name: d.planname || '',
@@ -236,6 +238,8 @@ function getPraeferenzen(ratings: dienstratings[], min: number, max: number) {
 function createTageAndMonths(start: Date, end: Date) {
   const tage: Date[] = [];
   const months: Record<string, string> = {};
+
+  // Create Tage and Months
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const date = new Date(d);
     tage.push(date);
@@ -244,6 +248,7 @@ function createTageAndMonths(start: Date, end: Date) {
     const firstDayStr = new Date(year, month, 1, 12).toISOString();
     months[firstDayStr] ||= new Date(year, month + 1, 0, 12).toISOString();
   }
+
   return { tage, months };
 }
 
@@ -339,14 +344,96 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
   return { dienstplaene, tage, months };
 }
 
-function calculateBedarfArbeitszeit(key = '', schichten: Schicht[], isWochenende = false) {
-  let wochenende = isWochenende;
+type UeberschneidungSchicht = {
+  anfang: Date;
+  ende: Date;
+  acceptedUeberschneidung: number;
+  diensteIds: number[];
+  isArbeitszeit: boolean;
+  isDienstzeit: boolean;
+  dienst: po_diensts;
+};
+
+type UeberschneidungSchichtenSammlung = Record<string, Record<number, Record<number, UeberschneidungSchicht[]>>>;
+
+function calculateBedarfArbeitszeit(
+  bedarfsEintrag: MainBedarfsEintrag,
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+) {
   let bereitschaft = false;
-  const arbeitszeitInMinuten = schichten.reduce((acc: number, s) => {
+  let wochenende = false;
+  const dienst = bedarfsEintrag.po_diensts;
+  if (!dienst) {
+    console.error('No Dienst found for BedarfsEintrag:', bedarfsEintrag);
+    return {
+      arbeitszeitInMinuten: 0,
+      wochenende,
+      bereitschaft
+    };
+  }
+
+  if (bedarfsEintrag.tag) wochenende = [0, 6].includes(bedarfsEintrag.tag.getDay());
+  const dienstId = bedarfsEintrag.po_dienst_id || 0;
+  const bereichId = bedarfsEintrag.bereich_id || 0;
+
+  const checkPreDienstgruppen = !bedarfsEintrag.is_block || bedarfsEintrag.id === bedarfsEintrag.first_entry;
+  const arbeitszeitverteilung = bedarfsEintrag.dienstbedarves?.arbeitszeitverteilungs;
+
+  const addSchichtToSammlung = (schicht: UeberschneidungSchicht, tag: string) => {
+    uberschneidungSchichten[tag] ||= {};
+    uberschneidungSchichten[tag][dienstId] ||= {};
+    uberschneidungSchichten[tag][dienstId][bereichId] ||= [];
+    uberschneidungSchichten[tag][dienstId][bereichId].push(schicht);
+  };
+
+  const arbeitszeitInMinuten = bedarfsEintrag.schichts.reduce((acc: number, s, i) => {
     if (!s.anfang || !s.ende) return acc;
     const azt = s.arbeitszeittyps;
+    // Check for Bereitschaftsdienst
     if (azt?.bereitschaft) bereitschaft = true;
+    const anfangTag = s.anfang.toISOString().split('T')[0];
+    const endeTag = s.ende.toISOString().split('T')[0];
+
+    const ueberschneidungSchicht: UeberschneidungSchicht = {
+      anfang: s.anfang,
+      ende: s.ende,
+      acceptedUeberschneidung: 0,
+      isArbeitszeit: !!azt?.arbeitszeit,
+      isDienstzeit: !!azt?.dienstzeit,
+      diensteIds: [],
+      dienst
+    };
+    addSchichtToSammlung(ueberschneidungSchicht, anfangTag);
+    if (anfangTag !== endeTag) {
+      addSchichtToSammlung(ueberschneidungSchicht, endeTag);
+    }
+
+    // Dienstgruppen Forderung überprüfen und DienstgruppenZeitraum hinzufügen
+    if (checkPreDienstgruppen && i === 0 && arbeitszeitverteilung) {
+      const preDienstgruppe = arbeitszeitverteilung?.pre_dienstgruppes;
+      const preDienstgruppeStd = Number(arbeitszeitverteilung?.pre_std || 0);
+      if (preDienstgruppe?.dienste?.length && preDienstgruppeStd) {
+        const preSchichtAnfang = new Date(s.anfang.getTime() - preDienstgruppeStd * 3600000);
+        const preSchichtAnfangTag = preSchichtAnfang.toISOString().split('T')[0];
+        addSchichtToSammlung(
+          {
+            anfang: preSchichtAnfang,
+            ende: s.anfang,
+            acceptedUeberschneidung: arbeitszeitverteilung?.pre_ueberschneidung_minuten || 0,
+            isArbeitszeit: false,
+            isDienstzeit: true,
+            diensteIds: preDienstgruppe.dienste,
+            dienst
+          },
+          preSchichtAnfangTag
+        );
+      }
+    }
+
+    // Calculate Arbeitzeit and check if is Wochenenddienst
+    // Wochenende: (Start Mo < 5:00 or Ende Fr > 21:00)
     if (azt?.arbeitszeit && s.arbeitszeit) {
+      acc += s.arbeitszeit;
       if (!wochenende && azt?.dienstzeit) {
         const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getHours() < 5;
         const endTime = s.ende.toTimeString().split(' ')[0];
@@ -354,10 +441,10 @@ function calculateBedarfArbeitszeit(key = '', schichten: Schicht[], isWochenende
         const endsFridayAfterNine = s.ende.getDay() === 5 && endTimeAsNumber > 210000;
         wochenende = beginsMondayBeforeFive || endsFridayAfterNine;
       }
-      return acc + s.arbeitszeit;
     }
     return acc;
   }, 0);
+
   return {
     arbeitszeitInMinuten,
     wochenende,
@@ -365,14 +452,14 @@ function calculateBedarfArbeitszeit(key = '', schichten: Schicht[], isWochenende
   };
 }
 
-function createBedarf(bedarfsEintrag: MainBedarfsEintrag): Bedarf | null {
+function createBedarf(
+  bedarfsEintrag: MainBedarfsEintrag,
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+): Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
-  const wochentag = bedarfsEintrag.tag.getDay();
-  let istWochenendEinteilung = wochentag === 0 || wochentag === 6;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
-    `${bedarfsEintrag.po_dienst_id}_${bedarfsEintrag.bereich_id}`,
-    bedarfsEintrag.schichts,
-    istWochenendEinteilung
+    bedarfsEintrag,
+    uberschneidungSchichten
   );
   return {
     ID: {
@@ -385,17 +472,21 @@ function createBedarf(bedarfsEintrag: MainBedarfsEintrag): Bedarf | null {
     IstBereitschaftsdienst: bereitschaft,
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
-    IstWochenendEinteilung: istWochenendEinteilung || wochenende
+    IstWochenendEinteilung: wochenende
   };
 }
 
-function checkBedarf(be: MainBedarfsEintrag, addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {}) {
+function checkBedarf(
+  be: MainBedarfsEintrag,
+  addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = be.tag.toISOString();
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be);
+  const bedarf = createBedarf(be, uberschneidungSchichten);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
@@ -407,6 +498,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
   const addedBloecke: Record<number, boolean> = {};
   const addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {};
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
+  const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
 
   dienstplaene.forEach((dpl) => {
     if (!dpl?.dienstplanbedarves?.bedarfs_eintrags) return;
@@ -415,16 +507,15 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten);
         if (bedarf) bedarfe.push(bedarf);
         return;
       }
       addedBloecke[firstBedarf.id] = true;
-      const lastBedarf = firstBedarf.block_bedarfe[firstBedarf.block_bedarfe.length - 1];
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
           if (bedarf) {
             bedarfe.push(bedarf);
             if (bb.tag < start || bb.tag > end) {
@@ -444,7 +535,8 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       });
     });
   });
-  return { bedarfe, bloecke, bedarfeTageOutSideInterval };
+
+  return { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten };
 }
 
 async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Record<string, number[]>) {
@@ -501,6 +593,10 @@ async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Recor
   };
 }
 
+function isKombiDienste() {
+  return false;
+}
+
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
 export async function getFraunhoferPlanData(start: Date, end: Date): Promise<PlanData> {
@@ -518,9 +614,45 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
       return result;
     }
 
-    const { bedarfe, bloecke, bedarfeTageOutSideInterval } = getBedarfeAndBloecke(dienstplaene, start, end);
+    const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten } = getBedarfeAndBloecke(
+      dienstplaene,
+      start,
+      end
+    );
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
+
+    Object.entries(uberschneidungSchichten).forEach(([tag, dienstObj]) => {
+      const parallel = new Set<string>();
+      Object.entries(dienstObj).forEach(([dienstId, bereichObj]) => {
+        Object.entries(bereichObj).forEach(([bereichId, schichten]) => {
+          const firstSchicht = schichten[0];
+          const dienst = firstSchicht?.dienst;
+          const fordertDienstgruppe = firstSchicht?.diensteIds?.length;
+          if (fordertDienstgruppe) {
+            // Add mögliche Dienste aus Dienstgruppe (ohne Überschneidungen)
+          } else if (dienst?.weak_parallel_conflict) {
+            parallel.add(`${dienstId}_${bereichId}`);
+          }
+        });
+      });
+
+      let lastSchichten: UeberschneidungSchicht[] = [];
+      Array.from(parallel.values()).forEach((key, i) => {
+        const [dienstId, bereichId] = key.split('_');
+        const schichten = dienstObj[Number(dienstId)][Number(bereichId)];
+        if (i === 0) {
+          lastSchichten = schichten;
+          return;
+        }
+        schichten.find((s) => {
+          return lastSchichten.find((ls) => {
+            // Falls es eine Überschneidung gibt, soll ein True zurückgegeben werden
+            return true;
+          });
+        });
+      });
+    });
 
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, fixedEinteilungen } = await getData(
       start,
