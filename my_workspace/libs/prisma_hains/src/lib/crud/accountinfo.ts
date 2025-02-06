@@ -24,11 +24,16 @@ export async function getAccountInfoForMitarbeiterInfo() {
           admin: true,
           login: true,
           id: true,
-          user_gruppes: true
+          user_gruppes: {
+            select: {
+              gruppes: true
+            }
+          }
         }
       },
       mitarbeiter: {
         select: {
+          id: true,
           aktiv: true,
           a_seit: true,
           anrechenbare_zeit: true,
@@ -47,6 +52,32 @@ export async function getAccountInfoForMitarbeiterInfo() {
                   name: true
                 }
               }
+            }
+          },
+          vertrags: {
+            select: {
+              id: true,
+              anfang: true,
+              ende: true,
+              mitarbeiter_id: true,
+              vertragstyp_id: true,
+              kommentar: true,
+              unbefristet: true,
+              vertrags_phases: {
+                select: {
+                  id: true,
+                  von: true,
+                  bis: true,
+                  vertrag_id: true,
+                  vertragsstufe_id: true,
+                  vertragsstuves: {
+                    select: {
+                      vertragsgruppes: true
+                    }
+                  }
+                }
+              },
+              vertrags_arbeitszeits: true
             }
           }
         }

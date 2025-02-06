@@ -47,4 +47,5 @@ out
 vite.config.*.timestamp*
 *.env
 
-/abcfile
+/implement.norg
+../implement.norg

@@ -1,5 +1,7 @@
 import { prismaDb } from '../prisma-hains';
 import { startOfMonth, endOfMonth, parseISO, formatDate } from 'date-fns';
+import { formatDateForDB } from '@my-workspace/utils';
+import { Prisma } from '@prisma/client';
 
 type TParamsOhneBedarf = {
   von: Date;
@@ -64,4 +66,29 @@ export async function getEinteilungenOhneBedarf({
   );
 
   return result;
+}
+
+export async function getPublicRangeEinteilungenForMitarbeiter(
+  id: number,
+  start: Date,
+  end: Date,
+  include: Prisma.diensteinteilungsInclude = {}
+) {
+  const startDate = formatDateForDB(start);
+  const endDate = formatDateForDB(end);
+
+  return await prismaDb.diensteinteilungs.findMany({
+    where: {
+      mitarbeiter_id: id,
+      tag: {
+        gte: startDate,
+        lte: endDate
+      },
+      einteilungsstatuses: {
+        counts: true,
+        public: true
+      }
+    },
+    include
+  });
 }

@@ -5,7 +5,7 @@ export * from './lib/crud/user';
 export * from './lib/crud/oatuh';
 export * from './lib/crud/planungsinfo';
 export * from './lib/crud/abwesenheiten';
-export * from './lib/crud/diensteinteilungen';
+export * from './lib/crud/diensteinteilung';
 export * from './lib/crud/planerdate';
 export * from './lib/crud/kalendermarkierung';
 export * from './lib/crud/datei';

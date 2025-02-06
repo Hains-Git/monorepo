@@ -5,10 +5,15 @@ export async function getVertragsTypsForMitarbeiterinfo() {
     include: {
       vertragsgruppes: {
         include: {
-          vertragsstuves: true
+          vertragsstuves: {
+            include: {
+              vertragsgruppes: true,
+              vertrags_variantes: true
+            }
+          },
+          vertragstyps: true
         }
-      },
-      vertrags_variantes: true
+      }
     }
   });
 }
