@@ -593,10 +593,6 @@ async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Recor
   };
 }
 
-function isKombiDienste() {
-  return false;
-}
-
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
 export async function getFraunhoferPlanData(start: Date, end: Date): Promise<PlanData> {
@@ -624,30 +620,36 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
 
     Object.entries(uberschneidungSchichten).forEach(([tag, dienstObj]) => {
       const parallel = new Set<string>();
+      // Kombidienste anhand der Dienstgruppenforderung suchen
+      // und mögliche Kombidienste über weak_parallel_conflict sammeln
       Object.entries(dienstObj).forEach(([dienstId, bereichObj]) => {
         Object.entries(bereichObj).forEach(([bereichId, schichten]) => {
           const firstSchicht = schichten[0];
           const dienst = firstSchicht?.dienst;
           const fordertDienstgruppe = firstSchicht?.diensteIds?.length;
           if (fordertDienstgruppe) {
-            // Add mögliche Dienste aus Dienstgruppe (ohne Überschneidungen)
+            // Add mögliche Dienste aus Dienstgruppe (ohne Überschneidungen, außer acceptedUeberschneidung)
+            // Nur Bedarfe im Zeitraum der entsprechenden Forderung
+            // und nur mit akzeptierter Überschneidung gelten als Kombidienste
           } else if (dienst?.weak_parallel_conflict) {
             parallel.add(`${dienstId}_${bereichId}`);
           }
         });
       });
 
-      let lastSchichten: UeberschneidungSchicht[] = [];
-      Array.from(parallel.values()).forEach((key, i) => {
-        const [dienstId, bereichId] = key.split('_');
-        const schichten = dienstObj[Number(dienstId)][Number(bereichId)];
-        if (i === 0) {
-          lastSchichten = schichten;
-          return;
-        }
-        schichten.find((s) => {
-          return lastSchichten.find((ls) => {
+      // Mögliche Kombidienste gelten nur, wenn es keine konfliktreichen Überschneidungen gibt
+      const parallelArr = Array.from(parallel);
+      parallelArr.forEach((key1, i) => {
+        const [dienstId, bereichId] = key1.split('_');
+        const schichten1 = dienstObj[Number(dienstId)][Number(bereichId)];
+        parallelArr.forEach((key2) => {
+        if(key1 === key2) return;
+        const [dienstId, bereichId] = key2.split('_');
+        const schichten2 = dienstObj[Number(dienstId)][Number(bereichId)];
+        schichten1.find((s) => {
+          return schichten2.find((ls) => {
             // Falls es eine Überschneidung gibt, soll ein True zurückgegeben werden
+            // Und ein Kombidienst erstellt werden
             return true;
           });
         });
