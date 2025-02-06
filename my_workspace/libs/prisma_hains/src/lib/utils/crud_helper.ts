@@ -192,3 +192,21 @@ export const getArbeitszeitInMinutenAm = (
   });
   return arbeitszeit;
 };
+
+export const bedarfsEintragsIncludeMainInfosNoBlock = {
+  schichts: {
+    include: {
+      arbeitszeittyps: true
+    }
+  },
+  po_diensts: true,
+  dienstbedarves: {
+    include: {
+      arbeitszeitverteilungs: {
+        include: {
+          pre_dienstgruppes: true
+        }
+      }
+    }
+  }
+};

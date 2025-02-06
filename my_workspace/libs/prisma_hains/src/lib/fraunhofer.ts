@@ -1,7 +1,10 @@
 import {
   arbeitszeittyps,
+  arbeitszeitverteilungs,
   bedarfs_eintrags,
+  dienstbedarves,
   dienstfreigabes,
+  dienstgruppes,
   dienstkategories,
   dienstkategoriethemas,
   dienstplanbedarves,
@@ -15,7 +18,12 @@ import {
   themas
 } from '@prisma/client';
 import { prismaDb } from './prisma-hains';
-import { getArbeitszeitInMinutenAm, getFraunhoferMitarbeiter, wherePlanBedarfIn } from './utils/crud_helper';
+import {
+  bedarfsEintragsIncludeMainInfosNoBlock,
+  getArbeitszeitInMinutenAm,
+  getFraunhoferMitarbeiter,
+  wherePlanBedarfIn
+} from './utils/crud_helper';
 
 type Einteilung = {
   MitarbeiterID: number;
@@ -274,7 +282,6 @@ function createDiensteAndMapInfos(
         diensteArr: Dienst[];
         freigabetypenDienste: FreigabetypenDienste;
         dienstkategorieDienste: DienstkategorieDienste;
-        kombos: po_diensts[];
       },
       d
     ) => {
@@ -297,10 +304,6 @@ function createDiensteAndMapInfos(
         acc.dienstkategorieDienste[dk.id].push(d.id);
       });
 
-      if (d.weak_parallel_conflict) {
-        acc.kombos.push(d);
-      }
-
       acc.diensteArr.push({
         ID: d.id,
         Name: d.planname || '',
@@ -312,8 +315,7 @@ function createDiensteAndMapInfos(
     {
       diensteArr: [],
       freigabetypenDienste: {},
-      dienstkategorieDienste: {},
-      kombos: []
+      dienstkategorieDienste: {}
     }
   );
 }
@@ -344,21 +346,38 @@ function createTageAndMonths(start: Date, end: Date) {
   return { tage, months };
 }
 
+type BedarfsEintragMainInfosNoBlock = {
+  schichts: ({
+    arbeitszeittyps: arbeitszeittyps | null;
+  } & schichts)[];
+  po_diensts: po_diensts | null;
+  dienstbedarves:
+    | ({
+        arbeitszeitverteilungs:
+          | ({
+              pre_dienstgruppes: dienstgruppes | null;
+            } & arbeitszeitverteilungs)
+          | null;
+      } & dienstbedarves)
+    | null;
+};
+
+type MainBedarfsEintrag = BedarfsEintragMainInfosNoBlock & bedarfs_eintrags;
+
+type BedarfsEintrag = {
+  first_bedarf:
+    | ({
+        block_bedarfe: MainBedarfsEintrag[];
+      } & bedarfs_eintrags)
+    | null;
+} & MainBedarfsEintrag;
+
 async function getDienstplanPerMonth(start: Date, end: Date) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: ({
     dienstplanbedarves:
       | ({
-          bedarfs_eintrags: ({
-            schichts: ({
-              arbeitszeittyps: arbeitszeittyps | null;
-            } & schichts)[];
-            first_bedarf:
-              | ({
-                  block_bedarfe: bedarfs_eintrags[];
-                } & bedarfs_eintrags)
-              | null;
-          } & bedarfs_eintrags)[];
+          bedarfs_eintrags: BedarfsEintrag[];
         } & dienstplanbedarves)
       | null;
   } & dienstplans)[] = [];
@@ -384,16 +403,16 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
                 ]
               },
               include: {
-                schichts: {
-                  include: {
-                    arbeitszeittyps: true
-                  }
-                },
                 first_bedarf: {
                   include: {
-                    block_bedarfe: true
+                    block_bedarfe: {
+                      include: {
+                        ...bedarfsEintragsIncludeMainInfosNoBlock
+                      }
+                    }
                   }
-                }
+                },
+                ...bedarfsEintragsIncludeMainInfosNoBlock
               }
             }
           }
@@ -415,10 +434,10 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
   return { dienstplaene, tage, months };
 }
 
-const calculateBedarfArbeitszeit = (
+function calculateBedarfArbeitszeit(
   schichten: ({ arbeitszeittyps: arbeitszeittyps | null } & schichts)[],
   isWochenende = false
-) => {
+) {
   let wochenende = isWochenende;
   let bereitschaft = false;
   const arbeitszeitInMinuten = schichten.reduce((acc: number, s) => {
@@ -442,7 +461,30 @@ const calculateBedarfArbeitszeit = (
     wochenende,
     bereitschaft
   };
-};
+}
+
+function createBedarf(bedarfsEintrag: MainBedarfsEintrag): Bedarf | null {
+  if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
+  const wochentag = bedarfsEintrag.tag.getDay();
+  let istWochenendEinteilung = wochentag === 0 || wochentag === 6;
+  const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
+    bedarfsEintrag.schichts,
+    istWochenendEinteilung
+  );
+  return {
+    ID: {
+      Tag: bedarfsEintrag.tag,
+      Dienst: bedarfsEintrag.po_dienst_id,
+      Bereich: bedarfsEintrag.bereich_id
+    },
+    Minimum: bedarfsEintrag.min || 0,
+    OptionalerZusätzlicherBedarf: bedarfsEintrag.opt || 0,
+    IstBereitschaftsdienst: bereitschaft,
+    ArbeitszeitInMinuten: arbeitszeitInMinuten,
+    Belastung: 0,
+    IstWochenendEinteilung: istWochenendEinteilung || wochenende
+  };
+}
 
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
@@ -463,32 +505,15 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
     }
 
     const addedBloecke: Record<number, boolean> = {};
+    const addedBedarfe: Record<string, boolean> = {};
     dienstplaene.forEach((dpl) => {
       if (!dpl?.dienstplanbedarves?.bedarfs_eintrags) return;
       dpl.dienstplanbedarves.bedarfs_eintrags.forEach((be) => {
-        if (!be.tag || !be.po_dienst_id || !be.bereich_id || (!be.min && !be.opt)) return;
-
-        const wochentag = be.tag.getDay();
-        let istWochenendEinteilung = wochentag === 0 || wochentag === 6;
-
-        const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
-          be.schichts,
-          istWochenendEinteilung
-        );
-
-        result.Bedarfe.push({
-          ID: {
-            Tag: be.tag,
-            Dienst: be.po_dienst_id,
-            Bereich: be.bereich_id
-          },
-          Minimum: be.min || 0,
-          OptionalerZusätzlicherBedarf: be.opt || 0,
-          IstBereitschaftsdienst: bereitschaft,
-          ArbeitszeitInMinuten: arbeitszeitInMinuten,
-          Belastung: 0,
-          IstWochenendEinteilung: istWochenendEinteilung || wochenende
-        });
+        const bedarf = createBedarf(be);
+        if (!bedarf || !be.tag) return;
+        const key = `${be.tag.toISOString()}_${be.po_dienst_id}_${be.bereich_id}`;
+        if (!addedBedarfe[key]) result.Bedarfe.push(bedarf);
+        addedBedarfe[key] = true;
 
         const firstBedarf = be.first_bedarf;
         if (!firstBedarf || firstBedarf.block_bedarfe.length < 2 || addedBloecke[firstBedarf.id]) return;
@@ -496,6 +521,14 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
         result.Bedarfsblöcke.push({
           Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb) => {
             if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
+            const key = `${bb.tag.toISOString()}_${bb.po_dienst_id}_${bb.bereich_id}`;
+            if (!addedBedarfe[key]) {
+              const bedarf = createBedarf(bb);
+              if (bedarf) {
+                result.Bedarfe.push(bedarf);
+                addedBedarfe[key] = true;
+              }
+            }
             acc.push({
               Tag: bb.tag,
               Dienst: bb.po_dienst_id,
@@ -573,24 +606,13 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
       return acc;
     }, []);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, kombos } = createDiensteAndMapInfos(
+    const { diensteArr, freigabetypenDienste, dienstkategorieDienste } = createDiensteAndMapInfos(
       dienste,
       mapThemenToDienstTypen(themen),
       dienstkategorien
     );
 
     result.Dienste = diensteArr;
-    while (kombos.length > 1) {
-      const dienst = kombos.pop();
-      if (!dienst) break;
-      kombos.forEach((komboDienst, i) => {
-        result.Kombidienste.push({
-          ID: i,
-          Name: `${dienst.planname || ''}_${komboDienst.planname || ''}`,
-          Dienste: [dienst.id, komboDienst.id]
-        });
-      });
-    }
 
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
