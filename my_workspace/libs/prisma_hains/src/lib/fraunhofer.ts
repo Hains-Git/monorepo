@@ -71,17 +71,21 @@ function mapThemenToDienstTypen(themen: themas[]) {
   themen.forEach((t) => {
     let key: DienstTyp = 'Frei';
     const name = (t.name || '').trim().toLowerCase();
-    if (name.includes('versetzter dienst') && name.indexOf('kein') !== 0) {
-      key = 'VersetzterDienst';
-    } else if (name.includes('langer dienst') && name.indexOf('kein') !== 0) {
-      key = 'LangerDienst';
-    } else if (name.includes('nachtdienst') && name.indexOf('kein') !== 0) {
-      key = 'Nachtdienst';
-    } else if (name.includes('frühdienst') && name.indexOf('kein') !== 0) {
-      key = 'Frühdienst';
-    } else if (name.includes('rufdienst') && name.indexOf('kein') !== 0) {
-      key = 'Rufdienst';
+    const notStartWithKein = name.indexOf('kein') !== 0;
+    if (notStartWithKein) {
+      if (name.includes('versetzter dienst')) {
+        key = 'VersetzterDienst';
+      } else if (name.includes('langer dienst')) {
+        key = 'LangerDienst';
+      } else if (name.includes('nachtdienst')) {
+        key = 'Nachtdienst';
+      } else if (name.includes('frühdienst')) {
+        key = 'Frühdienst';
+      } else if (name.includes('rufdienst')) {
+        key = 'Rufdienst';
+      }
     }
+
     dienstTypenThemen[key].push(t.id);
   });
   return dienstTypenThemen;
