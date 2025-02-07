@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { getDienstplanung } from '@my-workspace/prisma_hains';
-import { getAllApiData } from '@my-workspace/prisma_hains';
-import { createOrUpdatePlanungsinfo } from '@my-workspace/prisma_hains';
+import { getDienstplanung } from '@my-workspace/models';
+import { getAllApiData } from '@my-workspace/models';
+import { planungsInfoCreateOrupdate } from '@my-workspace/models';
 
 @Injectable()
 export class AppService {
@@ -22,7 +22,7 @@ export class AppService {
       bereich_id: body.bereich_id,
       kommentar: body.kommentar
     };
-    const planungsinfo = await createOrUpdatePlanungsinfo(params);
+    const planungsinfo = await planungsInfoCreateOrupdate(params);
     return planungsinfo;
   }
 }
