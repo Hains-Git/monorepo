@@ -188,6 +188,7 @@ function createDiensteAndMapInfos(
         diensteArr: Dienst[];
         freigabetypenDienste: FreigabetypenDienste;
         dienstkategorieDienste: DienstkategorieDienste;
+        nachtdienste: number[];
       },
       d
     ) => {
@@ -204,6 +205,8 @@ function createDiensteAndMapInfos(
           if (key === 'Frei') return false;
           return d.thema_ids.find((t) => ids.includes(t));
         })?.[0] as DienstTyp) || 'Frei';
+
+      if (typ === 'Nachtdienst') acc.nachtdienste.push(d.id);
 
       // Map Dienste to Dienstkategorien
       dienstkategorien.forEach((dk) => {
@@ -227,7 +230,8 @@ function createDiensteAndMapInfos(
     {
       diensteArr: [],
       freigabetypenDienste: {},
-      dienstkategorieDienste: {}
+      dienstkategorieDienste: {},
+      nachtdienste: []
     }
   );
 }
@@ -497,7 +501,7 @@ function checkBedarf(
   return bedarf;
 }
 
-function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date) {
+function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date, nachtdienste: number[]) {
   const bedarfe: Bedarf[] = [];
   const bloecke: Bedarfsblock[] = [];
   const addedBloecke: Record<number, boolean> = {};
@@ -510,12 +514,38 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
     if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
     const dienstId = be.po_dienst_id;
     const dienst = be.po_diensts?.planname || 'Unknown';
-    const addK3 = be.po_diensts?.planname === 'K3';
-    if (!addK3) {
-      const isDonnerstag = be.tag.getDay() === 4;
-      if (isLastInBlock && isDonnerstag) {
-        console.log('Donnerstag:', be);
-        return;
+    const isK3 = be.po_diensts?.planname === 'K3';
+
+    if (!isK3) {
+      const isDonnerstagNachtDienst = be.tag.getDay() === 4 && nachtdienste.includes(dienstId);
+      if (isLastInBlock && isDonnerstagNachtDienst) {
+        const l = be.schichts.length - 1;
+        const nextDayLimit = new Date(be.tag);
+        nextDayLimit.setDate(nextDayLimit.getDate() + 1);
+        nextDayLimit.setHours(12, 0, 0, 0);
+        const dateZahl = Number(be.tag.toISOString().split('T')[0].split('-').join(''));
+        let hasFreiNextDays = false;
+        const ausgleichsTage = be.ausgleich_tage || 0;
+        for (let i = l; i >= 0; i--) {
+          const schicht = be.schichts[i];
+          const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
+          const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
+          if (!schicht.anfang || !schicht.ende) continue;
+          const endeDateZahl = Number(schicht.ende.toISOString().split('T')[0].split('-').join(''));
+          // Es sind nur Schichten bis zum Tag des Bedarfs relevant
+          if (endeDateZahl <= dateZahl) break;
+          // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
+          if (isArbeitszeit && schicht.ende > nextDayLimit) {
+            return;
+          }
+          // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
+          if (isFrei) {
+            const freiAbSamstag = endeDateZahl > dateZahl + 1;
+            const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
+            hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
+          }
+        }
+        if (!hasFreiNextDays) return;
       } else return;
     }
 
@@ -572,31 +602,10 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
     });
   });
 
-  return { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten };
+  return { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen };
 }
 
-async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Record<string, number[]>) {
-  const relevantTeams = await prismaDb.teams.findMany({
-    where: {
-      name: { in: ['OP Team'] }
-    }
-  });
-  const relevantTeamIds = relevantTeams.map((t) => t.id);
-  const mitarbeiter = await prismaDb.mitarbeiters.findMany(getFraunhoferMitarbeiter(start, end, relevantTeamIds));
-  const dienste = await prismaDb.po_diensts.findMany({
-    where: {
-      team_id: { in: relevantTeamIds }
-    }
-  });
-
-  const kontingente = await prismaDb.kontingents.findMany();
-  const dienstkategorien = await prismaDb.dienstkategories.findMany({
-    include: {
-      dienstkategoriethemas: true
-    }
-  });
-  const themen = await prismaDb.themas.findMany();
-
+async function getFixedEinteilungen(start: Date, end: Date, bedarfeTageOutSideInterval: Record<string, number[]>) {
   const fixedEinteilungen = await prismaDb.diensteinteilungs.findMany({
     where: {
       OR: [
@@ -618,14 +627,37 @@ async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Recor
       }
     }
   });
+  return fixedEinteilungen;
+}
+
+async function getData(start: Date, end: Date) {
+  const relevantTeams = await prismaDb.teams.findMany({
+    where: {
+      name: { in: ['OP Team'] }
+    }
+  });
+  const relevantTeamIds = relevantTeams.map((t) => t.id);
+  const mitarbeiter = await prismaDb.mitarbeiters.findMany(getFraunhoferMitarbeiter(start, end, relevantTeamIds));
+  const dienste = await prismaDb.po_diensts.findMany({
+    where: {
+      team_id: { in: relevantTeamIds }
+    }
+  });
+
+  const kontingente = await prismaDb.kontingents.findMany();
+  const dienstkategorien = await prismaDb.dienstkategories.findMany({
+    include: {
+      dienstkategoriethemas: true
+    }
+  });
+  const themen = await prismaDb.themas.findMany();
 
   return {
     mitarbeiter,
     dienste,
     kontingente,
     dienstkategorien,
-    themen,
-    fixedEinteilungen
+    themen
   };
 }
 
@@ -695,13 +727,25 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
       return result;
     }
 
-    const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten } = getBedarfeAndBloecke(
-      dienstplaene,
-      start,
-      end
+    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen } = await getData(start, end);
+
+    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste } = createDiensteAndMapInfos(
+      dienste,
+      mapThemenToDienstTypen(themen),
+      dienstkategorien,
+      themen
     );
+
+    result.Dienste = diensteArr;
+
+    const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
+      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
+
+    const fixedEinteilungen = await getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
+    result.Ausgleichsdienste = Object.values(ausgleichsdienstgruppen);
 
     Object.entries(uberschneidungSchichten).forEach(([tag, dienstObj]) => {
       const parallel = new Set<string>();
@@ -761,12 +805,6 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
       });
     });
 
-    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, fixedEinteilungen } = await getData(
-      start,
-      end,
-      bedarfeTageOutSideInterval
-    );
-
     result.AuslgeichsfreiDienstID =
       (
         await prismaDb.po_diensts.findFirst({
@@ -797,15 +835,6 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
       });
       return acc;
     }, []);
-
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste } = createDiensteAndMapInfos(
-      dienste,
-      mapThemenToDienstTypen(themen),
-      dienstkategorien,
-      themen
-    );
-
-    result.Dienste = diensteArr;
 
     // Kombidienstausschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
     result.Mitarbeiter = mitarbeiter.map((m) => ({
