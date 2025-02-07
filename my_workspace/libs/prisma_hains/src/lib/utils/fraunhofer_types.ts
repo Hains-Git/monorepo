@@ -45,6 +45,7 @@ export type Kombidienst = {
   ID: number;
   Name: string;
   Dienste: number[];
+  Bedarfe: BedarfsID[];
 };
 
 export type Rotation = {

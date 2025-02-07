@@ -37,6 +37,7 @@ import {
   Freigabe,
   FreigabeTyp,
   FreigabetypenDienste,
+  Kombidienst,
   PlanData,
   Präferenz,
   Rotation,
@@ -363,8 +364,9 @@ function calculateBedarfArbeitszeit(
   let bereitschaft = false;
   let wochenende = false;
   const dienst = bedarfsEintrag.po_diensts;
-  if (!dienst) {
-    console.error('No Dienst found for BedarfsEintrag:', bedarfsEintrag);
+  const bedarfseintragTag = bedarfsEintrag.tag;
+  if (!dienst || !bedarfseintragTag) {
+    console.error('No Dienst or Day found for BedarfsEintrag:', bedarfsEintrag);
     return {
       arbeitszeitInMinuten: 0,
       wochenende,
@@ -372,14 +374,15 @@ function calculateBedarfArbeitszeit(
     };
   }
 
-  if (bedarfsEintrag.tag) wochenende = [0, 6].includes(bedarfsEintrag.tag.getDay());
+  wochenende = [0, 6].includes(bedarfseintragTag.getDay());
   const dienstId = bedarfsEintrag.po_dienst_id || 0;
   const bereichId = bedarfsEintrag.bereich_id || 0;
+  const tag = bedarfseintragTag.toISOString().split('T')[0];
 
   const checkPreDienstgruppen = !bedarfsEintrag.is_block || bedarfsEintrag.id === bedarfsEintrag.first_entry;
   const arbeitszeitverteilung = bedarfsEintrag.dienstbedarves?.arbeitszeitverteilungs;
 
-  const addSchichtToSammlung = (schicht: UeberschneidungSchicht, tag: string) => {
+  const addSchichtToSammlung = (schicht: UeberschneidungSchicht) => {
     uberschneidungSchichten[tag] ||= {};
     uberschneidungSchichten[tag][dienstId] ||= {};
     uberschneidungSchichten[tag][dienstId][bereichId] ||= [];
@@ -391,9 +394,27 @@ function calculateBedarfArbeitszeit(
     const azt = s.arbeitszeittyps;
     // Check for Bereitschaftsdienst
     if (azt?.bereitschaft) bereitschaft = true;
-    const anfangTag = s.anfang.toISOString().split('T')[0];
-    const endeTag = s.ende.toISOString().split('T')[0];
 
+    // Dienstgruppen Forderung überprüfen und DienstgruppenZeitraum hinzufügen, vor erste Schicht
+    if (checkPreDienstgruppen && i === 0 && arbeitszeitverteilung) {
+      const preDienstgruppe = arbeitszeitverteilung?.pre_dienstgruppes;
+      const preDienstgruppeStd = Number(arbeitszeitverteilung?.pre_std || 0);
+      if (preDienstgruppe?.dienste?.length && preDienstgruppeStd) {
+        const preSchichtAnfang = new Date(s.anfang.getTime() - preDienstgruppeStd * 3600000);
+        const ueberschneidungSchicht: UeberschneidungSchicht = {
+          anfang: preSchichtAnfang,
+          ende: s.anfang,
+          acceptedUeberschneidung: arbeitszeitverteilung?.pre_ueberschneidung_minuten || 0,
+          isArbeitszeit: false,
+          isDienstzeit: true,
+          diensteIds: preDienstgruppe.dienste,
+          dienst
+        };
+        addSchichtToSammlung(ueberschneidungSchicht);
+      }
+    }
+
+    // Schichten hinzufügen. Wichtig: Dienstgruppenforderung an ester Stelle
     const ueberschneidungSchicht: UeberschneidungSchicht = {
       anfang: s.anfang,
       ende: s.ende,
@@ -403,32 +424,7 @@ function calculateBedarfArbeitszeit(
       diensteIds: [],
       dienst
     };
-    addSchichtToSammlung(ueberschneidungSchicht, anfangTag);
-    if (anfangTag !== endeTag) {
-      addSchichtToSammlung(ueberschneidungSchicht, endeTag);
-    }
-
-    // Dienstgruppen Forderung überprüfen und DienstgruppenZeitraum hinzufügen
-    if (checkPreDienstgruppen && i === 0 && arbeitszeitverteilung) {
-      const preDienstgruppe = arbeitszeitverteilung?.pre_dienstgruppes;
-      const preDienstgruppeStd = Number(arbeitszeitverteilung?.pre_std || 0);
-      if (preDienstgruppe?.dienste?.length && preDienstgruppeStd) {
-        const preSchichtAnfang = new Date(s.anfang.getTime() - preDienstgruppeStd * 3600000);
-        const preSchichtAnfangTag = preSchichtAnfang.toISOString().split('T')[0];
-        addSchichtToSammlung(
-          {
-            anfang: preSchichtAnfang,
-            ende: s.anfang,
-            acceptedUeberschneidung: arbeitszeitverteilung?.pre_ueberschneidung_minuten || 0,
-            isArbeitszeit: false,
-            isDienstzeit: true,
-            diensteIds: preDienstgruppe.dienste,
-            dienst
-          },
-          preSchichtAnfangTag
-        );
-      }
-    }
+    addSchichtToSammlung(ueberschneidungSchicht);
 
     // Calculate Arbeitzeit and check if is Wochenenddienst
     // Wochenende: (Start Mo < 5:00 or Ende Fr > 21:00)
@@ -593,6 +589,55 @@ async function getData(start: Date, end: Date, bedarfeTageOutSideInterval: Recor
   };
 }
 
+function createKombidienste(
+  tag: string,
+  key1: string,
+  key2: string,
+  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung'
+): Kombidienst {
+  const date = new Date(tag);
+  const [dienst1, bereich1] = key1.split('_').map(Number);
+  const [dienst2, bereich2] = key2.split('_').map(Number);
+  return {
+    ID: 0,
+    Dienste: [dienst1, dienst2],
+    Name: `${tag} ${key1} ${key2} ${typ}`,
+    Bedarfe: [
+      {
+        Tag: date,
+        Dienst: dienst1,
+        Bereich: bereich1
+      },
+      {
+        Tag: date,
+        Dienst: dienst2,
+        Bereich: bereich2
+      }
+    ]
+  };
+}
+
+function getUeberschneidung(
+  schicht1: UeberschneidungSchicht,
+  schicht2: UeberschneidungSchicht,
+  onlyArbeitszeiten = false
+) {
+  const isFrei1 = !schicht1.isArbeitszeit && !schicht1.isDienstzeit;
+  const isFrei2 = !schicht2.isArbeitszeit && !schicht2.isDienstzeit;
+  // Only Arbeitszeiten -> Keine Überschneidung möglich, wenn eine von beiden Schichten Frei ist
+  // !Only Arbeitszeiten -> Keine Überschneidung zwischen zwei Frei Schichten
+  const ignore = onlyArbeitszeiten ? isFrei1 || isFrei2 : isFrei1 && isFrei2;
+  if (ignore) return 0;
+  const timeA = schicht1.anfang.getTime();
+  const timeE = schicht1.ende.getTime();
+  const timeA2 = schicht2.anfang.getTime();
+  const timeE2 = schicht2.ende.getTime();
+  // Überschneidung, wenn alle times > 0
+  const times = [timeE - timeA, timeE2 - timeA, timeE - timeA2, timeE2 - timeA2];
+  const min = Math.min(...times.map((t) => (t < 0 ? 0 : t))) / 60000;
+  return min;
+}
+
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
 export async function getFraunhoferPlanData(start: Date, end: Date): Promise<PlanData> {
@@ -627,10 +672,30 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
           const firstSchicht = schichten[0];
           const dienst = firstSchicht?.dienst;
           const fordertDienstgruppe = firstSchicht?.diensteIds?.length;
-          if (fordertDienstgruppe) {
-            // Add mögliche Dienste aus Dienstgruppe (ohne Überschneidungen, außer acceptedUeberschneidung)
-            // Nur Bedarfe im Zeitraum der entsprechenden Forderung
-            // und nur mit akzeptierter Überschneidung gelten als Kombidienste
+          if (fordertDienstgruppe && schichten.length > 1) {
+            firstSchicht.diensteIds.forEach((dId) => {
+              if (`${dId}` === dienstId) return;
+              const dienstToCheck = dienstObj[dId];
+              if (!dienstToCheck) return;
+              Object.entries(dienstToCheck).forEach(([bId, schichtenToCheck]) => {
+                // Wenn der Dienstfreizeitraum sich mit einer Arbeitszeit/Dienstzeit Schicht überschneidet, dann kann es eine Kombi sein.
+                const possibleKombi = schichtenToCheck.find((s) => getUeberschneidung(firstSchicht, s, true) > 0);
+                if (!possibleKombi) return;
+                let ueberschneidung = 0;
+                // Falls sich Schichten mehr als die akzeptierte Ueberschneidung überschneiden, dann ist es keine Kombi
+                schichten.find((s, i) => {
+                  if (i === 0) return false;
+                  return schichtenToCheck.find((ls) => {
+                    ueberschneidung += getUeberschneidung(s, ls, false);
+                    return ueberschneidung > firstSchicht.acceptedUeberschneidung;
+                  });
+                });
+                if (ueberschneidung > firstSchicht.acceptedUeberschneidung) return;
+                result.Kombidienste.push(
+                  createKombidienste(tag, `${dienstId}_${bereichId}`, `${dId}_${bId}`, 'Aus Dienstgruppen-Forderung')
+                );
+              });
+            });
           } else if (dienst?.weak_parallel_conflict) {
             parallel.add(`${dienstId}_${bereichId}`);
           }
@@ -639,21 +704,20 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
 
       // Mögliche Kombidienste gelten nur, wenn es keine konfliktreichen Überschneidungen gibt
       const parallelArr = Array.from(parallel);
+      const l = parallelArr.length;
       parallelArr.forEach((key1, i) => {
         const [dienstId, bereichId] = key1.split('_');
         const schichten1 = dienstObj[Number(dienstId)][Number(bereichId)];
-        parallelArr.forEach((key2) => {
-          if (key1 === key2) return;
+        for (let j = i + 1; j < l; j++) {
+          const key2 = parallelArr[j];
           const [dienstId, bereichId] = key2.split('_');
           const schichten2 = dienstObj[Number(dienstId)][Number(bereichId)];
-          schichten1.find((s) => {
-            return schichten2.find((ls) => {
-              // Falls es eine Überschneidung gibt, soll ein True zurückgegeben werden
-              // Und ein Kombidienst erstellt werden
-              return true;
-            });
+          const hasUeberschneidung = schichten1.find((s) => {
+            return schichten2.find((ls) => getUeberschneidung(s, ls) > 0, false);
           });
-        });
+          if (hasUeberschneidung) continue;
+          result.Kombidienste.push(createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt'));
+        }
       });
     });
 
