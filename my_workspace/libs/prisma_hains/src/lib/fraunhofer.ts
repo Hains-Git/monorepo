@@ -25,6 +25,7 @@ import {
   wherePlanBedarfIn
 } from './utils/crud_helper';
 import {
+  Ausgleichsdienstgruppe,
   Bedarf,
   Bedarfsblock,
   BedarfsID,
@@ -67,6 +68,7 @@ function mapThemenToDienstTypen(themen: themas[]) {
     Nachtdienst: [],
     VersetzterDienst: [],
     LangerDienst: [],
+    OnTopFD: [],
     Frei: []
   };
   themen.forEach((t) => {
@@ -84,6 +86,8 @@ function mapThemenToDienstTypen(themen: themas[]) {
         key = 'Frühdienst';
       } else if (name.includes('rufdienst')) {
         key = 'Rufdienst';
+      } else if (name.includes('on top fd')) {
+        key = 'OnTopFD';
       }
     }
     dienstTypenThemen[key].push(t.id);
@@ -500,25 +504,56 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
   const addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {};
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
   const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
+  const ausgleichsdienstgruppen: Record<number, Ausgleichsdienstgruppe> = {};
+
+  const addToAusgleichsDienstgruppe = (be: MainBedarfsEintrag, isLastInBlock: boolean) => {
+    if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
+    const dienstId = be.po_dienst_id;
+    const dienst = be.po_diensts?.planname || 'Unknown';
+    const addK3 = be.po_diensts?.planname === 'K3';
+    if (!addK3) {
+      const isDonnerstag = be.tag.getDay() === 4;
+      if (isLastInBlock && isDonnerstag) {
+        console.log('Donnerstag:', be);
+        return;
+      } else return;
+    }
+
+    ausgleichsdienstgruppen[dienstId] ||= {
+      Name: dienst,
+      Einträge: []
+    };
+    ausgleichsdienstgruppen[dienstId].Einträge.push({
+      Tag: be.tag,
+      Dienst: be.po_dienst_id,
+      Bereich: be.bereich_id
+    });
+  };
 
   dienstplaene.forEach((dpl) => {
     if (!dpl?.dienstplanbedarves?.bedarfs_eintrags) return;
     dpl.dienstplanbedarves.bedarfs_eintrags.forEach((be) => {
-      if (!be.tag) return;
+      if (!be.tag || !be.po_dienst_id) return;
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
         const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten);
-        if (bedarf) bedarfe.push(bedarf);
+        if (bedarf) {
+          bedarfe.push(bedarf);
+          addToAusgleichsDienstgruppe(be, true);
+        }
         return;
       }
+
       addedBloecke[firstBedarf.id] = true;
+      const l = firstBedarf.block_bedarfe.length - 1;
       bloecke.push({
-        Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb) => {
+        Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
           const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
           if (bedarf) {
             bedarfe.push(bedarf);
+            addToAusgleichsDienstgruppe(bb, i === l);
             if (bb.tag < start || bb.tag > end) {
               const tagKey = bb.tag.toISOString();
               bedarfeTageOutSideInterval[tagKey] ||= [];

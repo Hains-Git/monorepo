@@ -32,7 +32,14 @@ export type Präferenz = {
   Bewertung: number;
 };
 
-export type DienstTyp = 'Frühdienst' | 'Rufdienst' | 'Nachtdienst' | 'VersetzterDienst' | 'LangerDienst' | 'Frei';
+export type DienstTyp =
+  | 'Frühdienst'
+  | 'Rufdienst'
+  | 'Nachtdienst'
+  | 'VersetzterDienst'
+  | 'LangerDienst'
+  | 'OnTopFD'
+  | 'Frei';
 
 export type Dienst = {
   ID: number;
