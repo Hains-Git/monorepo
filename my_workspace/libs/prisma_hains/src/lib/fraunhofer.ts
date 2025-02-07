@@ -209,12 +209,14 @@ function createDiensteAndMapInfos(
         acc.dienstkategorieDienste[dk.id].push(d.id);
       });
 
+      const istRelevantFürDoppelWhopper = typ === 'Nachtdienst';
+
       // Add Dienst to DiensteArr
       acc.diensteArr.push({
         ID: d.id,
         Name: d.planname || '',
         Typ: typ,
-        IstRelevantFürDoppelWhopper: typ === 'Nachtdienst'
+        IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       });
       return acc;
     },
@@ -431,7 +433,8 @@ function calculateBedarfArbeitszeit(
     // Calculate Arbeitzeit and check if is Wochenenddienst
     // Wochenende: (Start Mo < 5:00 or Ende Fr > 21:00)
     if (azt?.arbeitszeit && s.arbeitszeit) {
-      acc += s.arbeitszeit;
+      // Bereitschaftsdienst mitzählen und Rufdienst ignorieren.
+      if (!azt.rufbereitschaft) acc += s.arbeitszeit;
       if (!wochenende && azt?.dienstzeit) {
         const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getHours() < 5;
         const endTime = s.ende.toTimeString().split(' ')[0];
@@ -769,6 +772,7 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
 
     result.Dienste = diensteArr;
 
+    // Kombidienstausschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
       Name: `Mitarbeiter ${m.id}`,
