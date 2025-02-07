@@ -86,7 +86,6 @@ function mapThemenToDienstTypen(themen: themas[]) {
         key = 'Rufdienst';
       }
     }
-
     dienstTypenThemen[key].push(t.id);
   });
   return dienstTypenThemen;
@@ -176,7 +175,8 @@ function createDiensteAndMapInfos(
   dienstTypenThemen: DienstTypenThemen,
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
-  } & dienstkategories)[]
+  } & dienstkategories)[],
+  themen: themas[]
 ) {
   return dienste.reduce(
     (
@@ -196,6 +196,8 @@ function createDiensteAndMapInfos(
       // Get DienstTyp
       const typ: DienstTyp =
         (Object.entries(dienstTypenThemen).find(([key, ids]) => {
+          // Frei ist der Default-Typ und gilt nur, wenn alle anderen nicht zutreffen
+          if (key === 'Frei') return false;
           return d.thema_ids.find((t) => ids.includes(t));
         })?.[0] as DienstTyp) || 'Frei';
 
@@ -212,7 +214,7 @@ function createDiensteAndMapInfos(
         ID: d.id,
         Name: d.planname || '',
         Typ: typ,
-        IstRelevantFürDoppelWhopper: false
+        IstRelevantFürDoppelWhopper: typ === 'Nachtdienst'
       });
       return acc;
     },
@@ -761,14 +763,15 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
     const { diensteArr, freigabetypenDienste, dienstkategorieDienste } = createDiensteAndMapInfos(
       dienste,
       mapThemenToDienstTypen(themen),
-      dienstkategorien
+      dienstkategorien,
+      themen
     );
 
     result.Dienste = diensteArr;
 
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
-      Name: m.planname || '',
+      Name: `Mitarbeiter ${m.id}`,
       Freigaben: getMitarbeiterFreigaben(m.dienstfreigabes, freigabetypenDienste, tage),
       KombidienstAusschlüsse: [],
       Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
