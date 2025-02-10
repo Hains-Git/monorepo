@@ -899,18 +899,17 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
 
   try {
     result.msg = '';
-    if (typeof body.Name !== 'string') {
+    if (typeof body.Name !== 'string' || !body.Name.trim()) {
       result.msg = 'Name muss ein String sein!\n';
       return result;
     }
-    if (!Array.isArray(body.Einteilungen) || !body.Einteilungen.length) {
-      result.msg = 'Keine Einteilungen vorhanden!\n';
-      return result;
-    }
-    const name = body.Name;
-    const beschreibung = typeof body.Beschreibung === 'string' ? body.Beschreibung : '';
-    const parameter = typeof body.Parameter === 'string' ? body.Parameter : '';
-    const einteilungen = body.Einteilungen;
+    const name = body.Name.trim();
+    let beschreibung = typeof body.Beschreibung === 'string' ? body.Beschreibung : '';
+    beschreibung += ' (Fraunhofer Plan)';
+    beschreibung = beschreibung.trim();
+    const parameter = typeof body.Parameter === 'string' ? body.Parameter.trim() : '';
+    const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
+
     const dienstplanStatusVorschlagId =
       (
         await prismaDb.dienstplanstatuses.findFirst({
@@ -956,6 +955,28 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       return result;
     }
 
+    const mitarbeiterHash = (await prismaDb.mitarbeiters.findMany({ select: { id: true } })).reduce(
+      (acc: Record<number, boolean>, m) => {
+        acc[m.id] = true;
+        return acc;
+      },
+      {}
+    );
+    const diensteHash = (await prismaDb.po_diensts.findMany({ select: { id: true } })).reduce(
+      (acc: Record<number, boolean>, d) => {
+        acc[d.id] = true;
+        return acc;
+      },
+      {}
+    );
+    const bereicheHash = (await prismaDb.bereiches.findMany({ select: { id: true } })).reduce(
+      (acc: Record<number, boolean>, b) => {
+        acc[b.id] = true;
+        return acc;
+      },
+      {}
+    );
+
     const dates: Record<
       string,
       {
@@ -964,26 +985,56 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         einteilungen: Einteilung[];
       }
     > = {};
-    einteilungen.forEach((e) => {
-      const tag = new Date(e.Tag);
-      if (!tag.getTime()) {
-        result.msg += `Ungültiges Datum: ${e.Tag}\n`;
-        return;
+    // Format: YYYY-MM-DD
+    const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
+
+    const fileteredEinteilungen = einteilungen.filter((e) => {
+      let tag = new Date(e.Tag);
+      // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
+      if (typeof e.Tag === 'string' && dateRegEx.test(e.Tag)) {
+        tag = new Date(`${e.Tag}T12:00:00.000Z`);
       }
+      if (e.BereichID === 0) e.BereichID = null;
+      const validBereich = e.BereichID ? bereicheHash[e.BereichID] : true;
+      const validateMsg = [
+        !tag.getTime() ? ' Ungültiges Datum ' : '',
+        !mitarbeiterHash[e.MitarbeiterID] ? ' Ungültiger Mitarbeiter ' : '',
+        !diensteHash[e.DienstID] ? ' Ungültiger Dienst ' : '',
+        !validBereich ? ' Ungültiger Bereich ' : ''
+      ]
+        .join('')
+        .trim();
+      if (validateMsg) {
+        result.msg += `Einteilung (${Object.entries(e)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ')}: ${validateMsg})!\n`;
+        return false;
+      }
+      e.Tag = tag;
+
       const [year, month] = [tag.getFullYear(), tag.getMonth()];
-      const monthYear = `${year}-${month}`;
+      const monthYear = tag.toISOString().split('T')[0];
       if (dates[monthYear]) {
         dates[monthYear].einteilungen.push(e);
-        return;
+        return true;
       }
+
       const start = new Date(year, month, 1, 12);
-      const end = new Date(year, month, 0, 12);
+      const end = new Date(year, month + 1, 0, 12);
       dates[monthYear] = {
         start,
         end,
         einteilungen: [e]
       };
+
+      return true;
     });
+
+    if (!fileteredEinteilungen.length) {
+      result.msg += 'Keine gültigen Einteilungen vorhanden!\n';
+      return result;
+    }
+
     for (const monthYear in dates) {
       const { start, end, einteilungen } = dates[monthYear];
       const dienstplanBedarfId =
@@ -991,13 +1042,15 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
           await prismaDb.dienstplanbedarves.findFirst({
             select: { id: true },
             where: {
-              anfang: { gte: start },
-              ende: { lte: end }
+              anfang: { lte: start },
+              ende: { gte: end }
             }
           })
         )?.id || 0;
       if (!dienstplanBedarfId) {
-        result.msg += `Kein Bedarf für ${monthYear} gefunden!\n`;
+        result.msg += `Keine Bedarf für ${start.toLocaleDateString('de-De')} - ${end.toLocaleDateString(
+          'de-De'
+        )} gefunden!\n`;
         continue;
       }
       const dienstplan = await prismaDb.dienstplans.create({
