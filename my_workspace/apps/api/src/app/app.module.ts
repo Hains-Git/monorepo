@@ -9,14 +9,17 @@ import { APP_GUARD } from '@nestjs/core';
 
 import { AbwesenheitenController } from './abwesenheiten/abwesenheiten.controller';
 import { AbwesenheitenService } from './abwesenheiten/abwesenheiten.service';
+import { FraunhoferController } from './fraunhofer/fraunhofer.controller';
+import { FraunhoferService } from './fraunhofer/fraunhofer.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
   imports: [PrismaModule],
-  controllers: [AppController, AbwesenheitenController],
+  controllers: [AppController, AbwesenheitenController, FraunhoferController],
   providers: [
     AppService,
-    AbwesenheitenService
+    AbwesenheitenService,
+    FraunhoferService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard
