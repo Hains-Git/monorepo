@@ -899,10 +899,18 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
 
   try {
     result.msg = '';
-    const name = body.Name || '';
+    if (typeof body.Name !== 'string') {
+      result.msg = 'Name muss ein String sein!';
+      return result;
+    }
+    if (!Array.isArray(body.Einteilungen) || !body.Einteilungen.length) {
+      result.msg = 'Keine Einteilungen vorhanden!';
+      return result;
+    }
+    const name = body.Name;
     const beschreibung = body.Beschreibung || '';
     const parameter = body.Parameter || '';
-    const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
+    const einteilungen = body.Einteilungen;
     const dienstplanStatusVorschlagId =
       (
         await prismaDb.dienstplanstatuses.findFirst({
