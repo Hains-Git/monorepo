@@ -1,6 +1,7 @@
 export type Einteilung = {
   MitarbeiterID: number;
   DienstID: number;
+  BereichID: number | null;
   Tag: Date;
 };
 

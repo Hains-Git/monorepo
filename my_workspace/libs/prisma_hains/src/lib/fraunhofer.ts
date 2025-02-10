@@ -818,7 +818,8 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
-          Tag: e.tag
+          Tag: e.tag,
+          BereichID: e.bereich_id
         });
       }
       return acc;
@@ -864,7 +865,127 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
     msg: 'Plan konnte nicht erstellt werden!',
     updated: false
   };
+
   try {
+    result.msg = '';
+    const name = body.Name || '';
+    const beschreibung = body.Beschreibung || '';
+    const parameter = body.Parameter || '';
+    const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
+    const dienstplanStatusVorschlagId =
+      (
+        await prismaDb.dienstplanstatuses.findFirst({
+          select: { id: true },
+          where: { name: 'Vorschlag' }
+        })
+      )?.id || 0;
+
+    if (!dienstplanStatusVorschlagId) {
+      result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!';
+      return result;
+    }
+
+    const einteilungsstatusVorschlagId =
+      (
+        await prismaDb.einteilungsstatuses.findFirst({
+          select: { id: true },
+          where: { name: 'Vorschlag', public: false, counts: false }
+        })
+      )?.id || 0;
+    if (!einteilungsstatusVorschlagId) {
+      result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!';
+      return result;
+    }
+
+    const einteilungskontextAutoId =
+      (
+        await prismaDb.einteilungskontexts.findFirst({
+          select: { id: true },
+          where: {
+            name: 'Auto'
+          }
+        })
+      )?.id || 0;
+    if (!einteilungskontextAutoId) {
+      result.msg = 'Einteilungskontext Auto nicht gefunden!';
+      return result;
+    }
+
+    const dates: Record<
+      string,
+      {
+        start: Date;
+        end: Date;
+        einteilungen: Einteilung[];
+      }
+    > = {};
+    einteilungen.forEach((e) => {
+      const tag = new Date(e.Tag);
+      const [year, month] = [tag.getFullYear(), tag.getMonth()];
+      const monthYear = `${year}-${month}`;
+      if (dates[monthYear]) {
+        dates[monthYear].einteilungen.push(e);
+        return;
+      }
+      const start = new Date(year, month, 1, 12);
+      const end = new Date(year, month, 0, 12);
+      dates[monthYear] = {
+        start,
+        end,
+        einteilungen: [e]
+      };
+    });
+    for (const monthYear in dates) {
+      const { start, end, einteilungen } = dates[monthYear];
+      const dienstplanBedarfId =
+        (
+          await prismaDb.dienstplanbedarves.findFirst({
+            select: { id: true },
+            where: {
+              anfang: { gte: start },
+              ende: { lte: end }
+            }
+          })
+        )?.id || 0;
+      if (!dienstplanBedarfId) {
+        result.msg += `Kein Bedarf für ${monthYear} gefunden!\n`;
+        continue;
+      }
+      const dienstplan = await prismaDb.dienstplans.create({
+        data: {
+          name,
+          beschreibung,
+          parameter,
+          created_at: new Date(),
+          updated_at: new Date(),
+          parameterset_id: 1,
+          dienstplanstatus_id: dienstplanStatusVorschlagId,
+          dienstplanbedarf_id: dienstplanBedarfId
+        }
+      });
+      const dienstplanId = dienstplan.id;
+      if (!dienstplanId) {
+        result.msg += `Fehler beim Erstellen des Plans für ${monthYear}!\n`;
+        continue;
+      }
+      await prismaDb.diensteinteilungs.createMany({
+        data: einteilungen.map((e) => ({
+          tag: e.Tag,
+          mitarbeiter_id: e.MitarbeiterID,
+          po_dienst_id: e.DienstID,
+          bereich_id: e.BereichID,
+          dienstplan_id: dienstplanId,
+          einteilungsstatus_id: einteilungsstatusVorschlagId,
+          schicht_nummern: [0],
+          is_optional: false,
+          einteilungskontext_id: einteilungskontextAutoId,
+          created_at: new Date(),
+          updated_at: new Date()
+        }))
+      });
+    }
+
+    result.updated = true;
   } catch (error) {
     console.error('Error in createFraunhoferPlan:', error);
     result.msg = 'Fehler beim Erstellen des Plans!';
