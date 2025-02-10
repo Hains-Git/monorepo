@@ -962,20 +962,35 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       },
       {}
     );
-    const diensteHash = (await prismaDb.po_diensts.findMany({ select: { id: true } })).reduce(
-      (acc: Record<number, boolean>, d) => {
-        acc[d.id] = true;
-        return acc;
-      },
-      {}
-    );
-    const bereicheHash = (await prismaDb.bereiches.findMany({ select: { id: true } })).reduce(
-      (acc: Record<number, boolean>, b) => {
-        acc[b.id] = true;
-        return acc;
-      },
-      {}
-    );
+
+    const relevantTeamIds = (
+      await prismaDb.teams.findMany({
+        where: {
+          name: { in: ['OP Team'] }
+        }
+      })
+    ).map((t) => t.id);
+
+    const diensteHash = (
+      await prismaDb.po_diensts.findMany({
+        select: { id: true },
+        where: {
+          team_id: { in: relevantTeamIds }
+        }
+      })
+    ).reduce((acc: Record<number, boolean>, d) => {
+      acc[d.id] = true;
+      return acc;
+    }, {});
+
+    const bereicheHash = (
+      await prismaDb.bereiches.findMany({
+        select: { id: true }
+      })
+    ).reduce((acc: Record<number, boolean>, b) => {
+      acc[b.id] = true;
+      return acc;
+    }, {});
 
     const dates: Record<
       string,
@@ -996,6 +1011,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       }
       if (e.BereichID === 0) e.BereichID = null;
       const validBereich = e.BereichID ? bereicheHash[e.BereichID] : true;
+      // zusätzlich Bedarfe und Team testen (OP Team)
       const validateMsg = [
         !tag.getTime() ? ' Ungültiges Datum ' : '',
         !mitarbeiterHash[e.MitarbeiterID] ? ' Ungültiger Mitarbeiter ' : '',
