@@ -1,3 +1,4 @@
+// import * as fs from 'fs/promises';
 import {
   arbeitszeittyps,
   arbeitszeitverteilungs,
@@ -854,6 +855,8 @@ export async function getFraunhoferPlanData(start: Date, end: Date): Promise<Pla
     return { ...defaultPlanData, msg: 'Es gab einen Fehler beim Laden der Daten!' };
   }
 
+  // Write Response in JSON-File
+  // await fs.writeFile('fraunhoferPlanData.json', JSON.stringify(result, null, 2), 'utf8');
   return result;
 }
 
@@ -968,6 +971,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         result.msg += `Fehler beim Erstellen des Plans für ${monthYear}!\n`;
         continue;
       }
+
       await prismaDb.diensteinteilungs.createMany({
         data: einteilungen.map((e) => ({
           tag: e.Tag,
