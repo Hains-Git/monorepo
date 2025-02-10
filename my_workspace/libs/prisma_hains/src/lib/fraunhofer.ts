@@ -711,10 +711,32 @@ function getUeberschneidung(
   return min;
 }
 
+export async function isValidFraunhoferRequest(clientId: string, clientSecret: string) {
+  const isValid = await prismaDb.oauth_applications.findFirst({
+    where: {
+      name: 'Fraunhofer',
+      uid: clientId,
+      secret: clientSecret
+    }
+  });
+  return !!isValid;
+}
+
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
-export async function getFraunhoferPlanData(start: Date, end: Date): Promise<PlanData> {
+export async function getFraunhoferPlanData(
+  start: Date,
+  end: Date,
+  client_id: string,
+  client_secret: string
+): Promise<PlanData> {
   const result: PlanData = { ...defaultPlanData };
+
+  const isValid = await isValidFraunhoferRequest(client_id, client_secret);
+  if (!isValid) {
+    result.msg = 'Nicht authorisiert!';
+    return result;
+  }
 
   if (!start.getTime() || !end.getTime() || start > end) {
     result.msg = 'Ungültige Zeitspanne!';
@@ -868,6 +890,12 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
     msg: 'Plan konnte nicht erstellt werden!',
     updated: false
   };
+
+  const isValid = await isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
+  if (!isValid) {
+    result.msg = 'Nicht authorisiert!';
+    return result;
+  }
 
   try {
     result.msg = '';

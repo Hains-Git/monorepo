@@ -3,10 +3,10 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class FraunhoferService {
-  async getPlanData(start: string, end: string) {
+  async getPlanData(start: string, end: string, clientId: string, clientSecret: string) {
     const startDate = new Date(start);
     const endDate = new Date(end);
-    return getFraunhoferPlanData(startDate, endDate);
+    return getFraunhoferPlanData(startDate, endDate, clientId, clientSecret);
   }
 
   async createPlan(plan: FraunhoferNewPlan) {

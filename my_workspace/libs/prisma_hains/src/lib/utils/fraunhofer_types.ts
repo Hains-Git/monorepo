@@ -121,6 +121,8 @@ export type FraunhoferNewPlan = {
   Beschreibung: string;
   Einteilungen: Einteilung[];
   Parameter: string;
+  client_id: string;
+  client_secret: string;
 };
 
 export type DienstTypenThemen = Record<DienstTyp, number[]>;
