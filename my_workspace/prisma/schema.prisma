@@ -9,6 +9,7 @@ datasource db {
 
 model abwesentheiten_spaltens {
   id           Int      @id @default(autoincrement())
+  db_key       String?  @db.VarChar
   planname     String?  @db.VarChar
   name         String?  @db.VarChar
   beschreibung String?  @db.VarChar
@@ -65,6 +66,7 @@ model abwesentheitenueberblicks {
   updated_at     DateTime      @db.Timestamp(6)
   vu             Int?
   bu             Int?
+  pu             Int?
   soll_tzu       Int?          @default(0)
   mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ed4202ea8e")
 
