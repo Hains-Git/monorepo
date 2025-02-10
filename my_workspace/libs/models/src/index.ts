@@ -5,3 +5,4 @@ export * from './lib/accountinfo';
 export * from './lib/mitarbeiter';
 export * from './lib/vertrag';
 export * from './lib/planungsinfo';
+export * from './lib/planerdate/planerdate';

@@ -109,6 +109,71 @@ export async function processAsyncData<T>(
   );
 }
 
+/**
+ * Transforms an object by applying specified methods to create new or modify existing properties.
+ *
+ * @template T - The type of the input object.
+ * @param {T} result - The original object to be transformed.
+ * @param {Array<{key: string, method: TransformMethod<any>, path?: string}>} transforms - An array of transformation specifications.
+ *   Each specification includes:
+ *   - key: The name of the property to be added or modified.
+ *   - method: A function that generates the value for the property.
+ *   - path (optional): A dot-separated string indicating the nested path where the property should be added.
+ *     An empty string or omitted path means the property will be added at the root level.
+ * @returns {T} A new object with the specified transformations applied.
+ *
+ * @example
+ * const result = await prisma.mitarbeiter.findUnique({
+ *   where: { id: mitarbeiterId },
+ *   include: { accountInfo: true }
+ * });
+ *
+ * const transformedResult = transformObject(result, [
+ *   {
+ *     key: 'weiterbildungsjahr',
+ *     method: addWeiterbildungsjahr,
+ *     path: 'accountInfo'
+ *   },
+ *   {
+ *     key: 'fullName',
+ *     method: (data) => `${data.firstName} ${data.lastName}`
+ *   }
+ * ]);
+ */
+type TransformMethod<T> = (data: T) => T;
+export function transformObject<T extends Record<string, any>>(
+  result: T,
+  transforms: Array<{
+    key: string;
+    method: TransformMethod<any>;
+    path?: string;
+  }>
+): T {
+  const transformed = { ...result };
+
+  transforms.forEach(({ key, method, path = '' }) => {
+    const pathParts = path.split('.');
+    let target: any = transformed;
+
+    // Traverse the object to the specified path
+    for (let i = 0; i < pathParts.length; i++) {
+      const part = pathParts[i];
+      if (part) {
+        if (!(part in target)) {
+          target[part] = {};
+        }
+        target[part] = { ...target[part] };
+        target = target[part];
+      }
+    }
+
+    // Apply the transformation
+    target[key] = method(path ? result[path] : result);
+  });
+
+  return transformed;
+}
+
 export function convertStringToSnakeCase(str: string) {
   return str.toLowerCase().replace(/[-\s]+/g, '_');
 }

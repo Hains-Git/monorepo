@@ -235,7 +235,7 @@ async function getAllRotationenByKontingentFlag() {
 }
 
 async function getBedarfe(dienstplanbedarf_id: number) {
-  const bedarfsEintraege = getBedarfseintragByDienstplanBedarfId(dienstplanbedarf_id);
+  const bedarfsEintraege = await getBedarfseintragByDienstplanBedarfId(dienstplanbedarf_id);
   return getDataByHash(bedarfsEintraege);
 }
 

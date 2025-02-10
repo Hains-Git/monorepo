@@ -1,32 +1,7 @@
-import { mitarbeiters, einteilung_rotations } from '@prisma/client';
-
-export function getWeiterbildungsjahr(aSeit: Date | null, anrechenbareZeit: number | null) {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-
-  if (!aSeit) {
-    return '';
-  }
-  const aSeitYear = aSeit.getFullYear();
-  const aSeitMonth = aSeit.getMonth();
-
-  const anrechenbareZeitInMonate = anrechenbareZeit ?? 0;
-
-  const diffInMonths = year * 12 + month - (aSeitYear * 12 + aSeitMonth) + anrechenbareZeitInMonate;
-  let yearDisplay = '';
-  let monthDisplay = '';
-
-  if (diffInMonths >= 0) {
-    yearDisplay = String(Math.floor(diffInMonths / 12));
-    monthDisplay = String(diffInMonths % 12);
-  } else {
-    yearDisplay = '0';
-    monthDisplay = String(diffInMonths);
-  }
-
-  return `${yearDisplay}.Jahr : ${monthDisplay} Monat`;
-}
+import { mitarbeiters, einteilung_rotations, kontingents, teams, funktions } from '@prisma/client';
+import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
+import { rotationAm } from './einteilungrotation';
+import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const aSeit = mitarbeiter.a_seit;
@@ -35,14 +10,53 @@ export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   return weiterbildungsjahr;
 }
 
-export function teamAm(
+type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
+
+export async function getDefaultTeamForMitarbeiter(
+  defaultTeam: teams | null = null,
+  defaultKontingent: TDefaultKontingents = null
+) {
+  let team = null;
+  if (!defaultTeam) {
+    defaultTeam = await getDefaultTeam();
+  }
+  if (!defaultTeam && !defaultKontingent) {
+    defaultKontingent = await getDefaultKontingents();
+  }
+
+  if (defaultTeam) {
+    team = defaultTeam;
+  } else if (defaultKontingent?.teams) {
+    team = defaultKontingent.teams;
+  }
+  return team;
+}
+
+type TRot = einteilung_rotations & {
+  kontingents:
+    | (kontingents & {
+        teams?: teams | null;
+      })
+    | null;
+};
+
+export async function mitarbeiterTeamAm(
   date = new Date(),
-  rotationen: einteilung_rotations[] | null = null,
+  rotationen: TRot[] | null = null,
   defaultTeam = null,
-  defaultKontingent = null
+  defaultKontingent = null,
+  mitarbeiterId: number
 ) {
   let team;
-  let rotation;
+  let rotation: TRot | undefined = undefined;
+  const mitarbeiter = await getMitarbeiterById(mitarbeiterId, {
+    funktion: {
+      include: {
+        teams: true
+      }
+    }
+  });
+
   if (rotationen && rotationen.length > 0) {
     rotation = rotationen.find((er) => {
       if (er.von && er.bis) {
@@ -50,6 +64,21 @@ export function teamAm(
       }
       return false;
     });
+  } else {
+    const rot = await rotationAm(date, mitarbeiterId);
+    if (rot && rot?.length > 0) {
+      rotation = rot?.[0];
+    }
+  }
+
+  if (rotation?.kontingents?.teams) {
+    team = rotation?.kontingents?.teams;
+  } else if (mitarbeiter?.funktion?.teams) {
+    team = mitarbeiter.funktion?.teams;
+  }
+
+  if (!team) {
+    team = getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
   }
 
   return;

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { prismaDb } from '../../../prisma_hains/src/lib/prisma-hains';
+// import { prismaDb } from '../../../prisma_hains/src/lib/prisma-hains';
+import { prismaDb } from '@my-workspace/prisma_hains';
 import { getUserById } from '@my-workspace/prisma_cruds';
 import { format } from 'date-fns';
 

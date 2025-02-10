@@ -13,10 +13,13 @@ import {
   getAllStandorte,
   getAllThemas,
   getVertragsTypsForMitarbeiterinfo,
-  getPublicRangeEinteilungenForMitarbeiter
-} from '@my-workspace/prisma_hains';
+  getPublicRangeEinteilungenForMitarbeiter,
+  getMitarbeiterById
+} from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
+import { transformObject, processData } from '@my-workspace/utils';
+import { addWeiterbildungsjahr, mitarbeiterTeamAm, rentenEintritt } from '@my-workspace/models';
 
 @Injectable()
 export class MitarbeiterInfoService {
@@ -40,6 +43,7 @@ export class MitarbeiterInfoService {
 
     return result;
   }
+
   async getEinteilungenInTime(body) {
     const { start, end, id: mitarbeiter_id } = body;
     const einteilungen = await getPublicRangeEinteilungenForMitarbeiter(mitarbeiter_id, start, end, {
@@ -47,5 +51,28 @@ export class MitarbeiterInfoService {
       einteilungsstatuses: true
     });
     return einteilungen;
+  }
+
+  async getMitarbeiterDetails(mitarbeiterId: number, userId: number) {
+    const result = {};
+    const mitarbeiter = await getMitarbeiterById(mitarbeiterId, { account_info: true, funktion: true });
+    const teamAm = await mitarbeiterTeamAm(new Date(), null, null, null, mitarbeiterId);
+    const teams = await getAllTeams();
+    const accountInfo = mitarbeiter.account_info;
+    result['teams'] = processData('id', teams);
+    result['mitarbeiter'] = transformObject(mitarbeiter, [
+      {
+        key: 'weiterbildungsjahr',
+        method: addWeiterbildungsjahr
+      }
+    ]);
+    result['accountInfo'] = transformObject(accountInfo, [
+      {
+        key: 'renten_eintritt',
+        method: rentenEintritt
+      }
+    ]);
+    result['team_am'] = teamAm;
+    return result;
   }
 }

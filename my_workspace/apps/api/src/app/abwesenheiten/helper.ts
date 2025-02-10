@@ -1,6 +1,7 @@
 import { abwesentheitenueberblick_counters, diensteinteilungs } from '@prisma/client';
 
-import { getEinteilungenOhneBedarf, PlanerDate } from '@my-workspace/prisma_hains';
+import { getEinteilungenOhneBedarf } from '@my-workspace/prisma_cruds';
+import { PlanerDate } from '@my-workspace/models';
 import { formatDate, getISOWeek, isMonday } from 'date-fns';
 
 type TParams = {

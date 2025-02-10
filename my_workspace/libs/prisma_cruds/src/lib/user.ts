@@ -4,13 +4,17 @@ import * as bcrypt from 'bcrypt';
 
 type TUserWithAccountInfo = users & { account_info: any };
 
-export async function getUserById(id: number, include: Prisma.usersInclude = {}) {
-  return await prismaDb.users.findUnique({
+export async function getUserById<TInclude extends Prisma.usersInclude>(
+  id: number,
+  include?: TInclude
+): Promise<Prisma.usersGetPayload<{ include: TInclude }> | null> {
+  const result = await prismaDb.users.findUnique({
     where: {
       id: id
     },
     include
   });
+  return result as Prisma.usersGetPayload<{ include: TInclude }> | null;
 }
 
 export async function checkUserCredentials(username: string, password: string): Promise<[boolean, users | null]> {

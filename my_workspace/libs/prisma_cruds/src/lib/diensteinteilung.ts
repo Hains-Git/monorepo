@@ -68,16 +68,16 @@ export async function getEinteilungenOhneBedarf({
   return result;
 }
 
-export async function getPublicRangeEinteilungenForMitarbeiter(
+export async function getPublicRangeEinteilungenForMitarbeiter<TInclude extends Prisma.diensteinteilungsInclude>(
   id: number,
   start: Date,
   end: Date,
-  include: Prisma.diensteinteilungsInclude = {}
-) {
+  include?: TInclude
+): Promise<Prisma.diensteinteilungsGetPayload<{ include: TInclude }>[] | null> {
   const startDate = formatDateForDB(start);
   const endDate = formatDateForDB(end);
 
-  return await prismaDb.diensteinteilungs.findMany({
+  return (await prismaDb.diensteinteilungs.findMany({
     where: {
       mitarbeiter_id: id,
       tag: {
@@ -90,7 +90,7 @@ export async function getPublicRangeEinteilungenForMitarbeiter(
       }
     },
     include
-  });
+  })) as Prisma.diensteinteilungsGetPayload<{ include: TInclude }>[] | null;
 }
 
 export async function getDiensteinteilungInRange(anfang: Date, ende: Date, _condition: any) {

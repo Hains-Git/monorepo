@@ -1,8 +1,9 @@
-import { processData, vkAndVgruppeAm } from '@my-workspace/utils';
+import { processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
 import { mitarbeiters } from '@prisma/client';
 
-import { getMitarbeitersWithoutAccountInfo, getAccountInfoForMitarbeiterInfo } from '@my-workspace/prisma_hains';
+import { getMitarbeitersWithoutAccountInfo, getAccountInfoForMitarbeiterInfo } from '@my-workspace/prisma_cruds';
+import { vkAndVgruppeAm } from '@my-workspace/models';
 
 function createFakeAccountInfos(mitarbeiters: mitarbeiters[]) {
   const fakeAccountInfos: any[] = [];

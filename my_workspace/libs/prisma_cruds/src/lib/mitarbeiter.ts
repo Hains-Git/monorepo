@@ -1,5 +1,19 @@
+import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { FindManyArgsTypes } from './utils/types';
+
+export async function getMitarbeiterById<TInclude extends Prisma.mitarbeitersInclude>(
+  id: number | string,
+  include?: TInclude
+): Promise<Prisma.mitarbeitersGetPayload<{ include: TInclude }> | null> {
+  const mitarbeiterId = Number(id);
+  const result = await prismaDb.mitarbeiters.findUnique({
+    where: { id: mitarbeiterId },
+    include
+  });
+
+  return result as Prisma.mitarbeitersGetPayload<{ include: TInclude }> | null;
+}
 
 export async function getAllActiveMitarbeiter() {
   return await prismaDb.mitarbeiters.findMany({

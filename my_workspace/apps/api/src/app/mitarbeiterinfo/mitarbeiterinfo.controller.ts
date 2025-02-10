@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 
 import { MitarbeiterInfoService } from './mitarbeiterinfo.service';
 
@@ -10,9 +10,15 @@ export class MitarbeiterInfoController {
   getMitarbeiterInfoData() {
     return this.mitarbeiterInfoService.getMitarbeiterInfoData();
   }
+  @Get('mitarbeiter_details')
+  getMitarbeiterDetails(@Query() query: { id: number; userId: number }) {
+    const mitarbeiterId = query.id;
+    const userId = query.userId;
+    return this.mitarbeiterInfoService.getMitarbeiterDetails(mitarbeiterId, userId);
+  }
+
   @Post('einteilungen_in_time')
   getEinteilungenInTime(@Body() body: { start: string; end: string; id: number }) {
-    console.log('body', body);
     return this.mitarbeiterInfoService.getEinteilungenInTime(body);
   }
 }

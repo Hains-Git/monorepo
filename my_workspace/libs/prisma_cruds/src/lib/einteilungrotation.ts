@@ -1,11 +1,19 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 
-export async function einteilungRotationByTag(tag: Date) {
+export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) {
   return await prismaDb.einteilung_rotations.findMany({
     where: {
+      mitarbeiter_id: mitarbeiterId,
       von: { lte: tag },
       bis: { gte: tag }
+    },
+    include: {
+      kontingents: {
+        include: {
+          teams: true
+        }
+      }
     },
     orderBy: {
       prioritaet: 'asc'
@@ -13,8 +21,12 @@ export async function einteilungRotationByTag(tag: Date) {
   });
 }
 
-export async function getRotationenInRange(anfang: Date, ende: Date, include: Prisma.einteilung_rotationsInclude = {}) {
-  return await prismaDb.einteilung_rotations.findMany({
+export async function getRotationenInRange<TInclude extends Prisma.einteilung_rotationsInclude>(
+  anfang: Date,
+  ende: Date,
+  include?: TInclude
+): Promise<Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[] | null> {
+  return (await prismaDb.einteilung_rotations.findMany({
     where: {
       OR: [
         {
@@ -32,7 +44,7 @@ export async function getRotationenInRange(anfang: Date, ende: Date, include: Pr
       }
     },
     include
-  });
+  })) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[] | null;
 }
 
 export async function getRotationenByKontingentFlag() {
