@@ -908,8 +908,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       return result;
     }
     const name = body.Name;
-    const beschreibung = body.Beschreibung || '';
-    const parameter = body.Parameter || '';
+    const beschreibung = typeof body.Beschreibung === 'string' ? body.Beschreibung : '';
+    const parameter = typeof body.Parameter === 'string' ? body.Parameter : '';
     const einteilungen = body.Einteilungen;
     const dienstplanStatusVorschlagId =
       (
@@ -950,6 +950,12 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       return result;
     }
 
+    const parametersetId = (await prismaDb.parametersets.findFirst({ select: { id: true } }))?.id || 0;
+    if (!parametersetId) {
+      result.msg = 'Parameterset nicht gefunden!';
+      return result;
+    }
+
     const dates: Record<
       string,
       {
@@ -960,6 +966,10 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
     > = {};
     einteilungen.forEach((e) => {
       const tag = new Date(e.Tag);
+      if (!tag.getTime()) {
+        result.msg += `Ungültiges Datum: ${e.Tag}\n`;
+        return;
+      }
       const [year, month] = [tag.getFullYear(), tag.getMonth()];
       const monthYear = `${year}-${month}`;
       if (dates[monthYear]) {
@@ -997,7 +1007,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
           parameter,
           created_at: new Date(),
           updated_at: new Date(),
-          parameterset_id: 1,
+          parameterset_id: parametersetId,
           dienstplanstatus_id: dienstplanStatusVorschlagId,
           dienstplanbedarf_id: dienstplanBedarfId
         }
