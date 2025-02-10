@@ -887,24 +887,24 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
   updated: boolean;
 }> {
   const result = {
-    msg: 'Plan konnte nicht erstellt werden!',
+    msg: 'Plan konnte nicht erstellt werden!\n',
     updated: false
   };
 
   const isValid = await isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
   if (!isValid) {
-    result.msg = 'Nicht authorisiert!';
+    result.msg = 'Nicht authorisiert!\n';
     return result;
   }
 
   try {
     result.msg = '';
     if (typeof body.Name !== 'string') {
-      result.msg = 'Name muss ein String sein!';
+      result.msg = 'Name muss ein String sein!\n';
       return result;
     }
     if (!Array.isArray(body.Einteilungen) || !body.Einteilungen.length) {
-      result.msg = 'Keine Einteilungen vorhanden!';
+      result.msg = 'Keine Einteilungen vorhanden!\n';
       return result;
     }
     const name = body.Name;
@@ -920,7 +920,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
       )?.id || 0;
 
     if (!dienstplanStatusVorschlagId) {
-      result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!';
+      result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
@@ -932,7 +932,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         })
       )?.id || 0;
     if (!einteilungsstatusVorschlagId) {
-      result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!';
+      result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
@@ -946,13 +946,13 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         })
       )?.id || 0;
     if (!einteilungskontextAutoId) {
-      result.msg = 'Einteilungskontext Auto nicht gefunden!';
+      result.msg = 'Einteilungskontext Auto nicht gefunden!\n';
       return result;
     }
 
     const parametersetId = (await prismaDb.parametersets.findFirst({ select: { id: true } }))?.id || 0;
     if (!parametersetId) {
-      result.msg = 'Parameterset nicht gefunden!';
+      result.msg = 'Parameterset nicht gefunden!\n';
       return result;
     }
 
