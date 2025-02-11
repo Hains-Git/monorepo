@@ -18,7 +18,7 @@ export class AbwesenheitenService {
   async getAbwesenheitsData(body) {
     const result = {};
 
-    const dateView = body.date_view;
+    const dateView = `${body.date_view}T12:00:00.000Z`;
     const leftSideDate = body.left_side_date;
     const year = new Date(leftSideDate).getFullYear();
     const init = body.init;
@@ -57,6 +57,7 @@ export class AbwesenheitenService {
     const dates = {};
 
     dateRange.forEach((day) => {
+      // console.log('dateRange', dateView, dateStart, dateEnd, day);
       createDates({ day, dates });
     });
 
