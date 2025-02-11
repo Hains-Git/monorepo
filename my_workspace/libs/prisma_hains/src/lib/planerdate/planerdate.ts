@@ -71,19 +71,22 @@ export class PlanerDate {
     this.date_nr = Number(this.id.split('-').join(''));
     this.celebrate = '';
     this.kws_vormonat = [];
-    PlanerDate.getFeiertag(date).then((_feiertag) => {
-      if (_feiertag) {
-        this.feiertag = {
-          name: _feiertag.name,
-          day: _feiertag.tag,
-          month: _feiertag.monat,
-          full_date: _feiertag.datum
-        };
-        this.celebrate = 'feiertag';
-      }
-      this.checkLastWeek();
-      this.addZeitraumkategorien(zeitraumkategorien);
-    });
+  }
+
+  async initializeFeiertage(date: Date, zeitraumkategorien: any[] = []) {
+    const _feiertag = await PlanerDate.getFeiertag(date);
+
+    if (_feiertag) {
+      this.feiertag = {
+        name: _feiertag.name,
+        day: _feiertag.tag,
+        month: _feiertag.monat,
+        full_date: _feiertag.datum
+      };
+      this.celebrate = 'feiertag';
+    }
+    this.checkLastWeek();
+    this.addZeitraumkategorien(zeitraumkategorien);
   }
 
   pdfClass(): string {
@@ -255,12 +258,12 @@ export class PlanerDate {
     this.last_week = PlanerDate.last_week[yearKey];
   }
 
-  private addZeitraumkategorien(zeitraumkategorien: any[] = []) {
-    zeitraumkategorien.forEach((zeitraumkategorie) => {
-      if (checkDate(this, zeitraumkategorie)) {
+  private async addZeitraumkategorien(zeitraumkategorien: any[] = []) {
+    for (const zeitraumkategorie of zeitraumkategorien) {
+      if (await checkDate(this, zeitraumkategorie)) {
         this.zeitraumkategorien.push(zeitraumkategorie.id);
       }
-    });
+    }
   }
 
   private getWeekNumber(dirtyDate: Date) {

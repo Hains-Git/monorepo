@@ -56,10 +56,12 @@ export class AbwesenheitenService {
 
     const dates = {};
 
-    dateRange.forEach((day) => {
-      // console.log('dateRange', dateView, dateStart, dateEnd, day);
-      createDates({ day, dates });
-    });
+    await Promise.all(
+      dateRange.map(async (day) => {
+        console.log('dateRange', dateView, dateStart, dateEnd, day);
+        await createDates({ day, dates });
+      })
+    );
 
     const kalendermarkierungen = await getKalenderMarkierungByDateRange(dateStart, dateEnd);
 

@@ -308,6 +308,7 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
 
   do {
     planerDate = new PlanerDate(anfang, weekCounter, zeitraumkategorie);
+    await planerDate.initializeFeiertage(anfang);
     dates[planerDate.id] = planerDate;
     anfang = addDays(anfang, 1);
 
@@ -320,6 +321,7 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   } while (anfang < windowEnde);
 
   planerDate = new PlanerDate(anfang, weekCounter, zeitraumkategorie);
+  await planerDate.initializeFeiertage(anfang);
   dates[planerDate.id] = planerDate;
   return dates;
 }

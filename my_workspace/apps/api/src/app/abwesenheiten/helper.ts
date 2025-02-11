@@ -64,13 +64,19 @@ type TParams1 = {
   dates: object;
 };
 
-export function createDates({ day, dates }: TParams1) {
+export async function createDates({ day, dates }: TParams1) {
   let weekCounter = getISOWeek(day) + 1;
 
   if (isMonday(day)) {
     weekCounter = getISOWeek(day);
   }
   const formatedDay = formatDate(day, 'yyyy-MM-dd');
-  dates[formatedDay] = new PlanerDate(day, weekCounter);
+  const planerdate = new PlanerDate(day, weekCounter);
+  await planerdate.initializeFeiertage(day);
+  if (formatedDay === '2025-04-20') {
+    console.log('formatedDay', day, planerdate);
+  }
+  dates[formatedDay] = planerdate;
+
   return dates;
 }
