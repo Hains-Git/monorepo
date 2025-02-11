@@ -869,7 +869,7 @@ export async function getFraunhoferPlanData(
       Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
       Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getArbeitszeitInMinutenAm(m, tag) })),
       Präferenzen: getPraeferenzen(m.dienstratings, result.MinPräferenz, result.MaxPräferenz),
-      MaximaleAzahlBereitschaftsdienste: MAX_BEREITSCHAFTSDIENSTE,
+      MaximaleAnzahlBereitschaftsdienste: MAX_BEREITSCHAFTSDIENSTE,
       ...getMitarbeiterWuensche(m.dienstwunsches, dienstkategorieDienste)
     }));
   } catch (error) {
