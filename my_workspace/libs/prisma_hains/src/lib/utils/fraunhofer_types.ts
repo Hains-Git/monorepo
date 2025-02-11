@@ -98,7 +98,7 @@ export type Mitarbeiter = {
   Wünsche: Wunsch[];
   'K-Wünsche': Date[];
   Präferenzen: Präferenz[];
-  MaximaleAzahlBereitschaftsdienste: number;
+  MaximaleAnzahlBereitschaftsdienste: number;
 };
 
 export type PlanData = {
