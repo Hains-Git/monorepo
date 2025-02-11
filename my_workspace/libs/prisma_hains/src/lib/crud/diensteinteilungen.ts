@@ -23,7 +23,6 @@ export async function getEinteilungenOhneBedarf({
   const dpAnfang = formatDate(startOfMonth(dateStart), 'yyyy-MM-dd');
   const dpEnde = formatDate(endOfMonth(dateEnd), 'yyyy-MM-dd');
 
-  // AND es.public = ${isPublic} AND es.counts = ${counts}
   const result = await prismaDb.$queryRawUnsafe(
     `
   WITH RankedResults AS (
@@ -44,7 +43,7 @@ export async function getEinteilungenOhneBedarf({
       OR (dp.anfang >= '${dpAnfang}' AND dp.ende <= '${dpEnde}')
       OR (dp.anfang IS NULL AND dp.ende IS NULL)
     )
-    AND es.counts = ${counts}
+    AND es.public = ${isPublic} AND es.counts = ${counts}
     AND db.id IS NULL
   )
   SELECT id,
