@@ -73,9 +73,6 @@ export async function createDates({ day, dates }: TParams1) {
   const formatedDay = formatDate(day, 'yyyy-MM-dd');
   const planerdate = new PlanerDate(day, weekCounter);
   await planerdate.initializeFeiertage(day);
-  if (formatedDay === '2025-04-20') {
-    console.log('formatedDay', day, planerdate);
-  }
   dates[formatedDay] = planerdate;
 
   return dates;

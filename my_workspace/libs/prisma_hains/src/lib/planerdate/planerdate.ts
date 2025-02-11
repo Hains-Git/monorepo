@@ -2,6 +2,7 @@ import { format, formatDate } from 'date-fns';
 // import { prismaDb } from '../prisma-hains';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '../crud/planerdate';
+import { zeitraumkategories } from '@prisma/client';
 
 export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -41,7 +42,7 @@ export class PlanerDate {
   kws_vormonat: any[];
   // static prismaDb = prismaDb;
 
-  constructor(date: Date, week_counter = 0, zeitraumkategorien: any[] = []) {
+  constructor(date: Date, week_counter = 0) {
     this.einteilungen = {};
     this.rotationen = [];
     this.wuensche = [];
@@ -73,7 +74,7 @@ export class PlanerDate {
     this.kws_vormonat = [];
   }
 
-  async initializeFeiertage(date: Date, zeitraumkategorien: any[] = []) {
+  async initializeFeiertage(date: Date, zeitraumkategorien: zeitraumkategories[] = []) {
     const _feiertag = await PlanerDate.getFeiertag(date);
 
     if (_feiertag) {
@@ -258,7 +259,7 @@ export class PlanerDate {
     this.last_week = PlanerDate.last_week[yearKey];
   }
 
-  private async addZeitraumkategorien(zeitraumkategorien: any[] = []) {
+  private async addZeitraumkategorien(zeitraumkategorien: zeitraumkategories[] = []) {
     for (const zeitraumkategorie of zeitraumkategorien) {
       if (await checkDate(this, zeitraumkategorie)) {
         this.zeitraumkategorien.push(zeitraumkategorie.id);
