@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { FraunhoferService } from './fraunhofer.service';
-import { FraunhoferNewPlan } from '@my-workspace/prisma_hains';
+import { FraunhoferTypes } from '@my-workspace/prisma_hains';
 
 @Controller()
 export class FraunhoferController {
@@ -19,7 +19,7 @@ export class FraunhoferController {
   }
 
   @Post('fraunhofer/new_plan')
-  createPlan(@Body() body: FraunhoferNewPlan) {
+  createPlan(@Body() body: FraunhoferTypes.FraunhoferNewPlan) {
     return this.fraunhoferService.createPlan(body);
   }
 }

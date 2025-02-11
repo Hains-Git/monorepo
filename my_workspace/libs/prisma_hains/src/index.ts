@@ -9,5 +9,5 @@ export * from './lib/crud/diensteinteilungen';
 export * from './lib/crud/planerdate';
 export * from './lib/crud/kalendermarkierung';
 export { PlanerDate } from './lib/planerdate/planerdate';
-export * from './lib/fraunhofer';
-export { FraunhoferNewPlan } from './lib/utils/fraunhofer_types';
+export * as Fraunhofer from './lib/fraunhofer';
+export * as FraunhoferTypes from './lib/utils/fraunhofer_types';
