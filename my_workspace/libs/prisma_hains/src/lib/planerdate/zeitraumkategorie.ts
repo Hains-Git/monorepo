@@ -29,12 +29,13 @@ function isPlanerDate(date: Date | PlanerDate) {
   return date instanceof PlanerDate;
 }
 
-function shouldCheckDate(date: Date | PlanerDate, zeitraumAnfang: Date, zeitraumEnde: Date): boolean {
+async function shouldCheckDate(date: Date | PlanerDate, zeitraumAnfang: Date, zeitraumEnde: Date): Promise<boolean> {
   let thisStart = true;
   let thisEnd = true;
 
   if (!(date instanceof PlanerDate)) {
     date = new PlanerDate(date);
+    await date.initializeFeiertage;
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
@@ -140,7 +141,7 @@ function checkKalenderwochen(regeln: string[], date: Date | PlanerDate): boolean
   return result;
 }
 
-function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
+async function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): Promise<boolean> {
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
@@ -151,7 +152,7 @@ function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
   const zeitraumEnde = zeitraumkategorie.ende;
   const regelcode = zeitraumkategorie.regelcode;
 
-  if (shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
+  if (await shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
     const hash = splitRegelcode(regelcode);
     isBedarf = hash.isBedarf;
 
