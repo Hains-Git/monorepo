@@ -11,15 +11,14 @@ import {
 } from '@my-workspace/prisma_hains';
 
 import { addCountsValue, createDates } from './helper';
-import { eachDayOfInterval } from 'date-fns';
 
 @Injectable()
 export class AbwesenheitenService {
   async getAbwesenheitsData(body) {
     const result = {};
 
-    const dateView = body.date_view;
-    const leftSideDate = body.left_side_date;
+    const dateView = `${body.date_view}T12:00:00.000Z`;
+    const leftSideDate = `${body.left_side_date}T12:00:00.000Z`;
     const year = new Date(leftSideDate).getFullYear();
     const init = body.init;
     const direction = body.direction;
@@ -52,13 +51,15 @@ export class AbwesenheitenService {
     }
 
     const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
-    const dateRange = eachDayOfInterval({ start: dateStart, end: dateEnd });
-
+    const dateRange: Date[] = [];
+    const dateRangeDate = new Date(dateView);
     const dates = {};
-
-    dateRange.forEach((day) => {
-      createDates({ day, dates });
-    });
+    while (dateRangeDate <= dateEnd) {
+      const currentDate = new Date(dateRangeDate);
+      dateRange.push(currentDate);
+      await createDates({ day: currentDate, dates });
+      dateRangeDate.setDate(currentDate.getDate() + 1);
+    }
 
     const kalendermarkierungen = await getKalenderMarkierungByDateRange(dateStart, dateEnd);
 

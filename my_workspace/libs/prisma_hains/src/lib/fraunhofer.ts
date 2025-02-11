@@ -1099,7 +1099,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
           is_optional: false,
           einteilungskontext_id: einteilungskontextAutoId,
           created_at: new Date(),
-          updated_at: new Date()
+          updated_at: new Date(),
+          reason: 'Fraunhofer Plan'
         }))
       });
     }
