@@ -52,7 +52,7 @@ export class AbwesenheitenService {
 
     const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
     const dateRange: Date[] = [];
-    const dateRangeDate = new Date(dateView);
+    const dateRangeDate = new Date(dateStart);
     const dates = {};
     while (dateRangeDate <= dateEnd) {
       const currentDate = new Date(dateRangeDate);
