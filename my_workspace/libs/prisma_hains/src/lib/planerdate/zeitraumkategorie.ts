@@ -1,3 +1,4 @@
+import { zeitraumkategories } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
 
@@ -29,12 +30,18 @@ function isPlanerDate(date: Date | PlanerDate) {
   return date instanceof PlanerDate;
 }
 
-function shouldCheckDate(date: Date | PlanerDate, zeitraumAnfang: Date, zeitraumEnde: Date): boolean {
+async function shouldCheckDate(
+  date: Date | PlanerDate,
+  zeitraumAnfang: Date | null,
+  zeitraumEnde: Date | null
+): Promise<boolean> {
   let thisStart = true;
   let thisEnd = true;
 
   if (!(date instanceof PlanerDate)) {
+    const originalDate = date;
     date = new PlanerDate(date);
+    await date.initializeFeiertage(originalDate);
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
@@ -140,7 +147,7 @@ function checkKalenderwochen(regeln: string[], date: Date | PlanerDate): boolean
   return result;
 }
 
-function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
+async function checkDate(date: Date | PlanerDate, zeitraumkategorie: zeitraumkategories): Promise<boolean> {
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
@@ -149,9 +156,8 @@ function checkDate(date: Date | PlanerDate, zeitraumkategorie: any): boolean {
 
   const zeitraumAnfang = zeitraumkategorie.anfang;
   const zeitraumEnde = zeitraumkategorie.ende;
-  const regelcode = zeitraumkategorie.regelcode;
-
-  if (shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
+  const regelcode = zeitraumkategorie.regelcode || '';
+  if (await shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
     const hash = splitRegelcode(regelcode);
     isBedarf = hash.isBedarf;
 
