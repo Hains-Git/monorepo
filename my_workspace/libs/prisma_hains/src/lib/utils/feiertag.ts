@@ -1,5 +1,6 @@
 import { addDays, getYear, setYear } from 'date-fns';
 import { prismaDb } from '../prisma-hains';
+import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 interface Feiertag {
   name: string;
@@ -62,7 +63,7 @@ export async function checkWeek(monday: Date, sunday: Date): Promise<[number, nu
   let nArbeitstage = 5;
 
   for (const feiertag of feiertage) {
-    const date = feiertag?.datum instanceof Date ? new Date(feiertag?.datum) : new Date();
+    const date = feiertag?.datum instanceof Date ? newDate(feiertag?.datum) : newDate();
     if (date.getDay() !== 0 && date.getDay() !== 6) {
       nArbeitstage -= 1;
     }
@@ -78,62 +79,62 @@ async function createFeiertage(year: number): Promise<void> {
       name: 'Neujahr',
       day: 1,
       month: 1,
-      fullDate: new Date(`${yearStr}-01-01`)
+      fullDate: newDate(`${yearStr}-01-01`)
     },
     {
       name: 'Heilige Drei Könige',
       day: 6,
       month: 1,
-      fullDate: new Date(`${yearStr}-01-06`)
+      fullDate: newDate(`${yearStr}-01-06`)
     },
     {
       name: 'Tag der Arbeit',
       day: 1,
       month: 5,
-      fullDate: new Date(`${yearStr}-05-01`)
+      fullDate: newDate(`${yearStr}-05-01`)
     },
 
     {
       name: 'Tag der deutschen Einheit',
       day: 3,
       month: 10,
-      fullDate: new Date(`${yearStr}-10-03`)
+      fullDate: newDate(`${yearStr}-10-03`)
     },
     // {
     //     "name": "Reformationstag",
     //     "day": 31,
     //     "month": 10,
-    //      fullDate: new Date(`${yearStr}-10-31`),
+    //      fullDate: newDate(`${yearStr}-10-31`),
     // },
     {
       name: 'Allerheiligen',
       day: 1,
       month: 11,
-      fullDate: new Date(`${yearStr}-11-01`)
+      fullDate: newDate(`${yearStr}-11-01`)
     },
     {
       name: 'Heiligabend',
       day: 24,
       month: 12,
-      fullDate: new Date(`${yearStr}-12-24`)
+      fullDate: newDate(`${yearStr}-12-24`)
     },
     {
       name: 'Erster Weihnachtstag',
       day: 25,
       month: 12,
-      fullDate: new Date(`${yearStr}-12-25`)
+      fullDate: newDate(`${yearStr}-12-25`)
     },
     {
       name: 'Zweiter Weihnachtstag',
       day: 26,
       month: 12,
-      fullDate: new Date(`${yearStr}-12-26`)
+      fullDate: newDate(`${yearStr}-12-26`)
     },
     {
       name: 'Silvester',
       day: 31,
       month: 12,
-      fullDate: new Date(`${yearStr}-12-31`)
+      fullDate: newDate(`${yearStr}-12-31`)
     }
   ];
 
@@ -167,8 +168,8 @@ async function createFeiertage(year: number): Promise<void> {
         monat: feiertag.month,
         datum: feiertag.fullDate,
         name: feiertag.name,
-        created_at: new Date(),
-        updated_at: new Date()
+        created_at: newDate(),
+        updated_at: newDate()
       }
     });
   }
@@ -181,6 +182,6 @@ function osterSonntag(jahr: number): Date {
   if (tag === 35 || (tag === 34 && d === 28 && a > 10)) {
     tag -= 7;
   }
-  const osterDatum = setYear(new Date(jahr, 2, 22), jahr);
+  const osterDatum = setYear(newDateYearMonthDay(jahr, 2, 22), jahr);
   return addDays(osterDatum, tag);
 }

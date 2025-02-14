@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { getDienstplanung } from '@my-workspace/prisma_hains';
 import { getAllApiData } from '@my-workspace/prisma_hains';
 import { createOrUpdatePlanungsinfo } from '@my-workspace/prisma_hains';
-
+import { newDate } from '@my-workspace/utils';
 @Injectable()
 export class AppService {
   async getDienstplanung(dienstplanId: number, loadVorschlaege: boolean) {
@@ -17,7 +17,7 @@ export class AppService {
 
   async savePlanungsComment(body) {
     const params = {
-      tag: new Date(`${body.tag}T12:00:00.000Z`),
+      tag: newDate(`${body.tag}T12:00:00.000Z`),
       po_dienst_id: body.po_dienst_id,
       bereich_id: body.bereich_id,
       kommentar: body.kommentar
