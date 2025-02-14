@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { _addWeeks, _subWeeks, processData } from '@my-workspace/utils';
+import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils';
 import {
   getAbwesenheitenSettings,
   getAbwesenheitenByYear,
@@ -19,7 +19,7 @@ export class AbwesenheitenService {
 
     const dateView = `${body.date_view}T12:00:00.000Z`;
     const leftSideDate = `${body.left_side_date}T12:00:00.000Z`;
-    const year = new Date(leftSideDate).getFullYear();
+    const year = newDate(leftSideDate).getFullYear();
     const init = body.init;
     const direction = body.direction;
     const userId = body.user_id;
@@ -43,19 +43,19 @@ export class AbwesenheitenService {
     } else {
       if (direction === 'past') {
         dateStart = _subWeeks(dateView, 6);
-        dateEnd = new Date(dateView);
+        dateEnd = newDate(dateView);
       } else {
-        dateStart = new Date(dateView);
+        dateStart = newDate(dateView);
         dateEnd = _addWeeks(dateView, 6);
       }
     }
 
     const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
     const dateRange: Date[] = [];
-    const dateRangeDate = new Date(dateView);
+    const dateRangeDate = newDate(dateView);
     const dates = {};
     while (dateRangeDate <= dateEnd) {
-      const currentDate = new Date(dateRangeDate);
+      const currentDate = newDate(dateRangeDate);
       dateRange.push(currentDate);
       await createDates({ day: currentDate, dates });
       dateRangeDate.setDate(currentDate.getDate() + 1);

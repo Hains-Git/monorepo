@@ -1,6 +1,7 @@
 import { zeitraumkategories } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
+import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 interface RegelcodeHash {
   is_bedarf: boolean;
@@ -223,7 +224,7 @@ function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: strin
     const wiederholung = Math.abs(parseInt(tagRegeln[1], 10));
     const endTag = parseInt(tagRegeln[2], 10);
 
-    const currentDate = date instanceof Date ? date : new Date(date.full_date); // Use full_date if it's a PlanerDate
+    const currentDate = date instanceof Date ? date : newDate(date.full_date); // Use full_date if it's a PlanerDate
     const currentMonth = currentDate.getMonth(); // JavaScript months are 0-indexed
     const currentYear = currentDate.getFullYear();
 
@@ -272,16 +273,16 @@ function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: strin
 }
 
 function checkValidDate(year: number, month: number, day: number): Date {
-  const nextMonthDate = addMonths(new Date(year, month, 1), 1);
+  const nextMonthDate = addMonths(newDateYearMonthDay(year, month, 1), 1);
   const lastDayOfMonth = subDays(nextMonthDate, 1);
   let result: Date;
 
   if (day <= 0) {
     result = addDays(nextMonthDate, day - 1); // day is negative, move back
   } else if (day > lastDayOfMonth.getDate()) {
-    result = new Date(year, month, lastDayOfMonth.getDate()); // day exceeds maximum for the month
+    result = newDateYearMonthDay(year, month, lastDayOfMonth.getDate()); // day exceeds maximum for the month
   } else {
-    result = new Date(year, month, day);
+    result = newDateYearMonthDay(year, month, day);
   }
 
   return result;

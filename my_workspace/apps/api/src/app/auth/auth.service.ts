@@ -11,6 +11,7 @@ import {
   getUserById
 } from '@my-workspace/prisma_hains';
 import { users } from '@prisma/client';
+import { newDate } from '@my-workspace/utils';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
 
   async generateAuthorizationCode(userId: number, clientId: string): Promise<string> {
     const payload = { userId, clientId };
-    const expiresAt = addMinutes(new Date(), 10); // Set expiration to 10 minutes from now
+    const expiresAt = addMinutes(newDate(), 10); // Set expiration to 10 minutes from now
 
     const code = this.jwtService.sign(payload, {
       expiresIn: '10m' // Token valid for 10 minutes
@@ -54,7 +55,7 @@ export class AuthService {
       }
     });
 
-    if (!authCode || isAfter(new Date(), authCode.expires_at)) {
+    if (!authCode || isAfter(newDate(), authCode.expires_at)) {
       throw new UnauthorizedException('Invalid or expired authorization code.');
     }
 
@@ -70,9 +71,9 @@ export class AuthService {
 
     // Save the refresh token
     const decodedRefreshToken = this.jwtService.decode(refreshToken);
-    const refreshExpiresAt = new Date(decodedRefreshToken.exp * 1000);
+    const refreshExpiresAt = newDate(decodedRefreshToken.exp * 1000);
     const decodedAccessToken = this.jwtService.decode(accessToken);
-    const accessExpiresAt = new Date(decodedAccessToken.exp * 1000);
+    const accessExpiresAt = newDate(decodedAccessToken.exp * 1000);
 
     const refreshTokenItem = await createRefreshToken(
       userId,
