@@ -666,13 +666,14 @@ function createKombidienste(
   tag: string,
   key1: string,
   key2: string,
-  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung'
+  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
+  index: number
 ): Kombidienst {
   const date = new Date(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
   return {
-    ID: 0,
+    ID: index,
     Dienste: [dienst1, dienst2],
     Name: `${tag} ${key1} ${key2} ${typ}`,
     Bedarfe: [
@@ -799,7 +800,13 @@ export async function getFraunhoferPlanData(
                 });
                 if (ueberschneidung > firstSchicht.acceptedUeberschneidung) return;
                 result.Kombidienste.push(
-                  createKombidienste(tag, `${dienstId}_${bereichId}`, `${dId}_${bId}`, 'Aus Dienstgruppen-Forderung')
+                  createKombidienste(
+                    tag,
+                    `${dienstId}_${bereichId}`,
+                    `${dId}_${bId}`,
+                    'Aus Dienstgruppen-Forderung',
+                    result.Kombidienste.length
+                  )
                 );
               });
             });
@@ -823,7 +830,9 @@ export async function getFraunhoferPlanData(
             return schichten2.find((ls) => getUeberschneidung(s, ls) > 0, false);
           });
           if (hasUeberschneidung) continue;
-          result.Kombidienste.push(createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt'));
+          result.Kombidienste.push(
+            createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt', result.Kombidienste.length)
+          );
         }
       });
     });
