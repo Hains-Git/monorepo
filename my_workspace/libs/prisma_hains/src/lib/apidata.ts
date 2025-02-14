@@ -4,6 +4,7 @@ import { getUserById } from './crud/user';
 import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
+import { newDate } from '@my-workspace/utils';
 
 const MONATSPLAN_ANSICHTEN = ['Datum-Dienste', 'Mitarbeiter-Datum', 'Mitarbeiter-Dienste'];
 
@@ -207,10 +208,10 @@ async function getPublicVorlagen(user: any) {
 }
 
 function getAnfang(absprache: any) {
-  let result = new Date();
+  let result = newDate();
   result.setMonth(0);
   result.setDate(1);
-  result.setFullYear(new Date().getFullYear());
+  result.setFullYear(newDate().getFullYear());
   if (absprache.von) {
     result = absprache.von;
   } else if (absprache.zeitraumKategorie?.anfang) {
@@ -233,7 +234,7 @@ function getEnde(absprache: any) {
 }
 
 function getTimeFromDate(date: Date | string) {
-  const dateObj = new Date(date);
+  const dateObj = newDate(date);
   return format(dateObj, 'HH:mm');
 }
 

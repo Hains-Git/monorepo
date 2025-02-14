@@ -2,6 +2,21 @@ import { addWeeks, subWeeks } from 'date-fns';
 
 type HashObjType<T> = Record<string | number, T | T[]>;
 
+export function newDate(tag: string | Date | number = ''): Date {
+  if (!tag) return new Date();
+  const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
+  let date = new Date(tag);
+  // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
+  if (typeof tag === 'string' && dateRegEx.test(tag)) {
+    tag = new Date(`${tag}T12:00:00.000Z`);
+  }
+  return date;
+}
+
+export function newDateYearMonthDay(year: number, month: number, day: number): Date {
+  return new Date(year, month, day, 12);
+}
+
 /**
  * Processes an array of data items and maps them to a hash object based on a specified key.
  *
@@ -130,7 +145,7 @@ export function mapIdToKeys<T extends Record<string, any>, K extends keyof T = k
 export function _subWeeks(date: Date | string, weeks: number) {
   let parseDate = date;
   if (typeof date === 'string') {
-    parseDate = new Date(date);
+    parseDate = newDate(date);
   }
   return subWeeks(parseDate, weeks);
 }
@@ -138,7 +153,7 @@ export function _subWeeks(date: Date | string, weeks: number) {
 export function _addWeeks(date: Date | string, weeks: number) {
   let parseDate = date;
   if (typeof date === 'string') {
-    parseDate = new Date(date);
+    parseDate = newDate(date);
   }
   return addWeeks(parseDate, weeks);
 }

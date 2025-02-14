@@ -3,6 +3,7 @@ import { format, formatDate } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '../crud/planerdate';
 import { zeitraumkategories } from '@prisma/client';
+import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -197,7 +198,7 @@ export class PlanerDate {
     const ostern = PlanerDate.osterSonntag(year);
 
     for (const [name, differenz] of Object.entries(tagesDifferenzen)) {
-      const osterDatum = new Date(ostern.getTime() + differenz * 24 * 60 * 60 * 1000);
+      const osterDatum = newDate(ostern.getTime() + differenz * 24 * 60 * 60 * 1000);
       const feiertag = {
         name: name,
         day: osterDatum.getDate(),
@@ -214,7 +215,7 @@ export class PlanerDate {
         name: feiertag.name,
         tag: feiertag.day,
         monat: feiertag.month,
-        datum: new Date(formatDate(osterDatum, 'yyyy-MM-dd')),
+        datum: newDate(formatDate(osterDatum, 'yyyy-MM-dd')),
         jahr: osterDatum.getFullYear()
       };
 
@@ -229,7 +230,7 @@ export class PlanerDate {
     if (tag === 35 || (tag === 34 && d === 28 && a > 10)) {
       tag -= 7;
     }
-    const osterDatum = new Date(jahr, 2, 22); // 22.03.XXXX
+    const osterDatum = newDateYearMonthDay(jahr, 2, 22); // 22.03.XXXX
     osterDatum.setDate(osterDatum.getDate() + tag);
     return osterDatum;
   }
@@ -252,7 +253,7 @@ export class PlanerDate {
     if (!PlanerDate.last_week[yearKey]) {
       PlanerDate.last_week[yearKey] = 52;
     }
-    const lastDay = new Date(this.year, 11, 31);
+    const lastDay = newDateYearMonthDay(this.year, 11, 31);
     if (this.getWeekNumber(lastDay) === 53) {
       PlanerDate.last_week[yearKey] += 1;
     }
@@ -268,18 +269,20 @@ export class PlanerDate {
   }
 
   private getWeekNumber(dirtyDate: Date) {
-    const date = new Date(dirtyDate);
+    const date = newDate(dirtyDate);
     date.setHours(0, 0, 0, 0);
     // Thursday in current week decides the year.
     date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
     // January 4 is always in week 1.
-    const week1 = new Date(date.getFullYear(), 0, 4);
+    const week1 = newDateYearMonthDay(date.getFullYear(), 0, 4);
+    week1.setHours(0, 0, 0, 0);
     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
   }
 
   private getDayOfYear(date: Date): number {
-    const start = new Date(date.getFullYear(), 0, 0);
+    const start = newDateYearMonthDay(date.getFullYear(), 0, 0);
+    start.setHours(0, 0, 0, 0);
     const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);

@@ -1,4 +1,5 @@
 import { prismaDb } from '../prisma-hains';
+import { newDate } from '@my-workspace/utils';
 
 export async function createRefreshToken(
   userId: number,
@@ -7,7 +8,7 @@ export async function createRefreshToken(
   scopes: string[],
   expiresAt: Date
 ) {
-  const now = new Date();
+  const now = newDate();
 
   const refreshToken = await prismaDb.oauth_refresh_tokens.create({
     data: {
@@ -32,7 +33,7 @@ export async function createAccessToken(
   scopes: string[],
   expiresAt: Date
 ) {
-  const now = new Date();
+  const now = newDate();
 
   const accessToken = await prismaDb.oauth_access_tokens_new.create({
     data: {
