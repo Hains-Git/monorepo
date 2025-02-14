@@ -68,6 +68,7 @@ model abwesentheitenueberblicks {
   bu             Int?
   pu             Int?
   soll_tzu       Int?          @default(0)
+  sbu            Int?          @default(0)
   mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ed4202ea8e")
 
   @@index([mitarbeiter_id], map: "index_abwesentheitenueberblicks_on_mitarbeiter_id")
@@ -1707,6 +1708,7 @@ model po_diensts {
   freigabetypen_ids                                                  Int[]                               @default([])
   preset                                                             Boolean?                            @default(false)
   sys                                                                Boolean?                            @default(false)
+  reduziere_urlaub                                                   Boolean?                            @default(false)
   thema_ids                                                          Int[]
   aufwand                                                            Int?                                @default(0)
   aneasy_name                                                        String?                             @default("") @db.VarChar
