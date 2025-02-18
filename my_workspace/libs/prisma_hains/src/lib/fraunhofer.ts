@@ -39,7 +39,7 @@ import {
   Freigabe,
   FreigabeTyp,
   FreigabetypenDienste,
-  Kombidienst,
+  Kombibedarf,
   PlanData,
   Präferenz,
   Rotation,
@@ -51,7 +51,7 @@ import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 const defaultPlanData: PlanData = {
   Mitarbeiter: [],
   Dienste: [],
-  Kombidienste: [],
+  Kombibedarfe: [],
   Rotationen: [],
   Bedarfe: [],
   Bedarfsblöcke: [],
@@ -191,6 +191,7 @@ function createDiensteAndMapInfos(
         freigabetypenDienste: FreigabetypenDienste;
         dienstkategorieDienste: DienstkategorieDienste;
         nachtdienste: number[];
+        dienstHash: Record<number, Dienst>;
       },
       d
     ) => {
@@ -213,27 +214,31 @@ function createDiensteAndMapInfos(
       // Map Dienste to Dienstkategorien
       dienstkategorien.forEach((dk) => {
         const hasThemen = d.thema_ids.find((t) => dk.dienstkategoriethemas.find((dt) => dt.thema_id === t));
-        if (!hasThemen) return;
+        if (!hasThemen) {
+          return;
+        }
         acc.dienstkategorieDienste[dk.id] ||= [];
         acc.dienstkategorieDienste[dk.id].push(d.id);
       });
 
       const istRelevantFürDoppelWhopper = typ === 'Nachtdienst';
-
-      // Add Dienst to DiensteArr
-      acc.diensteArr.push({
+      const dienst: Dienst = {
         ID: d.id,
         Name: d.planname || '',
         Typ: typ,
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
-      });
+      };
+      // Add Dienst to DiensteArr
+      acc.diensteArr.push(dienst);
+      acc.dienstHash[d.id] = dienst;
       return acc;
     },
     {
       diensteArr: [],
       freigabetypenDienste: {},
       dienstkategorieDienste: {},
-      nachtdienste: []
+      nachtdienste: [],
+      dienstHash: {}
     }
   );
 }
@@ -663,18 +668,18 @@ async function getData(start: Date, end: Date) {
   };
 }
 
-function createKombidienste(
+function createKombibedarfe(
   tag: string,
   key1: string,
   key2: string,
-  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung'
-): Kombidienst {
+  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
+  id: number
+): Kombibedarf {
   const date = newDate(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
   return {
-    ID: 0,
-    Dienste: [dienst1, dienst2],
+    ID: id,
     Name: `${tag} ${key1} ${key2} ${typ}`,
     Bedarfe: [
       {
@@ -753,12 +758,8 @@ export async function getFraunhoferPlanData(
 
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen } = await getData(start, end);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste } = createDiensteAndMapInfos(
-      dienste,
-      mapThemenToDienstTypen(themen),
-      dienstkategorien,
-      themen
-    );
+    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
+      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen);
 
     result.Dienste = diensteArr;
 
@@ -799,8 +800,14 @@ export async function getFraunhoferPlanData(
                   });
                 });
                 if (ueberschneidung > firstSchicht.acceptedUeberschneidung) return;
-                result.Kombidienste.push(
-                  createKombidienste(tag, `${dienstId}_${bereichId}`, `${dId}_${bId}`, 'Aus Dienstgruppen-Forderung')
+                result.Kombibedarfe.push(
+                  createKombibedarfe(
+                    tag,
+                    `${dienstId}_${bereichId}`,
+                    `${dId}_${bId}`,
+                    'Aus Dienstgruppen-Forderung',
+                    result.Kombibedarfe.length
+                  )
                 );
               });
             });
@@ -824,7 +831,9 @@ export async function getFraunhoferPlanData(
             return schichten2.find((ls) => getUeberschneidung(s, ls) > 0, false);
           });
           if (hasUeberschneidung) continue;
-          result.Kombidienste.push(createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt'));
+          result.Kombibedarfe.push(
+            createKombibedarfe(tag, key1, key2, 'Aus schwacher Konflikt', result.Kombibedarfe.length)
+          );
         }
       });
     });
@@ -843,7 +852,8 @@ export async function getFraunhoferPlanData(
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
-          BereichID: e.bereich_id
+          BereichID: e.bereich_id,
+          IstRelevantFürDoppelWhopper: !!dienstHash[e.po_dienst_id]?.IstRelevantFürDoppelWhopper
         });
       }
       return acc;
@@ -861,12 +871,12 @@ export async function getFraunhoferPlanData(
       return acc;
     }, []);
 
-    // Kombidienstausschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
+    // KombibedarfAusschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
       Name: `Mitarbeiter ${m.id}`,
       Freigaben: getMitarbeiterFreigaben(m.dienstfreigabes, freigabetypenDienste, tage),
-      KombidienstAusschlüsse: [],
+      KombibedarfAusschlüsse: [],
       Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
       Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getArbeitszeitInMinutenAm(m, tag) })),
       Präferenzen: getPraeferenzen(m.dienstratings, result.MinPräferenz, result.MaxPräferenz),
