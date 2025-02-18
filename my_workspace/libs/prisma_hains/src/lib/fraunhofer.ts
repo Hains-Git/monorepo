@@ -46,6 +46,7 @@ import {
   Rotationszuweisung,
   Wunsch
 } from './utils/fraunhofer_types';
+import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 const defaultPlanData: PlanData = {
   Mitarbeiter: [],
@@ -254,13 +255,13 @@ function createTageAndMonths(start: Date, end: Date) {
   const months: Record<string, string> = {};
 
   // Create Tage and Months
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const date = new Date(d);
+  for (let d = newDate(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const date = newDate(d);
     tage.push(date);
     const [year, month] = [date.getFullYear(), date.getMonth()];
     // 12 Uhr mittags, damit es keine Probleme mit der Zeitzone gibt
-    const firstDayStr = new Date(year, month, 1, 12).toISOString();
-    months[firstDayStr] ||= new Date(year, month + 1, 0, 12).toISOString();
+    const firstDayStr = newDateYearMonthDay(year, month, 1).toISOString();
+    months[firstDayStr] ||= newDateYearMonthDay(year, month + 1, 0).toISOString();
   }
 
   return { tage, months };
@@ -309,7 +310,7 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
     const monthEnd = months[monthStart];
     const dpl = await prismaDb.dienstplans.findFirst({
       where: {
-        ...wherePlanBedarfIn(new Date(monthStart), new Date(monthEnd)),
+        ...wherePlanBedarfIn(newDate(monthStart), newDate(monthEnd)),
         dienstplanbedarves: {
           isNot: null
         }
@@ -413,7 +414,7 @@ function calculateBedarfArbeitszeit(
       const preDienstgruppe = arbeitszeitverteilung?.pre_dienstgruppes;
       const preDienstgruppeStd = Number(arbeitszeitverteilung?.pre_std || 0);
       if (preDienstgruppe?.dienste?.length && preDienstgruppeStd) {
-        const preSchichtAnfang = new Date(s.anfang.getTime() - preDienstgruppeStd * 3600000);
+        const preSchichtAnfang = newDate(s.anfang.getTime() - preDienstgruppeStd * 3600000);
         const ueberschneidungSchicht: UeberschneidungSchicht = {
           anfang: preSchichtAnfang,
           ende: s.anfang,
@@ -521,7 +522,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       const isDonnerstagNachtDienst = be.tag.getDay() === 4 && nachtdienste.includes(dienstId);
       if (isLastInBlock && isDonnerstagNachtDienst) {
         const l = be.schichts.length - 1;
-        const nextDayLimit = new Date(be.tag);
+        const nextDayLimit = newDate(be.tag);
         nextDayLimit.setDate(nextDayLimit.getDate() + 1);
         nextDayLimit.setHours(12, 0, 0, 0);
         const dateZahl = Number(be.tag.toISOString().split('T')[0].split('-').join(''));
@@ -669,7 +670,7 @@ function createKombidienste(
   typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
   index: number
 ): Kombidienst {
-  const date = new Date(tag);
+  const date = newDate(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
   return {
@@ -1009,15 +1010,9 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         einteilungen: Einteilung[];
       }
     > = {};
-    // Format: YYYY-MM-DD
-    const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
 
     const fileteredEinteilungen = einteilungen.filter((e) => {
-      let tag = new Date(e.Tag);
-      // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
-      if (typeof e.Tag === 'string' && dateRegEx.test(e.Tag)) {
-        tag = new Date(`${e.Tag}T12:00:00.000Z`);
-      }
+      const tag = newDate(e.Tag);
       if (e.BereichID === 0) e.BereichID = null;
       const validBereich = e.BereichID ? bereicheHash[e.BereichID] : true;
       // zusätzlich Bedarfe und Team testen (OP Team)
@@ -1044,8 +1039,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         return true;
       }
 
-      const start = new Date(year, month, 1, 12);
-      const end = new Date(year, month + 1, 0, 12);
+      const start = newDateYearMonthDay(year, month, 1);
+      const end = newDateYearMonthDay(year, month + 1, 0);
       dates[monthYear] = {
         start,
         end,
@@ -1083,8 +1078,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
           name,
           beschreibung,
           parameter,
-          created_at: new Date(),
-          updated_at: new Date(),
+          created_at: newDate(),
+          updated_at: newDate(),
           parameterset_id: parametersetId,
           dienstplanstatus_id: dienstplanStatusVorschlagId,
           dienstplanbedarf_id: dienstplanBedarfId
@@ -1107,8 +1102,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
           schicht_nummern: [0],
           is_optional: false,
           einteilungskontext_id: einteilungskontextAutoId,
-          created_at: new Date(),
-          updated_at: new Date(),
+          created_at: newDate(),
+          updated_at: newDate(),
           reason: 'Fraunhofer Plan'
         }))
       });

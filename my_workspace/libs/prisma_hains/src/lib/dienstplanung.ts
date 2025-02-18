@@ -5,10 +5,9 @@ import { addDays, getWeek, getYear, isTuesday, setISODay, setISOWeek, startOfYea
 
 import { format, lastDayOfMonth } from 'date-fns';
 import { PlanerDate } from './planerdate/planerdate';
-// import { PlanerDate } from '@my-workspace/utils';
 import { checkWeek } from './utils/feiertag';
 
-import { processData, mapIdToKeys } from '@my-workspace/utils';
+import { processData, mapIdToKeys, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 import { getAllPlanungsinfo } from './crud/planungsinfo';
 import { getZeitraumkategorienInterval } from './utils/crud_helper';
 
@@ -34,7 +33,7 @@ function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
 function check_anfang_ende(dienstplan: any) {
   let anfang = dienstplan.anfang;
   let ende = dienstplan.ende;
-  const startOfNextMonth = new Date(anfang.getFullYear(), anfang.getMonth() + 1, 1);
+  const startOfNextMonth = newDateYearMonthDay(anfang.getFullYear(), anfang.getMonth() + 1, 1);
   if (anfang.getDate() !== 1) {
     anfang = startOfNextMonth;
   }
@@ -57,7 +56,7 @@ function get_dpl_anfang_ende(dienstplan: Dienstplan) {
 
 function dateCommercial(year: number, week: number, day: number): Date {
   // Start with the beginning of the specified year
-  let date = startOfYear(new Date(year, 0, 1));
+  let date = startOfYear(newDateYearMonthDay(year, 0, 1));
 
   // Set the ISO week
   date = setISOWeek(date, week);
@@ -67,7 +66,7 @@ function dateCommercial(year: number, week: number, day: number): Date {
 
   // Ensure we're in the correct year
   if (getYear(date) !== year) {
-    date = setISOWeek(new Date(year, 11, 31), week);
+    date = setISOWeek(newDateYearMonthDay(year, 11, 31), week);
     date = setISODay(date, day);
   }
 
@@ -375,8 +374,8 @@ async function getKalenderWoche(date: Date) {
       sonntag: sunday,
       arbeitstage: nArbeitstage,
       feiertage: nFeiertage,
-      created_at: new Date(),
-      updated_at: new Date()
+      created_at: newDate(),
+      updated_at: newDate()
     }
   });
 }
@@ -409,7 +408,7 @@ async function getWochenbilanzen(dienstplan: any) {
 }
 
 function getRotationenIdsInRangeDate(dateStr: string, data: any, kontingenteDienste: any) {
-  const date = new Date(dateStr);
+  const date = newDate(dateStr);
 
   return data.reduce((dateHash: any, rotation: any) => {
     const vonDate = rotation.von;

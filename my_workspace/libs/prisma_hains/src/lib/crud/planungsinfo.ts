@@ -2,6 +2,7 @@ import { prismaDb } from '../prisma-hains';
 
 import { planungsinformations } from '@prisma/client';
 import { format } from 'date-fns';
+import { newDate } from '@my-workspace/utils';
 
 function convertPlanungsinfoData(data: planungsinformations[]) {
   const result: { [key: string]: any } = {};
@@ -35,9 +36,9 @@ export async function getPlanungsinfo(planungsinfoId: number) {
 }
 
 export async function getAllPlanungsinfo(anfang: string, ende: string) {
-  const currentDateDayNum = new Date(ende).getDay();
-  const endeDate = new Date(ende);
-  const anfangDate = new Date(anfang);
+  const currentDateDayNum = newDate(ende).getDay();
+  const endeDate = newDate(ende);
+  const anfangDate = newDate(anfang);
   if (currentDateDayNum != 0) {
     endeDate.setDate(endeDate.getDate() + (7 - currentDateDayNum));
   }

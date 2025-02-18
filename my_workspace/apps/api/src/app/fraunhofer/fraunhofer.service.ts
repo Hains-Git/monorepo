@@ -1,11 +1,12 @@
 import { Fraunhofer, FraunhoferTypes } from '@my-workspace/prisma_hains';
+import { newDate } from '@my-workspace/utils';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class FraunhoferService {
   async getPlanData(start: string, end: string, clientId: string, clientSecret: string) {
-    const startDate = new Date(`${start}T12:00:00.000Z`);
-    const endDate = new Date(`${end}T12:00:00.000Z`);
+    const startDate = newDate(start);
+    const endDate = newDate(end);
     return Fraunhofer.getFraunhoferPlanData(startDate, endDate, clientId, clientSecret);
   }
 
