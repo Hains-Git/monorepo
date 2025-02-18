@@ -182,7 +182,8 @@ function createDiensteAndMapInfos(
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
   } & dienstkategories)[],
-  themen: themas[]
+  themen: themas[],
+  relevantTeamIds: number[]
 ) {
   return dienste.reduce(
     (
@@ -229,7 +230,9 @@ function createDiensteAndMapInfos(
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       };
       // Add Dienst to DiensteArr
-      acc.diensteArr.push(dienst);
+      if (d.team_id && relevantTeamIds.includes(d.team_id)) {
+        acc.diensteArr.push(dienst);
+      }
       acc.dienstHash[d.id] = dienst;
       return acc;
     },
@@ -645,11 +648,7 @@ async function getData(start: Date, end: Date) {
   });
   const relevantTeamIds = relevantTeams.map((t) => t.id);
   const mitarbeiter = await prismaDb.mitarbeiters.findMany(getFraunhoferMitarbeiter(start, end, relevantTeamIds));
-  const dienste = await prismaDb.po_diensts.findMany({
-    where: {
-      team_id: { in: relevantTeamIds }
-    }
-  });
+  const dienste = await prismaDb.po_diensts.findMany();
 
   const kontingente = await prismaDb.kontingents.findMany();
   const dienstkategorien = await prismaDb.dienstkategories.findMany({
@@ -664,7 +663,8 @@ async function getData(start: Date, end: Date) {
     dienste,
     kontingente,
     dienstkategorien,
-    themen
+    themen,
+    relevantTeamIds
   };
 }
 
@@ -756,10 +756,10 @@ export async function getFraunhoferPlanData(
       return result;
     }
 
-    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen } = await getData(start, end);
+    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } = await getData(start, end);
 
     const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
-      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen);
+      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
 
     result.Dienste = diensteArr;
 
