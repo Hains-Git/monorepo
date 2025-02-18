@@ -191,6 +191,7 @@ function createDiensteAndMapInfos(
         freigabetypenDienste: FreigabetypenDienste;
         dienstkategorieDienste: DienstkategorieDienste;
         nachtdienste: number[];
+        dienstHash: Record<number, Dienst>;
       },
       d
     ) => {
@@ -221,21 +222,23 @@ function createDiensteAndMapInfos(
       });
 
       const istRelevantFürDoppelWhopper = typ === 'Nachtdienst';
-
-      // Add Dienst to DiensteArr
-      acc.diensteArr.push({
+      const dienst: Dienst = {
         ID: d.id,
         Name: d.planname || '',
         Typ: typ,
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
-      });
+      };
+      // Add Dienst to DiensteArr
+      acc.diensteArr.push(dienst);
+      acc.dienstHash[d.id] = dienst;
       return acc;
     },
     {
       diensteArr: [],
       freigabetypenDienste: {},
       dienstkategorieDienste: {},
-      nachtdienste: []
+      nachtdienste: [],
+      dienstHash: {}
     }
   );
 }
@@ -755,12 +758,8 @@ export async function getFraunhoferPlanData(
 
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen } = await getData(start, end);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste } = createDiensteAndMapInfos(
-      dienste,
-      mapThemenToDienstTypen(themen),
-      dienstkategorien,
-      themen
-    );
+    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
+      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen);
 
     result.Dienste = diensteArr;
 
@@ -853,7 +852,8 @@ export async function getFraunhoferPlanData(
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
-          BereichID: e.bereich_id
+          BereichID: e.bereich_id,
+          IstRelevantFürDoppelWhopper: !!dienstHash[e.po_dienst_id]?.IstRelevantFürDoppelWhopper
         });
       }
       return acc;

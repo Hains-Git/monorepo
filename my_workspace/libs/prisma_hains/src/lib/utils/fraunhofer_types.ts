@@ -3,6 +3,7 @@ export type Einteilung = {
   DienstID: number;
   BereichID: number | null;
   Tag: Date;
+  IstRelevantFürDoppelWhopper?: boolean;
 };
 
 export type FreigabeTyp = 'qualifiziert' | 'überqualifiziert' | 'nicht qualifiziert';
