@@ -135,7 +135,15 @@ export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number
         }
       }
     },
-    dienstratings: true,
+    dienstratings: {
+      include: {
+        po_diensts: {
+          where: {
+            team_id: { in: teamIds }
+          }
+        }
+      }
+    },
     vertrags: {
       include: {
         vertrags_phases: {
