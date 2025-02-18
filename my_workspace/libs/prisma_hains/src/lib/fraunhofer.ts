@@ -213,7 +213,9 @@ function createDiensteAndMapInfos(
       // Map Dienste to Dienstkategorien
       dienstkategorien.forEach((dk) => {
         const hasThemen = d.thema_ids.find((t) => dk.dienstkategoriethemas.find((dt) => dt.thema_id === t));
-        if (!hasThemen) return;
+        if (!hasThemen) {
+          return;
+        }
         acc.dienstkategorieDienste[dk.id] ||= [];
         acc.dienstkategorieDienste[dk.id].push(d.id);
       });
@@ -667,13 +669,14 @@ function createKombidienste(
   tag: string,
   key1: string,
   key2: string,
-  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung'
+  typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
+  id: number
 ): Kombidienst {
   const date = newDate(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
   return {
-    ID: 0,
+    ID: id,
     Dienste: [dienst1, dienst2],
     Name: `${tag} ${key1} ${key2} ${typ}`,
     Bedarfe: [
@@ -800,7 +803,13 @@ export async function getFraunhoferPlanData(
                 });
                 if (ueberschneidung > firstSchicht.acceptedUeberschneidung) return;
                 result.Kombidienste.push(
-                  createKombidienste(tag, `${dienstId}_${bereichId}`, `${dId}_${bId}`, 'Aus Dienstgruppen-Forderung')
+                  createKombidienste(
+                    tag,
+                    `${dienstId}_${bereichId}`,
+                    `${dId}_${bId}`,
+                    'Aus Dienstgruppen-Forderung',
+                    result.Kombidienste.length
+                  )
                 );
               });
             });
@@ -824,7 +833,9 @@ export async function getFraunhoferPlanData(
             return schichten2.find((ls) => getUeberschneidung(s, ls) > 0, false);
           });
           if (hasUeberschneidung) continue;
-          result.Kombidienste.push(createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt'));
+          result.Kombidienste.push(
+            createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt', result.Kombidienste.length)
+          );
         }
       });
     });
