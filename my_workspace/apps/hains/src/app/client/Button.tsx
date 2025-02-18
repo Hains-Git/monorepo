@@ -4,7 +4,7 @@ import { FraunhoferTypes } from '@my-workspace/prisma_hains';
 function Button({ clientId, clientSecret }: { clientId: string; clientSecret: string }) {
   const loadDataFromApi = async () => {
     console.log('Loading data from API', clientId, clientSecret);
-    fetch('http://localhost:3020/api/fraunhofer/data/2025-01-01/2025-01-30', {
+    fetch('http://localhost/api/fraunhofer/data/2025-01-01/2025-01-30', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
