@@ -39,7 +39,7 @@ import {
   Freigabe,
   FreigabeTyp,
   FreigabetypenDienste,
-  Kombidienst,
+  Kombibedarf,
   PlanData,
   Präferenz,
   Rotation,
@@ -51,7 +51,7 @@ import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 const defaultPlanData: PlanData = {
   Mitarbeiter: [],
   Dienste: [],
-  Kombidienste: [],
+  Kombibedarfe: [],
   Rotationen: [],
   Bedarfe: [],
   Bedarfsblöcke: [],
@@ -665,19 +665,18 @@ async function getData(start: Date, end: Date) {
   };
 }
 
-function createKombidienste(
+function createKombibedarfe(
   tag: string,
   key1: string,
   key2: string,
   typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
   id: number
-): Kombidienst {
+): Kombibedarf {
   const date = newDate(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
   return {
     ID: id,
-    Dienste: [dienst1, dienst2],
     Name: `${tag} ${key1} ${key2} ${typ}`,
     Bedarfe: [
       {
@@ -802,13 +801,13 @@ export async function getFraunhoferPlanData(
                   });
                 });
                 if (ueberschneidung > firstSchicht.acceptedUeberschneidung) return;
-                result.Kombidienste.push(
-                  createKombidienste(
+                result.Kombibedarfe.push(
+                  createKombibedarfe(
                     tag,
                     `${dienstId}_${bereichId}`,
                     `${dId}_${bId}`,
                     'Aus Dienstgruppen-Forderung',
-                    result.Kombidienste.length
+                    result.Kombibedarfe.length
                   )
                 );
               });
@@ -833,8 +832,8 @@ export async function getFraunhoferPlanData(
             return schichten2.find((ls) => getUeberschneidung(s, ls) > 0, false);
           });
           if (hasUeberschneidung) continue;
-          result.Kombidienste.push(
-            createKombidienste(tag, key1, key2, 'Aus schwacher Konflikt', result.Kombidienste.length)
+          result.Kombibedarfe.push(
+            createKombibedarfe(tag, key1, key2, 'Aus schwacher Konflikt', result.Kombibedarfe.length)
           );
         }
       });
@@ -872,12 +871,12 @@ export async function getFraunhoferPlanData(
       return acc;
     }, []);
 
-    // Kombidienstausschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
+    // KombibedarfAusschlüsse könnten wir über eine Befragung für O1 Tag/Nacht lösen.
     result.Mitarbeiter = mitarbeiter.map((m) => ({
       ID: m.id,
       Name: `Mitarbeiter ${m.id}`,
       Freigaben: getMitarbeiterFreigaben(m.dienstfreigabes, freigabetypenDienste, tage),
-      KombidienstAusschlüsse: [],
+      KombibedarfAusschlüsse: [],
       Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
       Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getArbeitszeitInMinutenAm(m, tag) })),
       Präferenzen: getPraeferenzen(m.dienstratings, result.MinPräferenz, result.MaxPräferenz),

@@ -49,10 +49,9 @@ export type Dienst = {
   IstRelevantFürDoppelWhopper: boolean;
 };
 
-export type Kombidienst = {
+export type Kombibedarf = {
   ID: number;
   Name: string;
-  Dienste: number[];
   Bedarfe: BedarfsID[];
 };
 
@@ -92,7 +91,7 @@ export type Mitarbeiter = {
   ID: number;
   Name: string;
   Freigaben: Freigabe[];
-  KombidienstAusschlüsse: number[];
+  KombibedarfAusschlüsse: number[];
   Rotationen: Rotationszuweisung[];
   Arbeitszeit: MitarbeiterArbeitszeit[];
   Wünsche: Wunsch[];
@@ -104,7 +103,7 @@ export type Mitarbeiter = {
 export type PlanData = {
   Mitarbeiter: Mitarbeiter[];
   Dienste: Dienst[];
-  Kombidienste: Kombidienst[];
+  Kombibedarfe: Kombibedarf[];
   Rotationen: Rotation[];
   Bedarfe: Bedarf[];
   Bedarfsblöcke: Bedarfsblock[];
