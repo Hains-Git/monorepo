@@ -21,9 +21,9 @@ function Button({ clientId, clientSecret }: { clientId: string; clientSecret: st
         Object.entries(data).forEach(([key, value]) => {
           if (Array.isArray(value)) {
             console.log(key, value);
-            value.forEach((item, i) => {
-              if (item?.ID === 0 || item?.MitarbeiterID === 0 || item?.DienstID === 0) console.log(key, i, item);
-            });
+            // value.forEach((item, i) => {
+            //   if (item?.ID === 0 || item?.MitarbeiterID === 0 || item?.DienstID === 0) console.log(key, i, item);
+            // });
           } else console.log(key, value);
         });
       })
