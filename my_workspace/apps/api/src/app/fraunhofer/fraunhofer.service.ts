@@ -1,4 +1,5 @@
-import { Fraunhofer, FraunhoferTypes } from '@my-workspace/prisma_hains';
+import { Fraunhofer } from '@my-workspace/models';
+import { FraunhoferTypes } from '@my-workspace/prisma_cruds';
 import { newDate } from '@my-workspace/utils';
 import { Injectable } from '@nestjs/common';
 

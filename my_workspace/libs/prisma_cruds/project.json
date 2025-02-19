@@ -1,0 +1,9 @@
+{
+  "name": "prisma_cruds",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/prisma_cruds/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project prisma_cruds --web",
+  "targets": {}
+}
