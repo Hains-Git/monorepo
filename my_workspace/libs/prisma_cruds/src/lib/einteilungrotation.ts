@@ -25,8 +25,8 @@ export async function getRotationenInRange<TInclude extends Prisma.einteilung_ro
   anfang: Date,
   ende: Date,
   include?: TInclude
-): Promise<Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[] | null> {
-  return (await prismaDb.einteilung_rotations.findMany({
+) {
+  return ((await prismaDb.einteilung_rotations.findMany({
     where: {
       OR: [
         {
@@ -44,7 +44,7 @@ export async function getRotationenInRange<TInclude extends Prisma.einteilung_ro
       }
     },
     include
-  })) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[] | null;
+  })) || []) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[];
 }
 
 export async function getRotationenByKontingentFlag() {

@@ -11,6 +11,6 @@ export async function planungsInfoCreateOrupdate(params: TMutation) {
   return await createOrUpdatePlanungsinfo(params);
 }
 
-export async function planungsInfoGetAll(anfang: string, ende: string) {
+export async function planungsInfoGetAll(anfang: string | Date, ende: string | Date) {
   return await getAllPlanungsinfo(anfang, ende);
 }

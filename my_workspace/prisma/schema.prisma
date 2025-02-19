@@ -223,7 +223,7 @@ model antraeges {
 model antragsstatuses {
   id                 Int                  @id @default(autoincrement())
   name               String?              @db.VarChar
-  color              String?              @db.VarChar
+  color              String?              @default("#ffffff") @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
   antraege_histories antraege_histories[]
@@ -305,21 +305,21 @@ model arbeitszeittyps {
 }
 
 model arbeitszeitverteilungs {
-  id                                                                      Int              @id @default(autoincrement())
-  name                                                                    String?          @db.VarChar
-  dauer                                                                   Int?
-  verteilung                                                              DateTime[]       @db.Time
-  zeittypen                                                               Int[]
-  created_at                                                              DateTime         @db.Timestamp(6)
-  updated_at                                                              DateTime         @db.Timestamp(6)
-  std                                                                     Decimal?         @default(0) @db.Decimal(6, 2)
-  dienstgruppe_id                                                         Int?
-  pre_std                                                                 Decimal?         @default(0) @db.Decimal(6, 2)
-  pre_dienstgruppe_id                                                     Int?
-  pre_ueberschneidung_minuten                                             Int              @default(30)
-  dienstgruppes_arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes     dienstgruppes?   @relation("arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
-  dienstgruppes_arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes dienstgruppes?   @relation("arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
-  dienstbedarves                                                          dienstbedarves[]
+  id                          Int              @id @default(autoincrement())
+  name                        String?          @db.VarChar
+  dauer                       Int?
+  verteilung                  DateTime[]       @db.Time
+  zeittypen                   Int[]
+  created_at                  DateTime         @db.Timestamp(6)
+  updated_at                  DateTime         @db.Timestamp(6)
+  std                         Decimal?         @default(0) @db.Decimal(6, 2)
+  dienstgruppe_id             Int?
+  pre_std                     Decimal?         @default(0) @db.Decimal(6, 2)
+  pre_dienstgruppe_id         Int?
+  pre_ueberschneidung_minuten Int              @default(30)
+  post_dienstgruppes          dienstgruppes?   @relation("arbeitszeitverteiler_post", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
+  pre_dienstgruppes           dienstgruppes?   @relation("arbeitszeitverteiler_pre", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
+  dienstbedarves              dienstbedarves[]
 
   @@index([dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_dienstgruppe_id")
   @@index([pre_dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_pre_dienstgruppe_id")
@@ -366,6 +366,8 @@ model bedarfs_eintrags {
   bereiches               bereiches?             @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e18eeada6a")
   dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e8f3cb8e16")
   schichts                schichts[]
+  first_bedarf            bedarfs_eintrags?      @relation("BedarfeBlock", fields: [first_entry], references: [id])
+  block_bedarfe           bedarfs_eintrags[]     @relation("BedarfeBlock")
 
   @@index([bereich_id], map: "index_bedarfs_eintrags_on_bereich_id")
   @@index([dienstbedarf_id], map: "index_bedarfs_eintrags_on_dienstbedarf_id")
@@ -394,7 +396,7 @@ model benachrichtigungs {
 model benachrichtigungs_statuses {
   id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar
-  color             String?             @db.VarChar
+  color             String?             @default("#ffffff") @db.VarChar
   created_at        DateTime            @db.Timestamp(6)
   updated_at        DateTime            @db.Timestamp(6)
   benachrichtigungs benachrichtigungs[]
@@ -409,7 +411,7 @@ model benachrichtigungs_typs {
   rate            Boolean? @default(false)
   created_at      DateTime @db.Timestamp(6)
   updated_at      DateTime @db.Timestamp(6)
-  color           String?  @db.VarChar
+  color           String?  @default("#ffffff") @db.VarChar
   stars           Boolean? @default(false)
 }
 
@@ -418,7 +420,7 @@ model bereich_tagesverteilers {
   tagesverteiler_id Int?
   bereich_id        Int?
   po_dienst_id      Int?
-  color             String?          @db.VarChar
+  color             String?          @default("#ffffff") @db.VarChar
   created_at        DateTime         @db.Timestamp(6)
   updated_at        DateTime         @db.Timestamp(6)
   content_layout    String?          @default("one_col") @db.VarChar
@@ -633,18 +635,18 @@ model dienstfreigabes {
 }
 
 model dienstgruppes {
-  id                                                                               Int                      @id @default(autoincrement())
-  name                                                                             String?                  @db.VarChar
-  dienste                                                                          Int[]                    @default([])
-  created_at                                                                       DateTime                 @db.Timestamp(6)
-  updated_at                                                                       DateTime                 @db.Timestamp(6)
-  use_in_publish                                                                   Boolean                  @default(false)
-  publish_prio                                                                     Int                      @default(0)
-  publish_label                                                                    String                   @default("") @db.VarChar
-  publish_color_bg                                                                 String                   @default("#ffffff") @db.VarChar
-  publish_color_hl                                                                 String                   @default("#ffffff") @db.VarChar
-  arbeitszeitverteilungs_arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes     arbeitszeitverteilungs[] @relation("arbeitszeitverteilungs_dienstgruppe_idTodienstgruppes")
-  arbeitszeitverteilungs_arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes arbeitszeitverteilungs[] @relation("arbeitszeitverteilungs_pre_dienstgruppe_idTodienstgruppes")
+  id                        Int                      @id @default(autoincrement())
+  name                      String?                  @db.VarChar
+  dienste                   Int[]                    @default([])
+  created_at                DateTime                 @db.Timestamp(6)
+  updated_at                DateTime                 @db.Timestamp(6)
+  use_in_publish            Boolean                  @default(false)
+  publish_prio              Int                      @default(0)
+  publish_label             String                   @default("") @db.VarChar
+  publish_color_bg          String                   @default("#ffffff") @db.VarChar
+  publish_color_hl          String                   @default("#ffffff") @db.VarChar
+  arbeitszeitverteiler_post arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_post")
+  arbeitszeitverteiler_pre  arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_pre")
 }
 
 model dienstkategorie_teams {
@@ -664,7 +666,7 @@ model dienstkategories {
   id                    Int                     @id @default(autoincrement())
   name                  String?                 @db.VarChar
   beschreibung          String?                 @db.VarChar
-  color                 String?                 @db.VarChar
+  color                 String?                 @default("#ffffff") @db.VarChar
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
   poppix_name           String?                 @default("") @db.VarChar
@@ -778,7 +780,7 @@ model dienstplanbedarves {
 model dienstplaner_user_farbgruppens {
   id                   Int      @id @default(autoincrement())
   user_id              Int?
-  color                String?  @default("#000000") @db.VarChar
+  color                String?  @default("#ffffff") @db.VarChar
   pos                  Int?     @default(1)
   dienste_ids          Int[]    @default([])
   dienstkategorien_ids Int[]    @default([])
@@ -858,6 +860,7 @@ model dienstplans {
   dienstplanstatus_id Int?
   sys                 Boolean?            @default(false)
   dienstplanbedarf_id Int?
+  parameter           String?             @db.VarChar
   diensteinteilungs   diensteinteilungs[]
   dienstplanbedarves  dienstplanbedarves? @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_36027a91b3")
   dienstplanstatuses  dienstplanstatuses? @relation(fields: [dienstplanstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_55a766d44f")
@@ -871,7 +874,7 @@ model dienstplanstatuses {
   id           Int           @id @default(autoincrement())
   name         String?       @db.VarChar
   beschreibung String?       @db.VarChar
-  color        String?       @db.VarChar
+  color        String?       @default("#ffffff") @db.VarChar
   sys          Boolean?      @default(false)
   created_at   DateTime      @db.Timestamp(6)
   updated_at   DateTime      @db.Timestamp(6)
@@ -972,7 +975,7 @@ model einteilungskontexts {
   id             Int      @id @default(autoincrement())
   name           String?  @db.VarChar
   beschreibung   String?  @db.VarChar
-  color          String?  @db.VarChar
+  color          String?  @default("#ffffff") @db.VarChar
   created_at     DateTime @db.Timestamp(6)
   updated_at     DateTime @db.Timestamp(6)
   tagesverteiler Boolean? @default(false)
@@ -984,7 +987,7 @@ model einteilungskontexts {
 model einteilungsstatuses {
   id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar
-  color             String?             @db.VarChar
+  color             String?             @default("#ffffff") @db.VarChar
   public            Boolean?            @default(false)
   counts            Boolean?            @default(false)
   sys               Boolean?            @default(false)
@@ -1016,7 +1019,7 @@ model freigabestatuses {
   updated_at      DateTime          @db.Timestamp(6)
   counts_active   Boolean?
   sys             Boolean?          @default(false)
-  color           String?           @db.VarChar
+  color           String?           @default("#ffffff") @db.VarChar
   beschreibung    String?           @db.VarChar
   qualifiziert    Boolean?
   dienstfreigabes dienstfreigabes[]
@@ -1051,7 +1054,7 @@ model funktions {
   planname       String?          @db.VarChar
   name           String?          @db.VarChar
   beschreibung   String?          @db.VarChar
-  color          String?          @db.VarChar
+  color          String?          @default("#ffffff") @db.VarChar
   prio           Int?
   created_at     DateTime         @db.Timestamp(6)
   updated_at     DateTime         @db.Timestamp(6)
@@ -1066,7 +1069,7 @@ model funktions {
 model geraetebereiches {
   id         Int      @id @default(autoincrement())
   name       String?  @db.VarChar
-  color      String?  @db.VarChar
+  color      String?  @default("#ffffff") @db.VarChar
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
 }
@@ -1074,7 +1077,7 @@ model geraetebereiches {
 model geraeteklasses {
   id           Int       @id @default(autoincrement())
   name         String?   @db.VarChar
-  color        String?   @db.VarChar
+  color        String?   @default("#ffffff") @db.VarChar
   beschreibung String?   @db.VarChar
   created_at   DateTime  @db.Timestamp(6)
   updated_at   DateTime  @db.Timestamp(6)
@@ -1175,7 +1178,7 @@ model kalendermarkierungs {
   id         Int       @id @default(autoincrement())
   category   String?   @db.VarChar
   name       String?   @db.VarChar
-  color      String?   @db.VarChar
+  color      String?   @default("#ffffff") @db.VarChar
   year       Int?
   prio       Int?      @default(1)
   start      DateTime? @db.Date
@@ -1539,7 +1542,7 @@ model notfallmedizin_registers {
 model notfallmedizin_statuses {
   id                        Int                        @id @default(autoincrement())
   name                      String?                    @db.VarChar
-  color                     String?                    @db.VarChar
+  color                     String?                    @default("#ffffff") @db.VarChar
   created_at                DateTime                   @db.Timestamp(6)
   updated_at                DateTime                   @db.Timestamp(6)
   send_mitarbeiter_email    Boolean?
@@ -1705,10 +1708,11 @@ model po_diensts {
   created_at                                                         DateTime                            @db.Timestamp(6)
   updated_at                                                         DateTime                            @db.Timestamp(6)
   planname                                                           String?
-  color                                                              String?                             @db.VarChar
+  color                                                              String?                             @default("#ffffff") @db.VarChar
   freigabetypen_ids                                                  Int[]                               @default([])
   preset                                                             Boolean?                            @default(false)
   sys                                                                Boolean?                            @default(false)
+  reduziere_urlaub                                                   Boolean?                            @default(false)
   thema_ids                                                          Int[]
   aufwand                                                            Int?                                @default(0)
   aneasy_name                                                        String?                             @default("") @db.VarChar
@@ -1865,7 +1869,7 @@ model tagesverteiler_user_settings {
 model tagesverteilers {
   id                      Int                       @id @default(autoincrement())
   name                    String?                   @db.VarChar
-  color                   String?                   @db.VarChar
+  color                   String?                   @default("#ffffff") @db.VarChar
   planname                String?                   @db.VarChar
   created_at              DateTime                  @db.Timestamp(6)
   updated_at              DateTime                  @db.Timestamp(6)
@@ -1918,13 +1922,14 @@ model team_kw_krankpuffers {
 
 model teams {
   id                    Int                     @id @default(autoincrement())
-  name                  String?                 @db.VarChar
+  name                  String                  @db.VarChar
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
   kostenstelle_id       Int?                    @default(2)
   default               Boolean?                @default(false)
   krank_puffer          Int                     @default(0)
   verteiler_default     Boolean?                @default(false)
+  color                 String                  @default("#ffffff") @db.VarChar
   dienstkategorie_teams dienstkategorie_teams[]
   dienstplaners_teams   dienstplaners_teams[]
   funktions             funktions[]
@@ -1952,7 +1957,7 @@ model themas {
   id                              Int                               @id @default(autoincrement())
   name                            String?                           @db.VarChar
   beschreibung                    String?                           @db.VarChar
-  color                           String?                           @db.VarChar
+  color                           String?                           @default("#ffffff") @db.VarChar
   created_at                      DateTime                          @db.Timestamp(6)
   updated_at                      DateTime                          @db.Timestamp(6)
   dienstkategoriethemas           dienstkategoriethemas[]

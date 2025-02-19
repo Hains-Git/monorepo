@@ -1,13 +1,8 @@
-import { Prisma, users } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import * as bcrypt from 'bcrypt';
 
-type TUserWithAccountInfo = users & { account_info: any };
-
-export async function getUserById<TInclude extends Prisma.usersInclude>(
-  id: number,
-  include?: TInclude
-): Promise<Prisma.usersGetPayload<{ include: TInclude }> | null> {
+export async function getUserById<TInclude extends Prisma.usersInclude>(id: number, include?: TInclude) {
   const result = await prismaDb.users.findUnique({
     where: {
       id: id
@@ -17,8 +12,8 @@ export async function getUserById<TInclude extends Prisma.usersInclude>(
   return result as Prisma.usersGetPayload<{ include: TInclude }> | null;
 }
 
-export async function checkUserCredentials(username: string, password: string): Promise<[boolean, users | null]> {
-  const user = await prismaDb.users.findFirst({
+async function getUserByLogin(username: string) {
+  return await prismaDb.users.findFirst({
     where: {
       login: username
     },
@@ -38,12 +33,19 @@ export async function checkUserCredentials(username: string, password: string): 
       account_info: true
     }
   });
+}
 
+type TUserWithAccountInfo = Prisma.PromiseReturnType<typeof getUserByLogin>;
+
+export async function checkUserCredentials(
+  username: string,
+  password: string
+): Promise<[boolean, TUserWithAccountInfo | null]> {
+  const user = await getUserByLogin(username);
   const isValid = bcrypt.compareSync(password, user?.encrypted_password || '');
-
-  if (user && 'encrypted_password' in user) {
-    delete (user as any)?.encrypted_password;
+  if (user) {
+    user.encrypted_password = '';
   }
 
-  return [isValid, user as TUserWithAccountInfo];
+  return [isValid, user];
 }

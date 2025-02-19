@@ -1,5 +1,6 @@
 import { feiertages } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
+import { newDate } from '@my-workspace/utils';
 
 export async function getPlanerDateFeiertage(date: Date) {
   const feiertag = await prismaDb.feiertages.findFirst({
@@ -12,7 +13,7 @@ export async function getPlanerDateFeiertage(date: Date) {
 
 type TCreateFeiertageInput = Omit<feiertages, 'id' | 'counts_every_year' | 'key' | 'created_at' | 'updated_at'>;
 export async function createPlanerDate({ name, tag, monat, datum, jahr }: TCreateFeiertageInput) {
-  const now = new Date();
+  const now = newDate();
   const feiertag = await prismaDb.feiertages.create({
     data: {
       name,

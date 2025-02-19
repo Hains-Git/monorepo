@@ -2,6 +2,7 @@ import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
+import { newDate } from '@my-workspace/utils';
 import { Dienstfreigabe } from '@my-workspace/prisma_cruds';
 
 type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
@@ -42,7 +43,7 @@ type TRot = einteilung_rotations & {
 };
 
 export async function mitarbeiterTeamAm(
-  date = new Date(),
+  date = newDate(),
   rotationen: TRot[] | null = null,
   defaultTeam = null,
   defaultKontingent = null,

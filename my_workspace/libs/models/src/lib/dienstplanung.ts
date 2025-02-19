@@ -1,4 +1,4 @@
-import { dienstplans, parametersets, planparameters } from '@prisma/client';
+import { dienstplans, parametersets, planparameters, schichts } from '@prisma/client';
 
 import {
   format,
@@ -15,7 +15,7 @@ import {
 
 import { PlanerDate } from './planerdate/planerdate';
 
-import { processData, mapIdToKeys } from '@my-workspace/utils';
+import { processData, mapIdToKeys, newDateYearMonthDay, newDate } from '@my-workspace/utils';
 import { planungsInfoGetAll } from './planungsinfo';
 
 import {
@@ -58,10 +58,10 @@ function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
   return firstArr.filter((id: any) => secondArr.includes(id));
 }
 
-function check_anfang_ende(dienstplan: any) {
-  let anfang = dienstplan.anfang;
+function check_anfang_ende(dienstplan: Dienstplan) {
+  let anfang = dienstplan?.anfang ? dienstplan.anfang : newDate();
   let ende = dienstplan.ende;
-  const startOfNextMonth = new Date(anfang.getFullYear(), anfang.getMonth() + 1, 1);
+  const startOfNextMonth = newDateYearMonthDay(anfang.getFullYear(), anfang.getMonth() + 1, 1);
   if (anfang.getDate() !== 1) {
     anfang = startOfNextMonth;
   }
@@ -84,7 +84,7 @@ function get_dpl_anfang_ende(dienstplan: Dienstplan) {
 
 function dateCommercial(year: number, week: number, day: number): Date {
   // Start with the beginning of the specified year
-  let date = startOfYear(new Date(year, 0, 1));
+  let date = startOfYear(newDateYearMonthDay(year, 0, 1));
 
   // Set the ISO week
   date = setISOWeek(date, week);
@@ -94,7 +94,7 @@ function dateCommercial(year: number, week: number, day: number): Date {
 
   // Ensure we're in the correct year
   if (getYear(date) !== year) {
-    date = setISOWeek(new Date(year, 11, 31), week);
+    date = setISOWeek(newDateYearMonthDay(year, 11, 31), week);
     date = setISODay(date, day);
   }
 
@@ -190,7 +190,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
   return as_ids ? mitarbeiter.map((item) => item.id) : getDataByHash(mitarbeiter);
 }
 
-async function getDienstkategories(compute = true) {
+async function getDienstkategories() {
   const dienstkategories = await getAllDienstkategories({
     dienstkategoriethemas: true
   });
@@ -204,7 +204,7 @@ async function getWuensche(windowAnfang: Date, windowEnde: Date) {
   return getDataByHash(wuensche);
 }
 
-async function getRotationen(compute = true, anfang: Date, ende: Date) {
+async function getRotationen(anfang: Date, ende: Date) {
   const rotationen = await getRotationenInRange(anfang, ende, {
     kontingents: {
       include: {
@@ -241,7 +241,7 @@ async function getBedarfe(dienstplanbedarf_id: number) {
 
 async function getSchichten(dienstplanbedarf_id: number) {
   const schichten = await getSchichtenByDienstplanbedarfId(dienstplanbedarf_id);
-  return schichten.reduce((hash: any, value: any) => {
+  return schichten.reduce((hash: Record<string, schichts[]>, value) => {
     const key = String(value?.bedarfs_eintrag_id) || 0;
     hash[key] = hash[key] || [];
     hash[key].push(value);
@@ -270,7 +270,8 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   let planerDate;
 
   do {
-    planerDate = new PlanerDate(anfang, weekCounter, zeitraumkategorie);
+    planerDate = new PlanerDate(anfang, weekCounter);
+    await planerDate.initializeFeiertage(anfang, zeitraumkategorie);
     dates[planerDate.id] = planerDate;
     anfang = addDays(anfang, 1);
 
@@ -282,7 +283,8 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
     }
   } while (anfang < windowEnde);
 
-  planerDate = new PlanerDate(anfang, weekCounter, zeitraumkategorie);
+  planerDate = new PlanerDate(anfang, weekCounter);
+  await planerDate.initializeFeiertage(anfang, zeitraumkategorie);
   dates[planerDate.id] = planerDate;
   return dates;
 }
@@ -354,7 +356,7 @@ async function getWochenbilanzen(dienstplan: any) {
 }
 
 function getRotationenIdsInRangeDate(dateStr: string, data: any, kontingenteDienste: any) {
-  const date = new Date(dateStr);
+  const date = newDate(dateStr);
 
   return data.reduce((dateHash: any, rotation: any) => {
     const vonDate = rotation.von;
@@ -487,7 +489,7 @@ function computeBedarfsEintraege(bedarfsEintraege: any, dates: any) {
 
 async function getKontingenteDienste(diensteArr: any) {
   const kontingenteWithPoDienst = await getAllKontingents({ kontingent_po_diensts: true });
-
+  if (!kontingenteWithPoDienst) return [];
   const kontingentDienste = kontingenteWithPoDienst.reduce((hashObj: any, value: any) => {
     const kontingentId = value.id;
     hashObj[kontingentId] = [];
@@ -606,7 +608,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
   const mitarbeiter = await getMitarbeiters(true, true);
   const dienstkategorien = await getDienstkategories();
   const wuensche = await getWuensche(anfangFrame, endeFrame);
-  const rotationenArr = await getRotationen(true, anfangFrame, endeFrame);
+  const rotationenArr = await getRotationen(anfangFrame, endeFrame);
   const schichten = await getSchichten(dplBedarfId);
   const bedarf = await getDienstbedarfe(anfangFrame, endeFrame);
   const dienst_bedarfeintrag = await getDienstbedarfEintrag(dienste, bedarfs_eintraege);
@@ -658,7 +660,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
 export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean) {
   const dienstplan = await getDienstplanById(dpl_id);
 
-  if (!dienstplan) {
+  if (!dienstplan || !dienstplan?.anfang || !dienstplan?.ende) {
     return '';
   }
 

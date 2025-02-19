@@ -5,8 +5,8 @@ export async function getDienstWuenscheInRange<TInclude extends Prisma.dienstwun
   start: Date,
   end: Date,
   include?: TInclude
-): Promise<Prisma.dienstwunschesGetPayload<{ include: TInclude }>[] | null> {
-  return (await prismaDb.dienstwunsches.findMany({
+) {
+  return ((await prismaDb.dienstwunsches.findMany({
     where: {
       tag: {
         gte: start,
@@ -20,5 +20,5 @@ export async function getDienstWuenscheInRange<TInclude extends Prisma.dienstwun
     orderBy: {
       dienstkategorie_id: 'asc'
     }
-  })) as Prisma.dienstwunschesGetPayload<{ include: TInclude }>[] | null;
+  })) || []) as Prisma.dienstwunschesGetPayload<{ include: TInclude }>[];
 }

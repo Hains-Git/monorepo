@@ -1,12 +1,21 @@
 import { format, formatDate } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
+import { zeitraumkategories } from '@prisma/client';
+import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+
+type Feiertag = {
+  name: string;
+  day: number;
+  month: number;
+  full_date: string | Date;
+};
 
 export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
-  private static feiertage: Record<string, any> = {};
+  private static feiertage: Record<string, Record<string, Feiertag[]>> = {};
   private static last_week: Record<string, number> = {};
 
   week_counter: number;
@@ -21,7 +30,7 @@ export class PlanerDate {
   week_day_nr: number;
   week: number;
   day_of_year: number;
-  feiertag: any;
+  feiertag: '' | Feiertag;
   label: string;
   day: number;
   year: number;
@@ -33,13 +42,13 @@ export class PlanerDate {
   rotationen: any[];
   wuensche: any[];
   bedarf: any[];
-  zeitraumkategorien: any[];
+  zeitraumkategorien: number[];
   bedarfseintraege: any[];
   by_dienst: Record<string, any>;
   by_mitarbeiter: Record<string, any>;
   kws_vormonat: any[];
 
-  constructor(date: Date, week_counter = 0, zeitraumkategorien: any[] = []) {
+  constructor(date: Date, week_counter = 0) {
     this.einteilungen = {};
     this.rotationen = [];
     this.wuensche = [];
@@ -69,19 +78,22 @@ export class PlanerDate {
     this.date_nr = Number(this.id.split('-').join(''));
     this.celebrate = '';
     this.kws_vormonat = [];
-    PlanerDate.getFeiertag(date).then((_feiertag) => {
-      if (_feiertag) {
-        this.feiertag = {
-          name: _feiertag.name,
-          day: _feiertag.tag,
-          month: _feiertag.monat,
-          full_date: _feiertag.datum
-        };
-        this.celebrate = 'feiertag';
-      }
-      this.checkLastWeek();
-      this.addZeitraumkategorien(zeitraumkategorien);
-    });
+  }
+
+  async initializeFeiertage(date: Date, zeitraumkategorien: zeitraumkategories[] = []) {
+    const _feiertag = await PlanerDate.getFeiertag(date);
+
+    if (_feiertag) {
+      this.feiertag = {
+        name: _feiertag.name || '',
+        day: _feiertag.tag || 0,
+        month: _feiertag.monat || 0,
+        full_date: _feiertag.datum || ''
+      };
+      this.celebrate = 'feiertag';
+    }
+    this.checkLastWeek();
+    this.addZeitraumkategorien(zeitraumkategorien);
   }
 
   pdfClass(): string {
@@ -191,7 +203,7 @@ export class PlanerDate {
     const ostern = PlanerDate.osterSonntag(year);
 
     for (const [name, differenz] of Object.entries(tagesDifferenzen)) {
-      const osterDatum = new Date(ostern.getTime() + differenz * 24 * 60 * 60 * 1000);
+      const osterDatum = newDate(ostern.getTime() + differenz * 24 * 60 * 60 * 1000);
       const feiertag = {
         name: name,
         day: osterDatum.getDate(),
@@ -208,7 +220,7 @@ export class PlanerDate {
         name: feiertag.name,
         tag: feiertag.day,
         monat: feiertag.month,
-        datum: new Date(formatDate(osterDatum, 'yyyy-MM-dd')),
+        datum: newDate(formatDate(osterDatum, 'yyyy-MM-dd')),
         jahr: osterDatum.getFullYear()
       };
 
@@ -223,7 +235,7 @@ export class PlanerDate {
     if (tag === 35 || (tag === 34 && d === 28 && a > 10)) {
       tag -= 7;
     }
-    const osterDatum = new Date(jahr, 2, 22); // 22.03.XXXX
+    const osterDatum = newDateYearMonthDay(jahr, 2, 22); // 22.03.XXXX
     osterDatum.setDate(osterDatum.getDate() + tag);
     return osterDatum;
   }
@@ -246,34 +258,36 @@ export class PlanerDate {
     if (!PlanerDate.last_week[yearKey]) {
       PlanerDate.last_week[yearKey] = 52;
     }
-    const lastDay = new Date(this.year, 11, 31);
+    const lastDay = newDateYearMonthDay(this.year, 11, 31);
     if (this.getWeekNumber(lastDay) === 53) {
       PlanerDate.last_week[yearKey] += 1;
     }
     this.last_week = PlanerDate.last_week[yearKey];
   }
 
-  private addZeitraumkategorien(zeitraumkategorien: any[] = []) {
-    zeitraumkategorien.forEach((zeitraumkategorie) => {
-      if (checkDate(this, zeitraumkategorie)) {
+  private async addZeitraumkategorien(zeitraumkategorien: zeitraumkategories[] = []) {
+    for (const zeitraumkategorie of zeitraumkategorien) {
+      if (await checkDate(this, zeitraumkategorie)) {
         this.zeitraumkategorien.push(zeitraumkategorie.id);
       }
-    });
+    }
   }
 
   private getWeekNumber(dirtyDate: Date) {
-    const date = new Date(dirtyDate);
+    const date = newDate(dirtyDate);
     date.setHours(0, 0, 0, 0);
     // Thursday in current week decides the year.
     date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
     // January 4 is always in week 1.
-    const week1 = new Date(date.getFullYear(), 0, 4);
+    const week1 = newDateYearMonthDay(date.getFullYear(), 0, 4);
+    week1.setHours(0, 0, 0, 0);
     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
   }
 
   private getDayOfYear(date: Date): number {
-    const start = new Date(date.getFullYear(), 0, 0);
+    const start = newDateYearMonthDay(date.getFullYear(), 0, 0);
+    start.setHours(0, 0, 0, 0);
     const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { _addWeeks, _subWeeks, processData } from '@my-workspace/utils';
+import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils';
 import {
   getAbwesenheitenSettings,
   getAbwesenheitenByYear,
@@ -11,16 +11,15 @@ import {
 } from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
-import { eachDayOfInterval } from 'date-fns';
 
 @Injectable()
 export class AbwesenheitenService {
   async getAbwesenheitsData(body) {
     const result = {};
 
-    const dateView = body.date_view;
-    const leftSideDate = body.left_side_date;
-    const year = new Date(leftSideDate).getFullYear();
+    const dateView = `${body.date_view}T12:00:00.000Z`;
+    const leftSideDate = `${body.left_side_date}T12:00:00.000Z`;
+    const year = newDate(leftSideDate).getFullYear();
     const init = body.init;
     const direction = body.direction;
     const userId = body.user_id;
@@ -44,21 +43,23 @@ export class AbwesenheitenService {
     } else {
       if (direction === 'past') {
         dateStart = _subWeeks(dateView, 6);
-        dateEnd = new Date(dateView);
+        dateEnd = newDate(dateView);
       } else {
-        dateStart = new Date(dateView);
+        dateStart = newDate(dateView);
         dateEnd = _addWeeks(dateView, 6);
       }
     }
 
     const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
-    const dateRange = eachDayOfInterval({ start: dateStart, end: dateEnd });
-
+    const dateRange: Date[] = [];
+    const dateRangeDate = newDate(dateStart);
     const dates = {};
-
-    dateRange.forEach((day) => {
-      createDates({ day, dates });
-    });
+    while (dateRangeDate <= dateEnd) {
+      const currentDate = newDate(dateRangeDate);
+      dateRange.push(currentDate);
+      await createDates({ day: currentDate, dates });
+      dateRangeDate.setDate(currentDate.getDate() + 1);
+    }
 
     const kalendermarkierungen = await getKalenderMarkierungByDateRange(dateStart, dateEnd);
 

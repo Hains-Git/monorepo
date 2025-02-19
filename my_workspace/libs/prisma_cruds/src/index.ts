@@ -34,3 +34,5 @@ export * from './lib/schicht';
 export * as Freigabe from './lib/freigabe';
 export * as Freigabestatus from './lib/freigabestatus';
 export * as Dienstfreigabe from './lib/dienstfreigabe';
+export * as FraunhoferTypes from './lib/fraunhofer_types';
+export * as Fraunhofer from './lib/fraunhofer';

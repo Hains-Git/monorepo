@@ -90,13 +90,6 @@ export class AuthController {
     const code = await this.authService.generateAuthorizationCode(user.id, process.env.DIENSTPLANER_CLIENT_ID);
     const { accessToken, refreshToken } = await this.authService.exchangeAuthorizationCode(code);
 
-    console.log({
-      now: new Date(),
-      accessToken,
-      refreshToken,
-      user
-    });
-
     return { message: 'Login successful', accessToken, refreshToken, user };
   }
 

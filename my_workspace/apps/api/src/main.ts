@@ -17,17 +17,24 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.API_PORT || 3020;
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (process.env.NODE_ENV === 'development') {
+    app.enableCors({
+      origin: '*'
+    });
+  }
 
   // Required for dto's so they can throw the error
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
-      disableErrorMessages: process.env.NODE_ENV === 'production'
+      disableErrorMessages: isProd
     })
   );
 
-  console.log('process.env.NODE_ENV:', process.env.NODE_ENV);
+  console.log('process.env.NODE_ENV:', process.env.NODE_ENV, isProd);
 
   app.use(compression());
 
