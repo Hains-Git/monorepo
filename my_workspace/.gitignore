@@ -47,3 +47,6 @@ Thumbs.db
 out
 vite.config.*.timestamp*
 *.env
+
+/implement.norg
+../implement.norg

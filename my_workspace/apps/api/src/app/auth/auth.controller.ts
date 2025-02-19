@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 
-import { isValidClient } from '@my-workspace/prisma_hains';
+import { isValidClient } from '@my-workspace/prisma_cruds';
 
 @Controller('oauth')
 export class AuthController {

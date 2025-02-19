@@ -8,7 +8,7 @@ import {
   getAllAbwesenheitenSpalten,
   getEinteilungenOhneBedarf,
   getKalenderMarkierungByDateRange
-} from '@my-workspace/prisma_hains';
+} from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
 

@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { addMinutes, addDays, isAfter } from 'date-fns';
+import { addMinutes, isAfter } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 
 import {
@@ -9,7 +9,7 @@ import {
   createAccessToken,
   isAccessTokenInDb,
   getUserById
-} from '@my-workspace/prisma_hains';
+} from '@my-workspace/prisma_cruds';
 import { users } from '@prisma/client';
 import { newDate } from '@my-workspace/utils';
 
