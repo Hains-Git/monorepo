@@ -1,4 +1,4 @@
-import { processData } from '@my-workspace/utils';
+import { newDate, processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
 import { mitarbeiters } from '@prisma/client';
 
@@ -24,7 +24,7 @@ function createFakeAccountInfos(mitarbeiters: mitarbeiters[]) {
 }
 
 function getWeiterbildungsjahr(aSeit: Date, anrechenbareZeit: number) {
-  const today = new Date();
+  const today = newDate();
   const year = today.getFullYear();
   const month = today.getMonth();
 

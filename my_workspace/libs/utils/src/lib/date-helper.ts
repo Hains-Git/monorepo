@@ -1,18 +1,13 @@
 import { format, addWeeks, subWeeks, isValid, parseISO, startOfToday } from 'date-fns';
+import { newDate } from './utils';
 
 export function _subWeeks(date: Date | string, weeks: number) {
-  let parseDate = date;
-  if (typeof date === 'string') {
-    parseDate = new Date(date);
-  }
+  let parseDate = newDate(date);
   return subWeeks(parseDate, weeks);
 }
 
 export function _addWeeks(date: Date | string, weeks: number) {
-  let parseDate = date;
-  if (typeof date === 'string') {
-    parseDate = new Date(date);
-  }
+  let parseDate = newDate(date);
   return addWeeks(parseDate, weeks);
 }
 

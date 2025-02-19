@@ -1,5 +1,7 @@
+import { newDate } from '@my-workspace/utils';
+
 export function getWeiterbildungsjahr(aSeit: Date | null, anrechenbareZeit: number | null) {
-  const today = new Date();
+  const today = newDate();
   const year = today.getFullYear();
   const month = today.getMonth();
 

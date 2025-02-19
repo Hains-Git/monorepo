@@ -18,7 +18,7 @@ import {
 } from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
-import { transformObject, processData } from '@my-workspace/utils';
+import { transformObject, processData, newDate } from '@my-workspace/utils';
 import { addWeiterbildungsjahr, mitarbeiterTeamAm, rentenEintritt } from '@my-workspace/models';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class MitarbeiterInfoService {
   async getMitarbeiterDetails(mitarbeiterId: number, userId: number) {
     const result = {};
     const mitarbeiter = await getMitarbeiterById(mitarbeiterId, { account_info: true, funktion: true });
-    const teamAm = await mitarbeiterTeamAm(new Date(), null, null, null, mitarbeiterId);
+    const teamAm = await mitarbeiterTeamAm(newDate(), null, null, null, mitarbeiterId);
     const teams = await getAllTeams();
     const accountInfo = mitarbeiter.account_info;
     result['teams'] = processData('id', teams);

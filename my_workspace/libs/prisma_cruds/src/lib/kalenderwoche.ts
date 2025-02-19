@@ -1,4 +1,5 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
+import { newDate } from '@my-workspace/utils';
 
 export async function findFirstKalernderWoche(date: Date) {
   return await prismaDb.kalenderwoches.findFirst({
@@ -36,8 +37,8 @@ export async function createKalenderWoche({
       sonntag: sunday,
       arbeitstage: nArbeitstage,
       feiertage: nFeiertage,
-      created_at: new Date(),
-      updated_at: new Date()
+      created_at: newDate(),
+      updated_at: newDate()
     }
   });
 }
