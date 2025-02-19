@@ -5,7 +5,7 @@ import { FindManyArgsTypes } from './utils/types';
 export async function getMitarbeiterById<TInclude extends Prisma.mitarbeitersInclude>(
   id: number | string,
   include?: TInclude
-): Promise<Prisma.mitarbeitersGetPayload<{ include: TInclude }> | null> {
+) {
   const mitarbeiterId = Number(id);
   const result = await prismaDb.mitarbeiters.findUnique({
     where: { id: mitarbeiterId },
