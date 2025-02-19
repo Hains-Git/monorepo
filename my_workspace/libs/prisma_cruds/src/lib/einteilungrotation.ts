@@ -4,7 +4,7 @@ import { prismaDb } from '@my-workspace/prisma_hains';
 export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) {
   return await prismaDb.einteilung_rotations.findMany({
     where: {
-      mitarbeiter_id: mitarbeiterId,
+      mitarbeiter_id: Number(mitarbeiterId),
       von: { lte: tag },
       bis: { gte: tag }
     },

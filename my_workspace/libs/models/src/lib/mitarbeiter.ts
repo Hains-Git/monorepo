@@ -1,7 +1,10 @@
-import { mitarbeiters, einteilung_rotations, kontingents, teams, funktions } from '@prisma/client';
+import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
+import { Dienstfreigabe } from '@my-workspace/prisma_cruds';
+
+type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const aSeit = mitarbeiter.a_seit;
@@ -9,8 +12,6 @@ export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const weiterbildungsjahr = getWeiterbildungsjahr(aSeit, anrechenbareZeit);
   return weiterbildungsjahr;
 }
-
-type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
 
 export async function getDefaultTeamForMitarbeiter(
   defaultTeam: teams | null = null,
@@ -81,5 +82,15 @@ export async function mitarbeiterTeamAm(
     team = getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
   }
 
-  return;
+  return team;
+}
+
+async function freigegebeneDienste(mitarbeiterId: number, preset = false) {
+  const freigabeTypen = await Dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
+  const freigabeTypenIds = freigabeTypen.map((ft) => ft.freigabetyp_id);
+  console.log(freigabeTypenIds);
+}
+
+export async function getFreigegebeneDienste(mitarbeiterId: number) {
+  freigegebeneDienste(mitarbeiterId);
 }

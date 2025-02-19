@@ -31,3 +31,6 @@ export * from './lib/kontingent';
 export * from './lib/dienstplan';
 export * from './lib/feiertag';
 export * from './lib/schicht';
+export * as Freigabe from './lib/freigabe';
+export * as Freigabestatus from './lib/freigabestatus';
+export * as Dienstfreigabe from './lib/dienstfreigabe';

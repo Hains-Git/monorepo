@@ -14,12 +14,14 @@ import {
   getAllThemas,
   getVertragsTypsForMitarbeiterinfo,
   getPublicRangeEinteilungenForMitarbeiter,
-  getMitarbeiterById
+  getMitarbeiterById,
+  Freigabe,
+  Freigabestatus
 } from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
 import { transformObject, processData } from '@my-workspace/utils';
-import { addWeiterbildungsjahr, mitarbeiterTeamAm, rentenEintritt } from '@my-workspace/models';
+import { addWeiterbildungsjahr, mitarbeiterTeamAm, rentenEintritt, getFreigegebeneDienste } from '@my-workspace/models';
 
 @Injectable()
 export class MitarbeiterInfoService {
@@ -59,6 +61,9 @@ export class MitarbeiterInfoService {
     const teamAm = await mitarbeiterTeamAm(new Date(), null, null, null, mitarbeiterId);
     const teams = await getAllTeams();
     const accountInfo = mitarbeiter.account_info;
+    const freigaben = await Freigabe.getByMitarbeiterId(mitarbeiterId);
+    const freigabestatus = await Freigabestatus.getAll();
+
     result['teams'] = processData('id', teams);
     result['mitarbeiter'] = transformObject(mitarbeiter, [
       {
@@ -73,6 +78,10 @@ export class MitarbeiterInfoService {
       }
     ]);
     result['team_am'] = teamAm;
+    result['freigaben'] = freigaben;
+    result['statuse'] = processData('id', freigabestatus);
+    getFreigegebeneDienste(mitarbeiterId);
+
     return result;
   }
 }
