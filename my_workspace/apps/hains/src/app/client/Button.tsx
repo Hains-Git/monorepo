@@ -1,5 +1,5 @@
 'use client';
-import { FraunhoferTypes } from '@my-workspace/prisma_hains';
+import { FraunhoferTypes } from '@my-workspace/prisma_cruds';
 
 function Button({ clientId, clientSecret }: { clientId: string; clientSecret: string }) {
   const loadDataFromApi = async () => {

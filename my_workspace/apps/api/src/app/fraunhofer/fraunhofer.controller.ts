@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { FraunhoferService } from './fraunhofer.service';
-import { FraunhoferTypes } from '@my-workspace/prisma_hains';
+import { FraunhoferTypes } from '@my-workspace/prisma_cruds';
 
 @Controller()
 export class FraunhoferController {

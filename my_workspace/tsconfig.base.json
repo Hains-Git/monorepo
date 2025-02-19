@@ -15,10 +15,13 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@my-workspace/models": ["libs/models/src/index.ts"],
+      "@my-workspace/prisma_cruds": ["libs/prisma_cruds/src/index.ts"],
       "@my-workspace/prisma_hains": ["libs/prisma_hains/src/index.ts"],
       "@my-workspace/ui": ["libs/ui/src/index.ts"],
       "@my-workspace/utils": ["libs/utils/src/index.ts"]
-    }
+    },
+    "noErrorTruncation": true
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp"],
 }
