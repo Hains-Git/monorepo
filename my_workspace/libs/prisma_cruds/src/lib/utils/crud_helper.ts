@@ -161,7 +161,7 @@ export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number
   }
 });
 
-export const getArbeitszeitInMinutenAm = (
+export const getVertragArbeitszeitInMinutenAm = (
   mitarbeiter: {
     vertrags: ({
       vertrags_arbeitszeits: vertrags_arbeitszeits[];

@@ -18,37 +18,10 @@ import {
   schichts,
   themas
 } from '@prisma/client';
-import { prismaDb } from './prisma-hains';
-import {
-  bedarfsEintragsIncludeMainInfosNoBlock,
-  getArbeitszeitInMinutenAm,
-  getFraunhoferMitarbeiter,
-  wherePlanBedarfIn
-} from './utils/crud_helper';
-import {
-  Ausgleichsdienstgruppe,
-  Bedarf,
-  Bedarfsblock,
-  BedarfsID,
-  Dienst,
-  DienstkategorieDienste,
-  DienstTyp,
-  DienstTypenThemen,
-  Einteilung,
-  FraunhoferNewPlan,
-  Freigabe,
-  FreigabeTyp,
-  FreigabetypenDienste,
-  Kombibedarf,
-  PlanData,
-  Präferenz,
-  Rotation,
-  Rotationszuweisung,
-  Wunsch
-} from './utils/fraunhofer_types';
+import { Fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
 import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
-const defaultPlanData: PlanData = {
+const defaultPlanData: FraunhoferTypes.PlanData = {
   Mitarbeiter: [],
   Dienste: [],
   Kombibedarfe: [],
@@ -64,7 +37,7 @@ const defaultPlanData: PlanData = {
 };
 
 function mapThemenToDienstTypen(themen: themas[]) {
-  const dienstTypenThemen: DienstTypenThemen = {
+  const dienstTypenThemen: FraunhoferTypes.DienstTypenThemen = {
     Frühdienst: [],
     Rufdienst: [],
     Nachtdienst: [],
@@ -74,7 +47,7 @@ function mapThemenToDienstTypen(themen: themas[]) {
     Frei: []
   };
   themen.forEach((t) => {
-    let key: DienstTyp = 'Frei';
+    let key: FraunhoferTypes.DienstTyp = 'Frei';
     const name = (t.name || '').trim().toLowerCase();
     const notStartWithKein = name.indexOf('kein') !== 0;
     if (notStartWithKein) {
@@ -98,7 +71,7 @@ function mapThemenToDienstTypen(themen: themas[]) {
 }
 
 function getMitarbeiterRotationen(rotationen: einteilung_rotations[], tage: Date[]) {
-  return rotationen.reduce((acc: Rotationszuweisung[], r) => {
+  return rotationen.reduce((acc: FraunhoferTypes.Rotationszuweisung[], r) => {
     const kontingentId = r.kontingent_id || 0;
     if (kontingentId < 1) return acc;
     tage.forEach((tag) => {
@@ -117,12 +90,12 @@ function getMitarbeiterWuensche(
   wuensche: ({
     dienstkategories: dienstkategories | null;
   } & dienstwunsches)[],
-  dienstkategorieDienste: DienstkategorieDienste
+  dienstkategorieDienste: FraunhoferTypes.DienstkategorieDienste
 ) {
   return wuensche.reduce(
     (
       acc: {
-        Wünsche: Wunsch[];
+        Wünsche: FraunhoferTypes.Wunsch[];
         'K-Wünsche': Date[];
       },
       w
@@ -150,14 +123,14 @@ function getMitarbeiterFreigaben(
   freigaben: ({
     freigabestatuses: freigabestatuses | null;
   } & dienstfreigabes)[],
-  freigabetypenDienste: FreigabetypenDienste,
+  freigabetypenDienste: FraunhoferTypes.FreigabetypenDienste,
   tage: Date[]
 ) {
-  return freigaben.reduce((acc: Freigabe[], f) => {
+  return freigaben.reduce((acc: FraunhoferTypes.Freigabe[], f) => {
     const freigabeTypId = f.freigabetyp_id || 0;
     if (freigabeTypId < 1 || !f.freigabestatuses?.qualifiziert) return acc;
     // let typ: FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'nicht qualifiziert';
-    const typ: FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'überqualifiziert';
+    const typ: FraunhoferTypes.FreigabeTyp = f.freigabestatuses.counts_active ? 'qualifiziert' : 'überqualifiziert';
     // if (f.freigabestatuses.name === 'erteilt, ruhend (höhere Qualifikation)') {
     //   typ = 'überqualifiziert';
     // }
@@ -178,7 +151,7 @@ function getMitarbeiterFreigaben(
 
 function createDiensteAndMapInfos(
   dienste: po_diensts[],
-  dienstTypenThemen: DienstTypenThemen,
+  dienstTypenThemen: FraunhoferTypes.DienstTypenThemen,
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
   } & dienstkategories)[],
@@ -188,11 +161,11 @@ function createDiensteAndMapInfos(
   return dienste.reduce(
     (
       acc: {
-        diensteArr: Dienst[];
-        freigabetypenDienste: FreigabetypenDienste;
-        dienstkategorieDienste: DienstkategorieDienste;
+        diensteArr: FraunhoferTypes.Dienst[];
+        freigabetypenDienste: FraunhoferTypes.FreigabetypenDienste;
+        dienstkategorieDienste: FraunhoferTypes.DienstkategorieDienste;
         nachtdienste: number[];
-        dienstHash: Record<number, Dienst>;
+        dienstHash: Record<number, FraunhoferTypes.Dienst>;
       },
       d
     ) => {
@@ -203,12 +176,12 @@ function createDiensteAndMapInfos(
       });
 
       // Get DienstTyp
-      const typ: DienstTyp =
+      const typ: FraunhoferTypes.DienstTyp =
         (Object.entries(dienstTypenThemen).find(([key, ids]) => {
           // Frei ist der Default-Typ und gilt nur, wenn alle anderen nicht zutreffen
           if (key === 'Frei') return false;
           return d.thema_ids.find((t) => ids.includes(t));
-        })?.[0] as DienstTyp) || 'Frei';
+        })?.[0] as FraunhoferTypes.DienstTyp) || 'Frei';
 
       if (typ === 'Nachtdienst') acc.nachtdienste.push(d.id);
 
@@ -223,7 +196,7 @@ function createDiensteAndMapInfos(
       });
 
       const istRelevantFürDoppelWhopper = typ === 'Nachtdienst';
-      const dienst: Dienst = {
+      const dienst: FraunhoferTypes.Dienst = {
         ID: d.id,
         Name: d.planname || '',
         Typ: typ,
@@ -247,7 +220,7 @@ function createDiensteAndMapInfos(
 }
 
 function getPraeferenzen(ratings: dienstratings[], min: number, max: number) {
-  return ratings.reduce((acc: Präferenz[], r) => {
+  return ratings.reduce((acc: FraunhoferTypes.Präferenz[], r) => {
     if (r.po_dienst_id && r.rating !== null && r.rating >= min && r.rating <= max) {
       acc.push({
         Dienst: r.po_dienst_id,
@@ -316,50 +289,7 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
   const dienstplaene: DienstPlan[] = [];
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
-    const dpl = await prismaDb.dienstplans.findFirst({
-      where: {
-        ...wherePlanBedarfIn(newDate(monthStart), newDate(monthEnd)),
-        dienstplanbedarves: {
-          isNot: null
-        }
-      },
-      include: {
-        dienstplanbedarves: {
-          include: {
-            bedarfs_eintrags: {
-              where: {
-                AND: [
-                  { tag: { gte: monthStart, lte: monthEnd } },
-                  {
-                    tag: { gte: start, lte: end }
-                  }
-                ]
-              },
-              include: {
-                first_bedarf: {
-                  include: {
-                    block_bedarfe: {
-                      include: {
-                        ...bedarfsEintragsIncludeMainInfosNoBlock
-                      }
-                    }
-                  }
-                },
-                ...bedarfsEintragsIncludeMainInfosNoBlock
-              }
-            }
-          }
-        }
-      },
-      orderBy: [
-        {
-          anfang: 'asc'
-        },
-        {
-          ende: 'desc'
-        }
-      ]
-    });
+    const dpl = await Fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
     if (!dpl) continue;
     dienstplaene.push(dpl);
   }
@@ -474,7 +404,7 @@ function calculateBedarfArbeitszeit(
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
   uberschneidungSchichten: UeberschneidungSchichtenSammlung
-): Bedarf | null {
+): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
     bedarfsEintrag,
@@ -512,13 +442,13 @@ function checkBedarf(
 }
 
 function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date, nachtdienste: number[]) {
-  const bedarfe: Bedarf[] = [];
-  const bloecke: Bedarfsblock[] = [];
+  const bedarfe: FraunhoferTypes.Bedarf[] = [];
+  const bloecke: FraunhoferTypes.Bedarfsblock[] = [];
   const addedBloecke: Record<number, boolean> = {};
   const addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {};
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
   const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
-  const ausgleichsdienstgruppen: Record<number, Ausgleichsdienstgruppe> = {};
+  const ausgleichsdienstgruppen: Record<number, FraunhoferTypes.Ausgleichsdienstgruppe> = {};
 
   const addToAusgleichsDienstgruppe = (be: MainBedarfsEintrag, isLastInBlock: boolean) => {
     if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
@@ -588,7 +518,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       addedBloecke[firstBedarf.id] = true;
       const l = firstBedarf.block_bedarfe.length - 1;
       bloecke.push({
-        Einträge: firstBedarf.block_bedarfe.reduce((acc: BedarfsID[], bb, i) => {
+        Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
           const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
           if (bedarf) {
@@ -615,66 +545,13 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
   return { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen };
 }
 
-async function getFixedEinteilungen(start: Date, end: Date, bedarfeTageOutSideInterval: Record<string, number[]>) {
-  const fixedEinteilungen = await prismaDb.diensteinteilungs.findMany({
-    where: {
-      OR: [
-        {
-          tag: {
-            gte: start,
-            lte: end
-          }
-        },
-        ...Object.entries(bedarfeTageOutSideInterval).map(([tag, dienste]) => ({
-          tag: tag,
-          po_dienst_id: {
-            in: dienste
-          }
-        }))
-      ],
-      einteilungsstatuses: {
-        counts: true
-      }
-    }
-  });
-  return fixedEinteilungen;
-}
-
-async function getData(start: Date, end: Date) {
-  const relevantTeams = await prismaDb.teams.findMany({
-    where: {
-      name: { in: ['OP Team'] }
-    }
-  });
-  const relevantTeamIds = relevantTeams.map((t) => t.id);
-  const mitarbeiter = await prismaDb.mitarbeiters.findMany(getFraunhoferMitarbeiter(start, end, relevantTeamIds));
-  const dienste = await prismaDb.po_diensts.findMany();
-
-  const kontingente = await prismaDb.kontingents.findMany();
-  const dienstkategorien = await prismaDb.dienstkategories.findMany({
-    include: {
-      dienstkategoriethemas: true
-    }
-  });
-  const themen = await prismaDb.themas.findMany();
-
-  return {
-    mitarbeiter,
-    dienste,
-    kontingente,
-    dienstkategorien,
-    themen,
-    relevantTeamIds
-  };
-}
-
 function createKombibedarfe(
   tag: string,
   key1: string,
   key2: string,
   typ: 'Aus schwacher Konflikt' | 'Aus Dienstgruppen-Forderung',
   id: number
-): Kombibedarf {
+): FraunhoferTypes.Kombibedarf {
   const date = newDate(tag);
   const [dienst1, bereich1] = key1.split('_').map(Number);
   const [dienst2, bereich2] = key2.split('_').map(Number);
@@ -717,17 +594,6 @@ function getUeberschneidung(
   return min;
 }
 
-export async function isValidFraunhoferRequest(clientId: string, clientSecret: string) {
-  const isValid = await prismaDb.oauth_applications.findFirst({
-    where: {
-      name: 'Fraunhofer',
-      uid: clientId,
-      secret: clientSecret
-    }
-  });
-  return !!isValid;
-}
-
 const MAX_BEREITSCHAFTSDIENSTE = 7;
 
 export async function getFraunhoferPlanData(
@@ -735,10 +601,10 @@ export async function getFraunhoferPlanData(
   end: Date,
   client_id: string,
   client_secret: string
-): Promise<PlanData> {
-  const result: PlanData = { ...defaultPlanData };
+): Promise<FraunhoferTypes.PlanData> {
+  const result: FraunhoferTypes.PlanData = { ...defaultPlanData };
 
-  const isValid = await isValidFraunhoferRequest(client_id, client_secret);
+  const isValid = await Fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
   if (!isValid) {
     result.msg = 'Nicht authorisiert!';
     return result;
@@ -756,7 +622,8 @@ export async function getFraunhoferPlanData(
       return result;
     }
 
-    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } = await getData(start, end);
+    const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } =
+      await Fraunhofer.getFraunhoferData(start, end);
 
     const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
       createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
@@ -766,7 +633,7 @@ export async function getFraunhoferPlanData(
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
       getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
 
-    const fixedEinteilungen = await getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+    const fixedEinteilungen = await Fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
 
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
@@ -838,15 +705,9 @@ export async function getFraunhoferPlanData(
       });
     });
 
-    result.AuslgeichsfreiDienstID =
-      (
-        await prismaDb.po_diensts.findFirst({
-          select: { id: true },
-          where: { name: 'Ausgleichsfrei' }
-        })
-      )?.id || 0;
+    result.AuslgeichsfreiDienstID = await Fraunhofer.getAusgleichsDienstfreiId();
 
-    result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: Einteilung[], e) => {
+    result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
@@ -859,7 +720,7 @@ export async function getFraunhoferPlanData(
       return acc;
     }, []);
 
-    result.Rotationen = kontingente.reduce((acc: Rotation[], k) => {
+    result.Rotationen = kontingente.reduce((acc: FraunhoferTypes.Rotation[], k) => {
       acc.push({
         ID: k.id,
         Name: k.name || '',
@@ -878,7 +739,7 @@ export async function getFraunhoferPlanData(
       Freigaben: getMitarbeiterFreigaben(m.dienstfreigabes, freigabetypenDienste, tage),
       KombibedarfAusschlüsse: [],
       Rotationen: getMitarbeiterRotationen(m.einteilung_rotations, tage),
-      Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getArbeitszeitInMinutenAm(m, tag) })),
+      Arbeitszeit: tage.map((tag) => ({ Tag: tag, ArbeitszeitInMinuten: getVertragArbeitszeitInMinutenAm(m, tag) })),
       Präferenzen: getPraeferenzen(m.dienstratings, result.MinPräferenz, result.MaxPräferenz),
       MaximaleAnzahlBereitschaftsdienste: MAX_BEREITSCHAFTSDIENSTE,
       ...getMitarbeiterWuensche(m.dienstwunsches, dienstkategorieDienste)
@@ -893,7 +754,7 @@ export async function getFraunhoferPlanData(
   return result;
 }
 
-export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
+export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPlan): Promise<{
   msg: string;
   updated: boolean;
 }> {
@@ -902,7 +763,7 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
     updated: false
   };
 
-  const isValid = await isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
+  const isValid = await Fraunhofer.isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
   if (!isValid) {
     result.msg = 'Nicht authorisiert!\n';
     return result;
@@ -921,94 +782,41 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
     const parameter = typeof body.Parameter === 'string' ? body.Parameter.trim() : '';
     const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
 
-    const dienstplanStatusVorschlagId =
-      (
-        await prismaDb.dienstplanstatuses.findFirst({
-          select: { id: true },
-          where: { name: 'Vorschlag' }
-        })
-      )?.id || 0;
+    const dienstplanStatusVorschlagId = await Fraunhofer.getDienstplanstatusVorschlagId();
 
     if (!dienstplanStatusVorschlagId) {
       result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungsstatusVorschlagId =
-      (
-        await prismaDb.einteilungsstatuses.findFirst({
-          select: { id: true },
-          where: { name: 'Vorschlag', public: false, counts: false }
-        })
-      )?.id || 0;
+    const einteilungsstatusVorschlagId = await Fraunhofer.getEinteilungsstatusVorschlagId();
     if (!einteilungsstatusVorschlagId) {
       result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungskontextAutoId =
-      (
-        await prismaDb.einteilungskontexts.findFirst({
-          select: { id: true },
-          where: {
-            name: 'Auto'
-          }
-        })
-      )?.id || 0;
+    const einteilungskontextAutoId = await Fraunhofer.getEinteilungskontextAutoId();
     if (!einteilungskontextAutoId) {
       result.msg = 'Einteilungskontext Auto nicht gefunden!\n';
       return result;
     }
 
-    const parametersetId = (await prismaDb.parametersets.findFirst({ select: { id: true } }))?.id || 0;
+    const parametersetId = await Fraunhofer.getParametersetId();
     if (!parametersetId) {
       result.msg = 'Parameterset nicht gefunden!\n';
       return result;
     }
 
-    const mitarbeiterHash = (await prismaDb.mitarbeiters.findMany({ select: { id: true } })).reduce(
-      (acc: Record<number, boolean>, m) => {
-        acc[m.id] = true;
-        return acc;
-      },
-      {}
-    );
-
-    const relevantTeamIds = (
-      await prismaDb.teams.findMany({
-        where: {
-          name: { in: ['OP Team'] }
-        }
-      })
-    ).map((t) => t.id);
-
-    const diensteHash = (
-      await prismaDb.po_diensts.findMany({
-        select: { id: true },
-        where: {
-          team_id: { in: relevantTeamIds }
-        }
-      })
-    ).reduce((acc: Record<number, boolean>, d) => {
-      acc[d.id] = true;
-      return acc;
-    }, {});
-
-    const bereicheHash = (
-      await prismaDb.bereiches.findMany({
-        select: { id: true }
-      })
-    ).reduce((acc: Record<number, boolean>, b) => {
-      acc[b.id] = true;
-      return acc;
-    }, {});
+    const mitarbeiterHash = await Fraunhofer.getMitarbeiterHash();
+    const diensteHash = await Fraunhofer.getDiensteHash();
+    const bereicheHash = await Fraunhofer.getBereicheHash();
 
     const dates: Record<
       string,
       {
         start: Date;
         end: Date;
-        einteilungen: Einteilung[];
+        einteilungen: FraunhoferTypes.Einteilung[];
       }
     > = {};
 
@@ -1058,23 +866,14 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
 
     for (const monthYear in dates) {
       const { start, end, einteilungen } = dates[monthYear];
-      const dienstplanBedarfId =
-        (
-          await prismaDb.dienstplanbedarves.findFirst({
-            select: { id: true },
-            where: {
-              anfang: { lte: start },
-              ende: { gte: end }
-            }
-          })
-        )?.id || 0;
+      const dienstplanBedarfId = await Fraunhofer.getDienstplanbedarfId(start, end);
       if (!dienstplanBedarfId) {
         result.msg += `Keine Bedarf für ${start.toLocaleDateString('de-De')} - ${end.toLocaleDateString(
           'de-De'
         )} gefunden!\n`;
         continue;
       }
-      const dienstplan = await prismaDb.dienstplans.create({
+      const dienstplan = await Fraunhofer.createDienstplan({
         data: {
           name,
           beschreibung,
@@ -1092,7 +891,8 @@ export async function createFraunhoferPlan(body: FraunhoferNewPlan): Promise<{
         continue;
       }
 
-      await prismaDb.diensteinteilungs.createMany({
+      await Fraunhofer.createManyDiensteinteilungs({
+        skipDuplicates: true,
         data: einteilungen.map((e) => ({
           tag: e.Tag,
           mitarbeiter_id: e.MitarbeiterID,

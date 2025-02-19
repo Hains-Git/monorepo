@@ -31,3 +31,5 @@ export * from './lib/kontingent';
 export * from './lib/dienstplan';
 export * from './lib/feiertag';
 export * from './lib/schicht';
+export * as FraunhoferTypes from './lib/fraunhofer_types';
+export * as Fraunhofer from './lib/fraunhofer';
