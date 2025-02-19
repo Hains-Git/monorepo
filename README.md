@@ -19,7 +19,7 @@ Innerhalb des hains_monorepo Containers ausführen!
 - Komponente der Bibliothek erstellen erstellen:
   `npx nx g @nx/react:component libs/ui/button/button --project=ui`
 - Entfernen der Library:
-  `npx nx g @nx/workspace:remove ui (--dry-run)`[^1]
+  `npx nx g @nx/workspace:remove ui --dry-run`[^1]
 - Next.js Page erstellen:
   `npx nx g @nx/next:page apps/hains/pages/my-new-page`
 - Next.js Komponente erstellen:
@@ -32,6 +32,7 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
+
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma
