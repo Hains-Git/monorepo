@@ -1,4 +1,4 @@
-import { diensteinteilungs, dienstplans, parametersets, planparameters } from '@prisma/client';
+import { dienstplans, parametersets, planparameters } from '@prisma/client';
 
 import {
   format,
@@ -190,7 +190,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
   return as_ids ? mitarbeiter.map((item) => item.id) : getDataByHash(mitarbeiter);
 }
 
-async function getDienstkategories(compute = true) {
+async function getDienstkategories() {
   const dienstkategories = await getAllDienstkategories({
     dienstkategoriethemas: true
   });
