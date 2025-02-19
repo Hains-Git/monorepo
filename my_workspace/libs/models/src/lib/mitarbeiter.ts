@@ -1,4 +1,4 @@
-import { mitarbeiters, einteilung_rotations, kontingents, teams, funktions } from '@prisma/client';
+import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';

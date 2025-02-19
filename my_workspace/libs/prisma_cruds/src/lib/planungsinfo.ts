@@ -35,7 +35,7 @@ export async function getPlanungsinfo(planungsinfoId: number) {
   return planungsinfo;
 }
 
-export async function getAllPlanungsinfo(anfang: string, ende: string) {
+export async function getAllPlanungsinfo(anfang: string | Date, ende: string | Date) {
   const currentDateDayNum = newDate(ende).getDay();
   const endeDate = newDate(ende);
   const anfangDate = newDate(anfang);
