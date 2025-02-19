@@ -1,4 +1,4 @@
-import { dienstplans, parametersets, planparameters } from '@prisma/client';
+import { dienstplans, parametersets, planparameters, schichts } from '@prisma/client';
 
 import {
   format,
@@ -241,7 +241,7 @@ async function getBedarfe(dienstplanbedarf_id: number) {
 
 async function getSchichten(dienstplanbedarf_id: number) {
   const schichten = await getSchichtenByDienstplanbedarfId(dienstplanbedarf_id);
-  return schichten.reduce((hash: any, value: any) => {
+  return schichten.reduce((hash: Record<string, schichts[]>, value) => {
     const key = String(value?.bedarfs_eintrag_id) || 0;
     hash[key] = hash[key] || [];
     hash[key].push(value);
