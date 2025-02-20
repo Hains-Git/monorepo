@@ -1884,13 +1884,13 @@ model tagkategories {
 }
 
 model team_funktions {
-  id          Int        @id @default(autoincrement())
-  team_id     Int?
-  funktion_id Int?
-  created_at  DateTime   @db.Timestamp(6)
-  updated_at  DateTime   @db.Timestamp(6)
-  teams       teams?     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
-  funktions   funktions? @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bec8e126a9")
+  id          Int       @id @default(autoincrement())
+  team_id     Int
+  funktion_id Int
+  created_at  DateTime  @db.Timestamp(6)
+  updated_at  DateTime  @db.Timestamp(6)
+  team        teams     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
+  funktion    funktions @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bec8e126a9")
 
   @@index([funktion_id], map: "index_team_funktions_on_funktion_id")
   @@index([team_id], map: "index_team_funktions_on_team_id")
@@ -1915,7 +1915,7 @@ model team_kw_krankpuffers {
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
   puffer     Int      @default(0)
-  teams      teams    @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
+  team       teams    @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
 
   @@index([team_id], map: "index_team_kw_krankpuffers_on_team_id")
 }
@@ -1928,8 +1928,7 @@ model team_kopf_soll {
   bis        DateTime @db.Date
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
-  team       teams    @relation(fields: [teamsId], references: [id])
-  teamsId    Int
+  team       teams    @relation(fields: [team_id], references: [id])
 }
 
 model team_vk_soll {
@@ -1940,8 +1939,7 @@ model team_vk_soll {
   bis        DateTime @db.Date
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
-  team       teams    @relation(fields: [teamsId], references: [id])
-  teamsId    Int
+  team       teams    @relation(fields: [team_id], references: [id])
 }
 
 model teams {
@@ -1963,7 +1961,7 @@ model teams {
   team_kw_krankpuffers  team_kw_krankpuffers[]
   team_vk_soll          team_vk_soll[]
   team_kopf_soll        team_kopf_soll[]
-  kostenstelles         kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
+  kostenstelle          kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
   vorlages              vorlages[]
 
   @@index([kostenstelle_id], map: "index_teams_on_kostenstelle_id")

@@ -1,5 +1,7 @@
 type HashObjType<T> = Record<string | number, T | T[]>;
 
+export const colorRegEx = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
 export function newDate(tag: string | Date | number = ''): Date {
   if (!tag) return new Date();
   const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
