@@ -1,9 +1,18 @@
 import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
-import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
+import { getWeiterbildungsjahr, automatischeEinteilungAnfang, automatischeEinteilungEnde } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
-import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
-import { newDate } from '@my-workspace/utils';
-import { Dienstfreigabe } from '@my-workspace/prisma_cruds';
+import {
+  getDefaultTeam,
+  getDefaultKontingents,
+  getMitarbeiterById,
+  getByFreigabenTypenIds,
+  dienstfreigabe,
+  automatischeeinteilung,
+  arbeitszeitabsprache
+} from '@my-workspace/prisma_cruds';
+
+import { newDate, transformObject } from '@my-workspace/utils';
+import { formatDate } from 'date-fns';
 
 type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
 
@@ -87,11 +96,44 @@ export async function mitarbeiterTeamAm(
 }
 
 async function freigegebeneDienste(mitarbeiterId: number, preset = false) {
-  const freigabeTypen = await Dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
-  const freigabeTypenIds = freigabeTypen.map((ft) => ft.freigabetyp_id);
-  console.log(freigabeTypenIds);
+  const freigabeTypen = await dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
+  const freigabeTypenIds = freigabeTypen.map((ft) => ft.freigabetyp_id).filter(Boolean) as number[];
+  const dienste = await getByFreigabenTypenIds(freigabeTypenIds);
+  return dienste;
 }
 
 export async function getFreigegebeneDienste(mitarbeiterId: number) {
-  freigegebeneDienste(mitarbeiterId);
+  return await freigegebeneDienste(mitarbeiterId);
+}
+
+export async function getAutomatischeEinteilungen(mitarbeiterId: number) {
+  let automatischeEinteilungen = await automatischeeinteilung.getByMitarbeiterId(mitarbeiterId);
+  automatischeEinteilungen = automatischeEinteilungen.map((ae) => {
+    const aeObj = transformObject(ae, [
+      {
+        key: 'anfang',
+        method: automatischeEinteilungAnfang
+      },
+      {
+        key: 'ende',
+        method: automatischeEinteilungEnde
+      },
+      { key: 'von', method: (ae) => (ae?.von ? formatDate(ae.von, 'yyyy-MM-dd') : ae.von) },
+      { key: 'bis', method: (ae) => (ae?.bis ? formatDate(ae.bis, 'yyyy-MM-dd') : ae.bis) }
+    ]);
+    return aeObj;
+  });
+  return automatischeEinteilungen;
+}
+
+export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
+  let arbeitszeitAbsprachen = await arbeitszeitabsprache.getByMitarbeiterId(mitarbeiterId)
+  arbeitszeitAbsprachen = arbeitszeitAbsprachen.map((aa) => {
+    const aaObj = transformObject(aa, [
+      { key: 'von', method: (aa) => (aa?.von ? formatDate(aa.von, 'yyyy-MM-dd') : aa.von) },
+      { key: 'bis', method: (aa) => (aa?.bis ? formatDate(aa.bis, 'yyyy-MM-dd') : aa.bis) }
+    ]);
+    return aaObj;
+  });
+
 }

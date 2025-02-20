@@ -24,7 +24,6 @@ import {
   getMitarbeitersByCustomQuery,
   getZeitraumKategoriesInRange,
   getAllDienstkategories,
-  getDienstWuenscheInRange,
   getRotationenInRange,
   getRotationenByKontingentFlag,
   getBedarfseintragByDienstplanBedarfId,
@@ -36,7 +35,8 @@ import {
   getAllKontingents,
   getDienstplanById,
   checkWeek,
-  getZeitraumkategorienInterval
+  getZeitraumkategorienInterval,
+  dienstwunsch
 } from '@my-workspace/prisma_cruds';
 
 type Dienstplan = {
@@ -198,7 +198,7 @@ async function getDienstkategories() {
 }
 
 async function getWuensche(windowAnfang: Date, windowEnde: Date) {
-  const wuensche = await getDienstWuenscheInRange(windowAnfang, windowEnde, {
+  const wuensche = await dienstwunsch.getDienstWuenscheInRange(windowAnfang, windowEnde, {
     mitarbeiters: true
   });
   return getDataByHash(wuensche);

@@ -15,13 +15,23 @@ import {
   getVertragsTypsForMitarbeiterinfo,
   getPublicRangeEinteilungenForMitarbeiter,
   getMitarbeiterById,
-  Freigabe,
-  Freigabestatus
+  freigabe,
+  freigabestatus,
+  dienstrating,
+  dienstwunsch,
+  vertragsphase
 } from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
 import { transformObject, processData, newDate } from '@my-workspace/utils';
-import { addWeiterbildungsjahr, mitarbeiterTeamAm, rentenEintritt, getFreigegebeneDienste } from '@my-workspace/models';
+import {
+  addWeiterbildungsjahr,
+  mitarbeiterTeamAm,
+  rentenEintritt,
+  getFreigegebeneDienste,
+  getAutomatischeEinteilungen
+} from '@my-workspace/models';
+import { formatDate } from 'date-fns';
 
 @Injectable()
 export class MitarbeiterInfoService {
@@ -61,8 +71,13 @@ export class MitarbeiterInfoService {
     const teamAm = await mitarbeiterTeamAm(newDate(), null, null, null, mitarbeiterId);
     const teams = await getAllTeams();
     const accountInfo = mitarbeiter.account_info;
-    const freigaben = await Freigabe.getByMitarbeiterId(mitarbeiterId);
-    const freigabestatus = await Freigabestatus.getAll();
+    const freigaben = await freigabe.getByMitarbeiterId(mitarbeiterId);
+    const freigabestatuses = await freigabestatus.getAll();
+    const dienste = await getFreigegebeneDienste(mitarbeiterId);
+    const ratings = await dienstrating.getByMitarbeiterId(mitarbeiterId);
+    const dienstwunsche = await dienstwunsch.getByMitarbeiterIdForFuture(mitarbeiterId);
+    const vertragsphasen = await vertragsphase.getByMitarbeiterId(mitarbeiterId);
+    const automatischeEinteilungen = await getAutomatischeEinteilungen(mitarbeiterId);
 
     result['teams'] = processData('id', teams);
     result['mitarbeiter'] = transformObject(mitarbeiter, [
@@ -79,8 +94,17 @@ export class MitarbeiterInfoService {
     ]);
     result['team_am'] = teamAm;
     result['freigaben'] = freigaben;
-    result['statuse'] = processData('id', freigabestatus);
-    getFreigegebeneDienste(mitarbeiterId);
+    result['statuse'] = processData('id', freigabestatuses);
+    result['dienste'] = dienste.map((dienst) => ({ id: dienst.id, name: dienst.name }));
+    result['ratings'] = processData('po_dienst_id', ratings);
+    result['dienstwunsche'] = dienstwunsche;
+    result['vertragsphase'] = vertragsphasen.map((vp) => {
+      vp.von = formatDate(vp.von, 'yyyy-MM-dd') as unknown as Date;
+      vp.bis = formatDate(vp.bis, 'yyyy-MM-dd') as unknown as Date;
+      // vp.bis = formatDate(vp.bis, 'yyyy-MM-dd');
+      return vp;
+    });
+    result['automatische_einteilungen'] = automatischeEinteilungen;
 
     return result;
   }
