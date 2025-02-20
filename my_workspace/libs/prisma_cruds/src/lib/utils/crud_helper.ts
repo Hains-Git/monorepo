@@ -8,7 +8,7 @@ import {
   vertragsstuves
 } from '@prisma/client';
 
-export const getZeitraumkategorienInterval = (anfang: Date, ende: Date): Prisma.zeitraumkategoriesWhereInput => ({
+export const getZeitraumkategorienInterval = (anfang: Date, ende: Date) => ({
   OR: [
     {
       AND: [{ anfang: null }, { ende: null }]
@@ -35,7 +35,7 @@ export const getZeitraumkategorienInterval = (anfang: Date, ende: Date): Prisma.
   ]
 });
 
-export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date): Prisma.mitarbeitersWhereInput => ({
+export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
   aktiv: true,
   platzhalter: false,
   account_info: {
@@ -72,7 +72,7 @@ export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date): Pris
   }
 });
 
-export const whereRotationIn = (start: Date, end: Date): Prisma.einteilung_rotationsWhereInput => ({
+export const whereRotationIn = (start: Date, end: Date) => ({
   OR: [
     { von: { lte: start }, bis: { gte: start } },
     { von: { lte: end }, bis: { gte: end } },
@@ -80,7 +80,7 @@ export const whereRotationIn = (start: Date, end: Date): Prisma.einteilung_rotat
   ]
 });
 
-export const whereDienstplanIn = (start: Date, end: Date): Prisma.dienstplansWhereInput => ({
+export const whereDienstplanIn = (start: Date, end: Date) => ({
   OR: [
     { anfang: { lte: start }, ende: { gte: start } },
     { anfang: { lte: end }, ende: { gte: end } },
@@ -88,11 +88,7 @@ export const whereDienstplanIn = (start: Date, end: Date): Prisma.dienstplansWhe
   ]
 });
 
-export const getFraunhoferMitarbeiter = (
-  start: Date,
-  end: Date,
-  teamIds: number[]
-): Prisma.mitarbeitersFindManyArgs => ({
+export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number[]) => ({
   where: {
     ...whereMitarbeiterAktivNoPlatzhalter(start, end),
     OR: [
