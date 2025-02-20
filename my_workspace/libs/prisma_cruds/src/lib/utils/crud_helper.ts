@@ -1,5 +1,6 @@
 import {
   mitarbeiters,
+  Prisma,
   vertrags,
   vertrags_arbeitszeits,
   vertrags_phases,
@@ -7,7 +8,7 @@ import {
   vertragsstuves
 } from '@prisma/client';
 
-export const getZeitraumkategorienInterval = (anfang: Date, ende: Date) => ({
+export const getZeitraumkategorienInterval = (anfang: Date, ende: Date): Prisma.zeitraumkategoriesWhereInput => ({
   OR: [
     {
       AND: [{ anfang: null }, { ende: null }]
@@ -34,7 +35,7 @@ export const getZeitraumkategorienInterval = (anfang: Date, ende: Date) => ({
   ]
 });
 
-export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
+export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date): Prisma.mitarbeitersWhereInput => ({
   aktiv: true,
   platzhalter: false,
   account_info: {
@@ -71,7 +72,7 @@ export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
   }
 });
 
-export const whereRotationIn = (start: Date, end: Date) => ({
+export const whereRotationIn = (start: Date, end: Date): Prisma.einteilung_rotationsWhereInput => ({
   OR: [
     { von: { lte: start }, bis: { gte: start } },
     { von: { lte: end }, bis: { gte: end } },
@@ -79,7 +80,7 @@ export const whereRotationIn = (start: Date, end: Date) => ({
   ]
 });
 
-export const wherePlanBedarfIn = (start: Date, end: Date) => ({
+export const whereDienstplanIn = (start: Date, end: Date): Prisma.dienstplansWhereInput => ({
   OR: [
     { anfang: { lte: start }, ende: { gte: start } },
     { anfang: { lte: end }, ende: { gte: end } },
@@ -87,7 +88,11 @@ export const wherePlanBedarfIn = (start: Date, end: Date) => ({
   ]
 });
 
-export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number[]) => ({
+export const getFraunhoferMitarbeiter = (
+  start: Date,
+  end: Date,
+  teamIds: number[]
+): Prisma.mitarbeitersFindManyArgs => ({
   where: {
     ...whereMitarbeiterAktivNoPlatzhalter(start, end),
     OR: [
@@ -105,7 +110,7 @@ export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number
         einteilung_rotations: {
           none: { ...whereRotationIn(start, end) }
         },
-        funktions: {
+        funktion: {
           is: {
             team_id: { in: teamIds }
           }
