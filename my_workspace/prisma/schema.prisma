@@ -1910,13 +1910,37 @@ model team_kw_krankpuffer_versions {
 model team_kw_krankpuffers {
   id         Int      @id @default(autoincrement())
   kw         Int      @default(0)
-  team_id    Int?
+  team_id    Int
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
   puffer     Int      @default(0)
-  teams      teams?   @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
+  teams      teams    @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
 
   @@index([team_id], map: "index_team_kw_krankpuffers_on_team_id")
+}
+
+model team_kopf_soll {
+  id         Int      @id @default(autoincrement())
+  team_id    Int
+  soll       Int
+  von        DateTime @db.Date
+  bis        DateTime @db.Date
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  team       teams    @relation(fields: [teamsId], references: [id])
+  teamsId    Int
+}
+
+model team_vk_soll {
+  id         Int      @id @default(autoincrement())
+  team_id    Int
+  soll       Int
+  von        DateTime @db.Date
+  bis        DateTime @db.Date
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  team       teams    @relation(fields: [teamsId], references: [id])
+  teamsId    Int
 }
 
 model teams {
@@ -1936,6 +1960,8 @@ model teams {
   po_diensts            po_diensts[]
   team_funktions        team_funktions[]
   team_kw_krankpuffers  team_kw_krankpuffers[]
+  team_vk_soll          team_vk_soll[]
+  team_kopf_soll        team_kopf_soll[]
   kostenstelles         kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
   vorlages              vorlages[]
 
@@ -2136,8 +2162,8 @@ model vertrags {
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
   vertragstyp_id        Int?
-  anfang                DateTime?               @db.Date
-  ende                  DateTime?               @db.Date
+  anfang                DateTime                @db.Date
+  ende                  DateTime                @db.Date
   unbefristet           Boolean?                @default(false)
   kommentar             String?                 @default("") @db.VarChar
   mitarbeiters          mitarbeiters?           @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b20fe19842")
@@ -2151,8 +2177,8 @@ model vertrags {
 model vertrags_arbeitszeits {
   id         Int       @id @default(autoincrement())
   vertrag_id Int?
-  von        DateTime? @db.Date
-  bis        DateTime? @db.Date
+  von        DateTime  @db.Date
+  bis        DateTime  @db.Date
   vk         Decimal?  @db.Decimal(3, 2)
   tage_woche Float?    @default(5.0)
   created_at DateTime  @db.Timestamp(6)
@@ -2165,8 +2191,8 @@ model vertrags_arbeitszeits {
 model vertrags_phases {
   id               Int             @id @default(autoincrement())
   vertrag_id       Int?
-  von              DateTime?       @db.Date
-  bis              DateTime?       @db.Date
+  von              DateTime        @db.Date
+  bis              DateTime        @db.Date
   created_at       DateTime        @db.Timestamp(6)
   updated_at       DateTime        @db.Timestamp(6)
   vertragsstufe_id Int?
@@ -2179,8 +2205,8 @@ model vertrags_phases {
 
 model vertrags_variantes {
   id             Int              @id @default(autoincrement())
-  von            DateTime?        @db.Date
-  bis            DateTime?        @db.Date
+  von            DateTime         @db.Date
+  bis            DateTime         @db.Date
   vertragstyp_id Int?
   name           String?          @db.VarChar
   wochenstunden  Int?
