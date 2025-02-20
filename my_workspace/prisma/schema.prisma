@@ -1712,6 +1712,7 @@ model po_diensts {
   freigabetypen_ids                                                  Int[]                               @default([])
   preset                                                             Boolean?                            @default(false)
   sys                                                                Boolean?                            @default(false)
+  reduziere_urlaub                                                   Boolean?                            @default(false)
   thema_ids                                                          Int[]
   aufwand                                                            Int?                                @default(0)
   aneasy_name                                                        String?                             @default("") @db.VarChar
