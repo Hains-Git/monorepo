@@ -102,17 +102,22 @@ export type TeamInputType = {
   color: string;
 };
 
-async function checkTeamInput(input: TeamInputType, id: number, kostenstelle_id: number) {
+export async function checkTeamInput(input: TeamInputType, id: number, kostenstelle_id: number) {
+  console.log('CheckInput', input, id, kostenstelle_id);
   const msg = [];
   const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [id] } } });
   const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: kostenstelle_id } });
-  if (!input.name) msg.push('Name muss ausgefüllt sein.');
-  else if (input.name.length > 50) msg.push('Name darf maximal 50 Zeichen lang sein.');
-  else if (nameVergeben) msg.push('Name bereits vergeben.');
-  else if (input.name.toLowerCase() === 'kein team') msg.push('Name nicht zulässig.');
-  else if (input.name.includes('_')) msg.push('Name darf kein "_" enthalten.');
-  if (!input.color) msg.push('Farbe nicht zulässig.');
   if (id < 0) msg.push('ID ist nicht zulässig.');
+  if (!input.name) msg.push('Name muss ausgefüllt sein.');
+  else {
+    if (nameVergeben) msg.push('Name bereits vergeben.');
+    else if (input.name.toLowerCase() === 'kein team') msg.push('Name nicht zulässig.');
+    else {
+      if (input.name.length > 50) msg.push('Name darf maximal 50 Zeichen lang sein.');
+      if (input.name.includes('_')) msg.push('Name darf kein "_" enthalten.');
+    }
+  }
+  if (!colorRegEx.test(input.color)) msg.push('Farbe nicht zulässig, nur HEX-Farben erlaubt.');
   if (input.krank_puffer < 0) msg.push('Krankpuffer muss größer oder gleich 0 sein.');
   if (!kostenStelle) msg.push('Kostenstelle nicht gefunden.');
   return msg.join('\n');
@@ -126,10 +131,12 @@ export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id:
       team_id: id
     }
   });
+
+  if (!kwpuffer.length) return;
+
   await prismaDb.team_kw_krankpuffers.createMany({
     data: kwpuffer.map((kp) => ({
-      kw: kp.kw,
-      puffer: kp.puffer,
+      ...kp,
       team_id: id,
       created_at: newDate(),
       updated_at: newDate()
@@ -143,6 +150,9 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
       team_id: id
     }
   });
+
+  if (!funktionenIds.length) return;
+
   await prismaDb.team_funktions.createMany({
     data: funktionenIds.map((funktion_id) => ({
       team_id: id,
@@ -153,11 +163,68 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
   });
 }
 
+export type TeamVKSollInput = { soll: number; von: Date; bis: Date };
+
+export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
+  await prismaDb.team_vk_soll.deleteMany({
+    where: {
+      team_id: id
+    }
+  });
+
+  if (!vkSoll.length) return;
+
+  await prismaDb.team_vk_soll.createMany({
+    data: vkSoll.map((soll) => ({
+      ...soll,
+      team_id: id,
+      created_at: newDate(),
+      updated_at: newDate()
+    }))
+  });
+}
+
+export type TeamKopfSollInput = { soll: number; von: Date; bis: Date };
+
+export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number) {
+  await prismaDb.team_kopf_soll.deleteMany({
+    where: {
+      team_id: id
+    }
+  });
+
+  if (!kopfSoll.length) return;
+
+  await prismaDb.team_kopf_soll.createMany({
+    data: kopfSoll.map((soll) => ({
+      ...soll,
+      team_id: id,
+      created_at: newDate(),
+      updated_at: newDate()
+    }))
+  });
+}
+
+export async function uncheckOldDefaultTeam(id: number) {
+  await prismaDb.teams.updateMany({
+    where: {
+      default: true,
+      id: { not: id }
+    },
+    data: {
+      default: false,
+      updated_at: newDate()
+    }
+  });
+}
+
 export async function createOrUpdateTeam(
   args: TeamInputType & {
     id: number;
     kostenstelle_id: number;
     team_kw_krankpuffers: TeamKWKrankPufferInput[];
+    team_vk_soll: TeamVKSollInput[];
+    team_kopf_soll: TeamKopfSollInput[];
     funktionen_ids: number[];
   }
 ) {
@@ -165,7 +232,7 @@ export async function createOrUpdateTeam(
     name: args.name.trim(),
     default: args.default,
     verteiler_default: args.verteiler_default,
-    color: colorRegEx.test(args.color) ? args.color.toLowerCase() : '',
+    color: args.color.toLowerCase(),
     krank_puffer: args.krank_puffer,
     updated_at: newDate(),
     kostenstelle: {
@@ -175,7 +242,7 @@ export async function createOrUpdateTeam(
     }
   };
 
-  const msg = checkTeamInput(input, args.id, args.kostenstelle_id);
+  const msg = await checkTeamInput(input, args.id, args.kostenstelle_id);
   if (msg) return msg;
 
   const record =
@@ -197,8 +264,14 @@ export async function createOrUpdateTeam(
 
   if (!record?.id) return 'Team konnte nicht erstellt oder aktualisiert werden.';
 
+  if (record.default) {
+    await uncheckOldDefaultTeam(record.id);
+  }
   await addTeamKrankpuffer(args.team_kw_krankpuffers, record.id);
   await addTeamFunktionen(args.funktionen_ids, record.id);
+  await addTeamVKSoll(args.team_vk_soll, record.id);
+  await addTeamKopfSoll(args.team_kopf_soll, record.id);
+
   return await prismaDb.teams.findFirst({
     where: {
       id: record.id

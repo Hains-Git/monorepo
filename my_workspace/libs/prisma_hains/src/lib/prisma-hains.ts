@@ -82,15 +82,20 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
       async $allOperations({ model, operation, args, query }) {
         if (!versionsMap[model]) return query(args);
         const now = newDate();
-        if (
-          'data' in args &&
-          args.data &&
-          typeof args.data === 'object' &&
-          'updated_at' in args.data &&
-          args.data.updated_at
-        ) {
-          args.data.updated_at = now;
+
+        if ('data' in args && args.data && typeof args.data === 'object') {
+          if (Array.isArray(args.data)) {
+            args.data = args.data.map((obj: any) => {
+              if ('updated_at' in obj && obj.updated_at) {
+                obj.updated_at = now;
+              }
+              return obj;
+            });
+          } else if ('updated_at' in args.data && args.data.updated_at) {
+            args.data.updated_at = now;
+          }
         }
+
         if (operation === 'create' || operation === 'createMany' || operation === 'createManyAndReturn') {
           return async () => {
             const results = await query(args);
