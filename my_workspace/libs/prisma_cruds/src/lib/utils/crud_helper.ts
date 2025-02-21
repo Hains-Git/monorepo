@@ -1,6 +1,5 @@
 import {
   mitarbeiters,
-  Prisma,
   vertrags,
   vertrags_arbeitszeits,
   vertrags_phases,

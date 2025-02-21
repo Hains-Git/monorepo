@@ -1,5 +1,5 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { colorRegEx } from '@my-workspace/utils';
+import { colorRegEx, newDate } from '@my-workspace/utils';
 
 export const teamsBaseIncludes = {
   kostenstelle: true,
@@ -12,30 +12,6 @@ export const teamsBaseIncludes = {
     }
   }
 };
-
-// def add_funktionen
-//   funktionen = params.has_key?(:funktionen_ids) ? JSON.parse(params[:funktionen_ids]).uniq.select { |el| !el.blank?} : []
-//   TeamFunktion.where(team_id: @team.id).delete_all
-//   funktionen.each { |id|
-//     TeamFunktion.find_or_create_by(team_id: @team.id, funktion_id: id.to_i)
-//   }
-// end
-
-// def add_team_kw_krankpuffers
-//   team_kw_krankpuffers = params.has_key?(:team_kw_krankpuffers) ?  JSON.parse(params[:team_kw_krankpuffers]) : []
-//   team_id = @team.id
-//   kws = []
-//   team_kw_krankpuffers.each do |obj|
-//     kw = obj["kw"].to_i
-//     puffer = obj["puffer"].to_i
-//     if kw > 0 && kw < 54 && puffer >= 0
-//       kws << kw
-//       team_kw_krankpuffer = TeamKwKrankpuffer.find_or_create_by(team_id: team_id, kw: kw)
-//       team_kw_krankpuffer.update(puffer: puffer)
-//     end
-//   end
-//   TeamKwKrankpuffer.where(team_id: team_id).where.not(kw: kws).delete_all
-// end
 
 export async function getAllTeams() {
   return await prismaDb.teams.findMany();
@@ -142,22 +118,56 @@ async function checkTeamInput(input: TeamInputType, id: number, kostenstelle_id:
   return msg.join('\n');
 }
 
-export async function addTeamKrankpuffer() {
-  console.log('addTeamKrankpuffer');
+export type TeamKWKrankPufferInput = { kw: number; puffer: number };
+
+export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id: number) {
+  await prismaDb.team_kw_krankpuffers.deleteMany({
+    where: {
+      team_id: id
+    }
+  });
+  await prismaDb.team_kw_krankpuffers.createMany({
+    data: kwpuffer.map((kp) => ({
+      kw: kp.kw,
+      puffer: kp.puffer,
+      team_id: id,
+      created_at: newDate(),
+      updated_at: newDate()
+    }))
+  });
 }
 
-export async function addTeamFunktionen() {
-  console.log('addTeamFunktionen');
+export async function addTeamFunktionen(funktionenIds: number[], id: number) {
+  await prismaDb.team_funktions.deleteMany({
+    where: {
+      team_id: id
+    }
+  });
+  await prismaDb.team_funktions.createMany({
+    data: funktionenIds.map((funktion_id) => ({
+      team_id: id,
+      funktion_id,
+      updated_at: newDate(),
+      created_at: newDate()
+    }))
+  });
 }
 
-export async function createOrUpdateTeam(args: TeamInputType & { id: number; kostenstelle_id: number }) {
+export async function createOrUpdateTeam(
+  args: TeamInputType & {
+    id: number;
+    kostenstelle_id: number;
+    team_kw_krankpuffers: TeamKWKrankPufferInput[];
+    funktionen_ids: number[];
+  }
+) {
   const input = {
     name: args.name.trim(),
     default: args.default,
     verteiler_default: args.verteiler_default,
     color: colorRegEx.test(args.color) ? args.color.toLowerCase() : '',
     krank_puffer: args.krank_puffer,
-    updated_at: new Date(),
+    updated_at: newDate(),
     kostenstelle: {
       connect: {
         id: args.kostenstelle_id
@@ -173,9 +183,8 @@ export async function createOrUpdateTeam(args: TeamInputType & { id: number; kos
       ? await prismaDb.teams.create({
           data: {
             ...input,
-            created_at: new Date()
-          },
-          include: teamsBaseIncludes
+            created_at: newDate()
+          }
         })
       : await prismaDb.teams.update({
           data: {
@@ -183,8 +192,17 @@ export async function createOrUpdateTeam(args: TeamInputType & { id: number; kos
           },
           where: {
             id: args.id
-          },
-          include: teamsBaseIncludes
+          }
         });
-  return record;
+
+  if (!record?.id) return 'Team konnte nicht erstellt oder aktualisiert werden.';
+
+  await addTeamKrankpuffer(args.team_kw_krankpuffers, record.id);
+  await addTeamFunktionen(args.funktionen_ids, record.id);
+  return await prismaDb.teams.findFirst({
+    where: {
+      id: record.id
+    },
+    include: teamsBaseIncludes
+  });
 }

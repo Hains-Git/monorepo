@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-// import { prismaDb } from '../../../prisma_hains/src/lib/prisma-hains';
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { getUserById } from '@my-workspace/prisma_cruds';
+import { findManyByModelKey, getUserById } from '@my-workspace/prisma_cruds';
 import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
@@ -22,19 +20,8 @@ function transformDienstkategorie(dienstkategorie: any) {
   return dienstkategorie;
 }
 
-type PrismaModels = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
-
-type FindManyArgsTypes = {
-  [K in PrismaModels]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['findMany']>[0] : never;
-};
-
-async function getApiDataByKey<K extends PrismaModels>(key: K, args: FindManyArgsTypes[K] = {}) {
-  const data = await (prismaDb[key] as any).findMany(args);
-  return data;
-}
-
 async function transformMitarbeiter(mitarbeiter: any) {
-  const freigabenTypenIds = await getApiDataByKey('dienstfreigabes', {
+  const freigabenTypenIds = await findManyByModelKey('dienstfreigabes', {
     where: {
       mitarbeiter_id: mitarbeiter.id,
       freigabestatuses: {
@@ -280,8 +267,8 @@ async function getAllApiData(userId: number) {
   const canAcces =
     userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
 
-  const bereicheArr = await getApiDataByKey('bereiches', {});
-  const poDiensteArr = await getApiDataByKey('po_diensts', {
+  const bereicheArr = await findManyByModelKey('bereiches', {});
+  const poDiensteArr = await findManyByModelKey('po_diensts', {
     include: {
       dienstbedarves: true,
       dienstratings: true
@@ -294,10 +281,10 @@ async function getAllApiData(userId: number) {
   res['MAX_RATING'] = 5;
   res['MAX_WOCHENENDEN'] = 2;
 
-  res['arbeitsplaetze'] = processData('id', await getApiDataByKey('arbeitsplatzs'));
+  res['arbeitsplaetze'] = processData('id', await findManyByModelKey('arbeitsplatzs'));
   res['arbeitszeit_absprachen'] = processData(
     'mitarbeiter_id',
-    await getApiDataByKey('arbeitszeit_absprachens', {
+    await findManyByModelKey('arbeitszeit_absprachens', {
       where: {
         mitarbeiters: {
           platzhalter: false
@@ -308,26 +295,26 @@ async function getAllApiData(userId: number) {
     [transformArbeitszeitAbsprachen],
     true
   );
-  res['arbeitszeittypen'] = processData('id', await getApiDataByKey('arbeitszeittyps'));
-  res['arbeitszeitverteilungen'] = processData('id', await getApiDataByKey('arbeitszeitverteilungs'));
+  res['arbeitszeittypen'] = processData('id', await findManyByModelKey('arbeitszeittyps'));
+  res['arbeitszeitverteilungen'] = processData('id', await findManyByModelKey('arbeitszeitverteilungs'));
   res['bereiche'] = bereiche;
-  res['dienstgruppen'] = processData('id', await getApiDataByKey('dienstgruppes'));
+  res['dienstgruppen'] = processData('id', await findManyByModelKey('dienstgruppes'));
   res['dienstkategorien'] = processData(
     'id',
-    await getApiDataByKey('dienstkategories', {
+    await findManyByModelKey('dienstkategories', {
       include: {
         dienstkategoriethemas: true
       }
     }),
     [transformDienstkategorie]
   );
-  res['dienstplanpfade'] = processData('id', await getApiDataByKey('dienstplan_paths'));
-  res['dienstverteilungstypen'] = processData('id', await getApiDataByKey('dienstverteilungstyps'));
-  res['einteilungskontexte'] = processData('id', await getApiDataByKey('einteilungskontexts'));
-  res['einteilungsstatuse'] = processData('id', await getApiDataByKey('einteilungsstatuses'));
+  res['dienstplanpfade'] = processData('id', await findManyByModelKey('dienstplan_paths'));
+  res['dienstverteilungstypen'] = processData('id', await findManyByModelKey('dienstverteilungstyps'));
+  res['einteilungskontexte'] = processData('id', await findManyByModelKey('einteilungskontexts'));
+  res['einteilungsstatuse'] = processData('id', await findManyByModelKey('einteilungsstatuses'));
   res['freigaben'] = processData(
     'id',
-    await getApiDataByKey('dienstfreigabes', {
+    await findManyByModelKey('dienstfreigabes', {
       where: {
         freigabestatuses: {
           qualifiziert: true
@@ -338,21 +325,21 @@ async function getAllApiData(userId: number) {
       }
     })
   );
-  res['freigabestatuse'] = processData('id', await getApiDataByKey('freigabestatuses'));
-  res['freigabetypen'] = processData('id', await getApiDataByKey('freigabetyps'));
-  res['funktionen'] = processData('id', await getApiDataByKey('funktions'));
+  res['freigabestatuse'] = processData('id', await findManyByModelKey('freigabestatuses'));
+  res['freigabetypen'] = processData('id', await findManyByModelKey('freigabetyps'));
+  res['funktionen'] = processData('id', await findManyByModelKey('funktions'));
   res['kontingente'] = processData(
     'id',
-    await getApiDataByKey('kontingents', {
+    await findManyByModelKey('kontingents', {
       include: {
         kontingent_po_diensts: true
       }
     })
   );
-  res['kostenstellen'] = processData('id', await getApiDataByKey('kostenstelles'));
+  res['kostenstellen'] = processData('id', await findManyByModelKey('kostenstelles'));
   res['mitarbeiters'] = await processAsyncData(
     'id',
-    await getApiDataByKey('mitarbeiters', {
+    await findManyByModelKey('mitarbeiters', {
       where: {
         OR: [
           {
@@ -382,7 +369,7 @@ async function getAllApiData(userId: number) {
   res['monatsplanung_settings'] = await getMonatsplanungSettings(user, isAdmin, canAcces);
   res['nicht_einteilen_absprachen'] = processData(
     'mitarbeiter_id',
-    await getApiDataByKey('nicht_einteilen_absprachens', {
+    await findManyByModelKey('nicht_einteilen_absprachens', {
       where: {
         mitarbeiters: {
           platzhalter: false
@@ -399,12 +386,12 @@ async function getAllApiData(userId: number) {
   // res['nicht_einteilen_absprachen'] = {};
   res['po_dienste'] = poDienste;
   res['publicvorlagen'] = isAdmin ? {} : await getPublicVorlagen(user);
-  res['ratings'] = processData('id', await getApiDataByKey('dienstratings'));
+  res['ratings'] = processData('id', await findManyByModelKey('dienstratings'));
 
-  res['standorte'] = processData('id', await getApiDataByKey('standorts'));
+  res['standorte'] = processData('id', await findManyByModelKey('standorts'));
   res['teams'] = processData(
     'id',
-    await getApiDataByKey('teams', {
+    await findManyByModelKey('teams', {
       include: {
         po_diensts: true,
         team_funktions: true,
@@ -414,12 +401,12 @@ async function getAllApiData(userId: number) {
     }),
     [transformTeams]
   );
-  res['themen'] = processData('id', await getApiDataByKey('themas'));
-  res['vertraege'] = processData('id', await getApiDataByKey('vertrags'));
-  res['vertragsphasen'] = processData('id', await getApiDataByKey('vertrags_phases'));
-  res['vertrags_arbeitszeiten'] = processData('id', await getApiDataByKey('vertrags_arbeitszeits'));
-  res['vertragsstufen'] = processData('id', await getApiDataByKey('vertragsstuves'));
-  const vertragsvarianten = await getApiDataByKey('vertrags_variantes');
+  res['themen'] = processData('id', await findManyByModelKey('themas'));
+  res['vertraege'] = processData('id', await findManyByModelKey('vertrags'));
+  res['vertragsphasen'] = processData('id', await findManyByModelKey('vertrags_phases'));
+  res['vertrags_arbeitszeiten'] = processData('id', await findManyByModelKey('vertrags_arbeitszeits'));
+  res['vertragsstufen'] = processData('id', await findManyByModelKey('vertragsstuves'));
+  const vertragsvarianten = await findManyByModelKey('vertrags_variantes');
   res['vertragstyp_varianten'] = vertragsvarianten.reduce((hashObj: any, vertragsvariante: any) => {
     const key = vertragsvariante.vertragstyp_id;
     if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
@@ -431,7 +418,7 @@ async function getAllApiData(userId: number) {
     return hashObj;
   }, {});
   res['vertragsvarianten'] = processData('id', vertragsvarianten);
-  res['zeitraumkategorien'] = processData('id', await getApiDataByKey('zeitraumkategories'));
+  res['zeitraumkategorien'] = processData('id', await findManyByModelKey('zeitraumkategories'));
 
   return res;
 }

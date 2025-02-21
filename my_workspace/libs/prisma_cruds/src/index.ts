@@ -1,5 +1,6 @@
 export * from './lib/prisma-cruds';
 export * from './lib/utils/crud_helper';
+export * from './lib/utils/types';
 
 export * from './lib/user';
 export * from './lib/oauth';
