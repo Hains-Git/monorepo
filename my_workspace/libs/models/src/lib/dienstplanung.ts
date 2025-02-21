@@ -32,11 +32,11 @@ import {
   findFirstKalernderWoche,
   createKalenderWoche,
   getWochenbilanzByKalenderWocheForMitarbeiters,
-  getAllKontingents,
   getDienstplanById,
   checkWeek,
   getZeitraumkategorienInterval,
-  dienstwunsch
+  dienstwunsch,
+  kontingent
 } from '@my-workspace/prisma_cruds';
 
 type Dienstplan = {
@@ -488,7 +488,7 @@ function computeBedarfsEintraege(bedarfsEintraege: any, dates: any) {
 }
 
 async function getKontingenteDienste(diensteArr: any) {
-  const kontingenteWithPoDienst = await getAllKontingents({ kontingent_po_diensts: true });
+  const kontingenteWithPoDienst = await kontingent.getAll({ kontingent_po_diensts: true });
   if (!kontingenteWithPoDienst) return [];
   const kontingentDienste = kontingenteWithPoDienst.reduce((hashObj: any, value: any) => {
     const kontingentId = value.id;

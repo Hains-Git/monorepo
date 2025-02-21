@@ -5,7 +5,6 @@ import {
   getAllFunktionen,
   getAllHainsGroups,
   getAllPoDiensts,
-  getAllMerkmal,
   getAllZeitraumKategories,
   getAllTeams,
   getAllActiveMitarbeiter,
@@ -15,11 +14,14 @@ import {
   getVertragsTypsForMitarbeiterinfo,
   getPublicRangeEinteilungenForMitarbeiter,
   getMitarbeiterById,
+  merkmal,
+  mitarbeiter_merkmal,
   freigabe,
   freigabestatus,
   dienstrating,
   dienstwunsch,
-  vertragsphase
+  vertragsphase,
+  urlaubssaldo_absprache,
 } from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
@@ -29,7 +31,9 @@ import {
   mitarbeiterTeamAm,
   rentenEintritt,
   getFreigegebeneDienste,
-  getAutomatischeEinteilungen
+  getAutomatischeEinteilungen,
+  getArbeitszeitAbsprachen,
+  getKontingentEingeteiltBasis
 } from '@my-workspace/models';
 import { formatDate } from 'date-fns';
 
@@ -49,7 +53,7 @@ export class MitarbeiterInfoService {
     result['all_mitarbeiters'] = await getAllMitarbeiter();
     result['dienste'] = await getAllPoDiensts();
     result['teams'] = await getAllTeams();
-    result['merkmale'] = await getAllMerkmal();
+    result['merkmale'] = await merkmal.getAll();
     result['standorte'] = await getAllStandorte();
     result['themen'] = await getAllThemas();
 
@@ -78,7 +82,15 @@ export class MitarbeiterInfoService {
     const dienstwunsche = await dienstwunsch.getByMitarbeiterIdForFuture(mitarbeiterId);
     const vertragsphasen = await vertragsphase.getByMitarbeiterId(mitarbeiterId);
     const automatischeEinteilungen = await getAutomatischeEinteilungen(mitarbeiterId);
+    const arbeitszeitAbsprachen = await getArbeitszeitAbsprachen(mitarbeiterId);
+    const urlaubssaldoAbsprachen = await urlaubssaldo_absprache.getByMitarbeiterId(mitarbeiterId);
+    const merkmale = await merkmal.getAll({ merkmal_options: true });
+    const mitarbeiterMerkmale = await mitarbeiter_merkmal.getAll();
+    const hmmm = await getKontingentEingeteiltBasis(mitarbeiterId);
 
+    result['urlaubssaldo_absprachen'] = urlaubssaldoAbsprachen;
+    result ['mitarbeiter_merkmale'] = mitarbeiterMerkmale;
+    result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
     result['teams'] = processData('id', teams);
     result['mitarbeiter'] = transformObject(mitarbeiter, [
       {
@@ -99,12 +111,12 @@ export class MitarbeiterInfoService {
     result['ratings'] = processData('po_dienst_id', ratings);
     result['dienstwunsche'] = dienstwunsche;
     result['vertragsphase'] = vertragsphasen.map((vp) => {
-      vp.von = formatDate(vp.von, 'yyyy-MM-dd') as unknown as Date;
-      vp.bis = formatDate(vp.bis, 'yyyy-MM-dd') as unknown as Date;
-      // vp.bis = formatDate(vp.bis, 'yyyy-MM-dd');
+      // vp.von = formatDate(vp.von, 'yyyy-MM-dd') as unknown as Date;
+      // vp.bis = formatDate(vp.bis, 'yyyy-MM-dd') as unknown as Date;
       return vp;
     });
     result['automatische_einteilungen'] = automatischeEinteilungen;
+    result['merkmale'] = merkmale;
 
     return result;
   }

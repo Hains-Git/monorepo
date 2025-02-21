@@ -1,19 +1,4 @@
-type HashObjType<T> = Record<string | number, T | T[]>;
-
-export function newDate(tag: string | Date | number = ''): Date {
-  if (!tag) return new Date();
-  const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
-  const date = new Date(tag);
-  // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
-  if (typeof tag === 'string' && dateRegEx.test(tag)) {
-    tag = new Date(`${tag}T12:00:00.000Z`);
-  }
-  return date;
-}
-
-export function newDateYearMonthDay(year: number, month: number, day: number): Date {
-  return new Date(year, month, day, 12);
-}
+type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
 
 /**
  * Maps an array of objects to a hash object based on a specified key.
@@ -68,13 +53,13 @@ export function mapIdToKeys<T extends Record<string, any>, K extends keyof T = k
  * @param isInArray - A flag to indicate whether the values in the hash object should be placed in a  array.
  * @returns A hash object where each key is an id from the data array, and the value is the processed data item.
  */
-export function processData<T>(
+export function processData<T, IsArray extends boolean = false>(
   hashKey: keyof T = 'id' as keyof T,
   dataArr: T[],
   cbs?: ((data: T) => T)[],
-  isInArray = false
-): HashObjType<T> {
-  return dataArr.reduce((hashObj: HashObjType<T>, dataItem: T) => {
+  isInArray: IsArray = false as IsArray
+): HashObjType<T, IsArray> {
+  return dataArr.reduce((hashObj: HashObjType<T, IsArray>, dataItem: T) => {
     let processedItem = dataItem;
 
     if (Array.isArray(cbs)) {
@@ -85,11 +70,11 @@ export function processData<T>(
     if (key !== undefined && (typeof key === 'string' || typeof key === 'number')) {
       if (isInArray) {
         if (!Array.isArray(hashObj[key])) {
-          hashObj[key] = [];
+          (hashObj[key] as T[]) = [];
         }
         (hashObj[key] as T[]).push(processedItem);
       } else {
-        hashObj[key] = processedItem;
+        (hashObj[key] as T) = processedItem;
       }
     }
 
@@ -155,20 +140,21 @@ export async function processAsyncData<T>(
  *   }
  * ]);
  */
-type TransformMethod<T> = (data: T) => T;
-export function transformObject<T extends Record<string, any>>(
+type TransformMethod<T, K extends keyof T = keyof T> = (data: T[K]) => T[K];
+
+export function transformObject<T extends Record<string, any>, K extends string>(
   result: T,
   transforms: Array<{
-    key: string;
-    method: TransformMethod<any>;
+    key: keyof T | K;
+    method: TransformMethod<T, any>;
     path?: string;
   }>
-): T {
-  const transformed = { ...result };
+): T & Record<K, any> {
+  const transformed = { ...result } as T & Record<K, any>;
 
   transforms.forEach(({ key, method, path = '' }) => {
     const pathParts = path.split('.');
-    let target: any = transformed;
+    let target: Record<string, any> = transformed;
 
     // Traverse the object to the specified path
     for (let i = 0; i < pathParts.length; i++) {
@@ -183,7 +169,8 @@ export function transformObject<T extends Record<string, any>>(
     }
 
     // Apply the transformation
-    target[key] = method(path ? result[path] : result);
+    const data = path ? (result as any)[path] : result;
+    target[key as string] = method(data);
   });
 
   return transformed;
@@ -203,4 +190,19 @@ export function convertDienstPlanname(data: any) {
   const converted_planname = convertStringToSnakeCase(data.planname);
   data['converted_planname'] = `d-${converted_planname}`;
   return data;
+}
+
+export function newDate(tag: string | Date | number = ''): Date {
+  if (!tag) return new Date();
+  const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
+  const date = new Date(tag);
+  // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
+  if (typeof tag === 'string' && dateRegEx.test(tag)) {
+    tag = new Date(`${tag}T12:00:00.000Z`);
+  }
+  return date;
+}
+
+export function newDateYearMonthDay(year: number, month: number, day: number): Date {
+  return new Date(year, month, day, 12);
 }

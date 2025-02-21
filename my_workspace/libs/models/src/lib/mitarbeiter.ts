@@ -1,18 +1,26 @@
 import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
-import { getWeiterbildungsjahr, automatischeEinteilungAnfang, automatischeEinteilungEnde } from './helpers/mitarbeiter';
+import {
+  getWeiterbildungsjahr,
+  automatischeEinteilungAnfang,
+  automatischeEinteilungEnde,
+  arbeitszeitAbspracheAnfang,
+  arbeitszeitAbspracheEnde
+} from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import {
   getDefaultTeam,
-  getDefaultKontingents,
   getMitarbeiterById,
   getByFreigabenTypenIds,
+  kontingent,
   dienstfreigabe,
-  automatischeeinteilung,
-  arbeitszeitabsprache
+  automatische_einteilung,
+  arbeitszeit_absprache,
+  mitarbeiter_default_eingeteilt
 } from '@my-workspace/prisma_cruds';
 
-import { newDate, transformObject } from '@my-workspace/utils';
+import { newDate, processData, transformObject } from '@my-workspace/utils';
 import { formatDate } from 'date-fns';
+import { argv0 } from 'process';
 
 type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
 
@@ -32,7 +40,7 @@ export async function getDefaultTeamForMitarbeiter(
     defaultTeam = await getDefaultTeam();
   }
   if (!defaultTeam && !defaultKontingent) {
-    defaultKontingent = await getDefaultKontingents();
+    defaultKontingent = await kontingent.getDefaults();
   }
 
   if (defaultTeam) {
@@ -107,7 +115,7 @@ export async function getFreigegebeneDienste(mitarbeiterId: number) {
 }
 
 export async function getAutomatischeEinteilungen(mitarbeiterId: number) {
-  let automatischeEinteilungen = await automatischeeinteilung.getByMitarbeiterId(mitarbeiterId);
+  let automatischeEinteilungen = await automatische_einteilung.getByMitarbeiterId(mitarbeiterId);
   automatischeEinteilungen = automatischeEinteilungen.map((ae) => {
     const aeObj = transformObject(ae, [
       {
@@ -127,13 +135,99 @@ export async function getAutomatischeEinteilungen(mitarbeiterId: number) {
 }
 
 export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
-  let arbeitszeitAbsprachen = await arbeitszeitabsprache.getByMitarbeiterId(mitarbeiterId)
+  let arbeitszeitAbsprachen = await arbeitszeit_absprache.getByMitarbeiterId(mitarbeiterId);
   arbeitszeitAbsprachen = arbeitszeitAbsprachen.map((aa) => {
     const aaObj = transformObject(aa, [
-      { key: 'von', method: (aa) => (aa?.von ? formatDate(aa.von, 'yyyy-MM-dd') : aa.von) },
-      { key: 'bis', method: (aa) => (aa?.bis ? formatDate(aa.bis, 'yyyy-MM-dd') : aa.bis) }
+      { key: 'anfang', method: arbeitszeitAbspracheAnfang },
+      { key: 'anfang', method: arbeitszeitAbspracheEnde },
+      {
+        key: 'arbeitszeit_von_time',
+        method: (ae) => (ae?.arbeitszeit_von ? formatDate(ae.arbeitszeit_von, 'HH:mm') : ae.arbeitszeit_von)
+      },
+      {
+        key: 'arbeitszeit_bis_time',
+        method: (ae) => (ae?.arbeitszeit_bis ? formatDate(ae.arbeitszeit_bis, 'HH:mm') : ae.arbeitszeit_bis)
+      }
     ]);
     return aaObj;
   });
+  return arbeitszeitAbsprachen;
+}
 
+type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
+
+type TResult = {
+  rotationen: {
+    [key: number]: [];
+  };
+  kontingente: {
+    [key: number]: kontingents & {
+      default_last_year?: number;
+      einteilungen?: {
+        while_in_rotation: {
+          default_eingeteilt: number;
+          eingeteilt_sum: number;
+          rotationen: object;
+        };
+        all: {
+          default_eingeteilt: number;
+          eingeteilt_sum: number;
+          rotationen: object;
+        };
+      };
+    };
+  };
+  defaults: HashObjType<
+    {
+      id: number;
+      mitarbeiter_id: number;
+      eingeteilt: number;
+      year: number;
+    },
+    false
+  >;
+  counted_in_kontingent: object;
+};
+
+function createKontingentEingeteiltDefault(kontingent: kontingents, kontingentId = 0, resultObj: TResult) {
+  if (resultObj.kontingente[kontingentId]) {
+    return resultObj;
+  }
+  const defaultValue = resultObj.defaults[kontingentId]?.eingeteilt || 0;
+  const lastYear = resultObj.defaults[kontingentId]?.year || 0;
+  resultObj.rotationen[kontingentId] = [];
+  resultObj.kontingente[kontingentId] = kontingent;
+  resultObj.kontingente[kontingentId]['default_last_year'] = lastYear;
+  resultObj.kontingente[kontingentId]['einteilungen'] = {
+    while_in_rotation: {
+      default_eingeteilt: 0,
+      eingeteilt_sum: 0,
+      rotationen: {}
+    },
+    all: {
+      default_eingeteilt: defaultValue,
+      eingeteilt_sum: defaultValue,
+      rotationen: {}
+    }
+  };
+}
+
+export async function getKontingentEingeteiltBasis(mitarbeiterId: number) {
+  const kontingente = await kontingent.getAll();
+  const kontigentDefaultEingeteiltSum =
+    await mitarbeiter_default_eingeteilt.getKontingentDefaultEingeteiltsSum(mitarbeiterId);
+
+  const defaults = processData('id', kontigentDefaultEingeteiltSum);
+
+  const result = {
+    rotationen: {},
+    kontingente: {},
+    defaults,
+    counted_in_kontingent: {}
+  };
+
+  for (const kontingent of kontingente) {
+    createKontingentEingeteiltDefault(kontingent, kontingent.id, result);
+  }
+  return result;
 }

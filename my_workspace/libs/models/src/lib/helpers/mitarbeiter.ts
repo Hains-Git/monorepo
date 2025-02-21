@@ -1,5 +1,5 @@
 import { newDate } from '@my-workspace/utils';
-import { automatische_einteilungens, po_diensts, zeitraumkategories } from '@prisma/client';
+import { arbeitszeit_absprachens, automatische_einteilungens, po_diensts, zeitraumkategories } from '@prisma/client';
 import { startOfYear, formatDate } from 'date-fns';
 
 export function getWeiterbildungsjahr(aSeit: Date | null, anrechenbareZeit: number | null) {
@@ -54,4 +54,28 @@ export function automatischeEinteilungEnde(automatischeEinteilung: TAutomatische
     result = automatischeEinteilung.zeitraumkategories.ende;
   }
   return formatDate(result, 'yyyy-MM-dd');
+}
+
+type TArbeitszeitAbsprache = arbeitszeit_absprachens & {
+  zeitraumkategories: zeitraumkategories;
+};
+export function arbeitszeitAbspracheAnfang(arbeitszeitAbsprache: TArbeitszeitAbsprache) {
+  const today = newDate();
+  let result = startOfYear(today);
+  if (arbeitszeitAbsprache?.von) {
+    result = arbeitszeitAbsprache.von;
+  } else if (arbeitszeitAbsprache?.zeitraumkategories?.anfang) {
+    result = arbeitszeitAbsprache.zeitraumkategories.anfang;
+  }
+  return result;
+}
+export function arbeitszeitAbspracheEnde(arbeitszeitAbsprache: TArbeitszeitAbsprache) {
+  const today = newDate();
+  let result = startOfYear(today);
+  if (arbeitszeitAbsprache?.bis) {
+    result = arbeitszeitAbsprache.bis;
+  } else if (arbeitszeitAbsprache?.zeitraumkategories?.ende) {
+    result = arbeitszeitAbsprache.zeitraumkategories?.ende;
+  }
+  return result;
 }
