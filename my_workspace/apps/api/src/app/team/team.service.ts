@@ -27,13 +27,12 @@ export class TeamService {
   }
 
   async createTeam(id: number, body: any) {
-    console.log('createTeam body', body);
     const args: TeamCreateOrUpdate = {
       id: Number(id) || 0,
       name: String(body.name).trim(),
-      default: !!body.default || body.default === 'true',
+      default: body.default === 'true' || body.default === true,
       kostenstelle_id: Number(body.kostenstelle_id) || 0,
-      verteiler_default: !!body.verteiler_default || body.verteiler_default === 'true',
+      verteiler_default: body.verteiler_default === 'true' || body.verteiler_default === true,
       krank_puffer: Number(body.krank_puffer) || 0,
       color: String(body.color).toLowerCase(),
       funktionen_ids: [],
