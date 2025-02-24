@@ -103,7 +103,6 @@ export type TeamInputType = {
 };
 
 export async function checkTeamInput(input: TeamInputType, id: number, kostenstelle_id: number) {
-  console.log('CheckInput', input, id, kostenstelle_id);
   const msg = [];
   const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [id] } } });
   const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: kostenstelle_id } });

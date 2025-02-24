@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { prismaDb } from '@my-workspace/prisma_hains';
 import * as Team from './team';
 
@@ -19,6 +18,14 @@ const createTeam = async (teamName = 'NameAlreadyExists', defaultTeam = true) =>
       }
     }
   });
+
+beforeEach(async () => {
+  vi.clearAllMocks();
+});
+
+afterAll(async () => {
+  vi.restoreAllMocks();
+});
 
 describe('teams', () => {
   describe('checkTeamInput', () => {
@@ -373,19 +380,11 @@ describe('teams', () => {
     });
   });
 
-  // Mock /Spy is not working currently!!!!!!!!!!!!!!!!!!!
-
   describe('create or update team', () => {
     let oldDefaultId = 0;
     beforeAll(async () => {
       await createTeam();
       oldDefaultId = (await prismaDb.teams.findFirst({ where: { default: true } }))?.id || 0;
-      vi.spyOn(Team, 'checkTeamInput').mockImplementation(async () => '');
-      vi.spyOn(Team, 'uncheckOldDefaultTeam').mockImplementation(async () => {});
-      vi.spyOn(Team, 'addTeamFunktionen').mockImplementation(async () => {});
-      vi.spyOn(Team, 'addTeamKrankpuffer').mockImplementation(async () => {});
-      vi.spyOn(Team, 'addTeamVKSoll').mockImplementation(async () => {});
-      vi.spyOn(Team, 'addTeamKopfSoll').mockImplementation(async () => {});
     });
 
     afterAll(async () => {
@@ -405,7 +404,6 @@ describe('teams', () => {
           OR: [{ name: 'CreateNewTeam' }, { name: 'NameAlreadyExists' }]
         }
       });
-      vi.restoreAllMocks();
     });
 
     test('create team', async () => {
@@ -414,8 +412,8 @@ describe('teams', () => {
         name: 'CreateNewTeam',
         default: true,
         verteiler_default: false,
-        color: '#fff',
-        krank_puffer: 0,
+        color: '#aaa',
+        krank_puffer: 5,
         kostenstelle_id: 1,
         team_kopf_soll: [],
         team_vk_soll: [],
@@ -426,15 +424,12 @@ describe('teams', () => {
       expect(result).not.toBeNull();
       expect(typeof result).toBe('object');
 
-      // expect(Team.checkTeamInput).toHaveBeenCalledTimes(1);
-      // expect(Team.uncheckOldDefaultTeam).toHaveBeenCalledTimes(1);
-      // expect(Team.addTeamFunktionen).toHaveBeenCalledTimes(1);
-      // expect(Team.addTeamKrankpuffer).toHaveBeenCalledTimes(1);
-      // expect(Team.addTeamVKSoll).toHaveBeenCalledTimes(1);
-      // expect(Team.addTeamKopfSoll).toHaveBeenCalledTimes(1);
-
       if (typeof result !== 'object') return;
       expect(result?.name).toBe('CreateNewTeam');
+      expect(result?.id).toBeGreaterThan(0);
+      expect(result?.default).toBe(true);
+      expect(result?.krank_puffer).toBe(5);
+      expect(result?.color).toBe('#aaa');
     });
 
     test('update team', async () => {
@@ -459,13 +454,6 @@ describe('teams', () => {
 
       expect(result).not.toBeNull();
       expect(typeof result).toBe('object');
-
-      // expect(Team.checkTeamInput).toHaveBeenCalledTimes(2);
-      // expect(Team.uncheckOldDefaultTeam).toHaveBeenCalledTimes(2);
-      // expect(Team.addTeamFunktionen).toHaveBeenCalledTimes(2);
-      // expect(Team.addTeamKrankpuffer).toHaveBeenCalledTimes(2);
-      // expect(Team.addTeamVKSoll).toHaveBeenCalledTimes(2);
-      // expect(Team.addTeamKopfSoll).toHaveBeenCalledTimes(2);
 
       if (typeof result !== 'object') return;
       expect(result?.id).toBe(nameAlreadyExistsTeamId);
