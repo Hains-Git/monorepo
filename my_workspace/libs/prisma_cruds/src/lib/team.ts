@@ -307,10 +307,5 @@ export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
   await addTeamVKSoll(args.team_vk_soll, record.id);
   await addTeamKopfSoll(args.team_kopf_soll, record.id);
 
-  return await prismaDb.teams.findFirst({
-    where: {
-      id: record.id
-    },
-    include: teamsBaseIncludes
-  });
+  return await getAllTeamsWithMainIncludes();
 }
