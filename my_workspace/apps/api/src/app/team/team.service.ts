@@ -41,42 +41,36 @@ export class TeamService {
       body.funktionen_ids = JSON.parse(body.funktionen_ids);
     }
     if (Array.isArray(body.funktionen_ids)) {
-      args.funktionen_ids = body.funktionen_ids.map((fId) => Number(fId) || 0).filter((fId) => fId > 0);
+      args.funktionen_ids = body.funktionen_ids.map((fId) => Number(fId) || 0);
     }
     if (typeof body.team_kw_krankpuffers === 'string') {
       body.team_kw_krankpuffers = JSON.parse(body.team_kw_krankpuffers);
     }
     if (Array.isArray(body.team_kw_krankpuffers)) {
-      args.team_kw_krankpuffers = body.team_kw_krankpuffers
-        .map((kw) => ({
-          kw: Number(kw.kw) || 0,
-          puffer: Number(kw.puffer) || 0
-        }))
-        .filter((kw) => kw.kw > 0 && kw.kw < 54 && kw.puffer >= 0);
+      args.team_kw_krankpuffers = body.team_kw_krankpuffers.map((kw) => ({
+        kw: Number(kw.kw) || 0,
+        puffer: Number(kw.puffer) || 0
+      }));
     }
     if (typeof body.team_vk_soll === 'string') {
       body.team_vk_soll = JSON.parse(body.team_vk_soll);
     }
     if (Array.isArray(body.team_vk_soll)) {
-      args.team_vk_soll = body.team_vk_soll
-        .map((vk) => ({
-          soll: Number(vk.soll) || 0,
-          von: newDate(vk.von),
-          bis: newDate(vk.bis)
-        }))
-        .filter((vk) => vk.soll >= 0 && vk.von.getTime() && vk.bis.getTime());
+      args.team_vk_soll = body.team_vk_soll.map((vk) => ({
+        soll: Number(vk.soll) || 0,
+        von: newDate(vk.von),
+        bis: newDate(vk.bis)
+      }));
     }
     if (typeof body.team_kopf_soll === 'string') {
       body.team_kopf_soll = JSON.parse(body.team_kopf_soll);
     }
     if (Array.isArray(body.team_kopf_soll)) {
-      args.team_kopf_soll = body.team_kopf_soll
-        .map((kopf) => ({
-          soll: Number(kopf.soll) || 0,
-          von: newDate(kopf.von),
-          bis: newDate(kopf.bis)
-        }))
-        .filter((kopf) => kopf.soll >= 0 && kopf.von.getTime() && kopf.bis.getTime());
+      args.team_kopf_soll = body.team_kopf_soll.map((kopf) => ({
+        soll: Number(kopf.soll) || 0,
+        von: newDate(kopf.von),
+        bis: newDate(kopf.bis)
+      }));
     }
     return await createOrUpdateTeam(args);
   }
