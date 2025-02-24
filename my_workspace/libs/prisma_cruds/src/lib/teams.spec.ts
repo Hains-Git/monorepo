@@ -44,135 +44,155 @@ describe('checkTeamInput', () => {
       'Name nicht zulässig.',
       'Farbe nicht zulässig, nur HEX-Farben erlaubt.',
       'Krankpuffer muss größer oder gleich 0 sein.',
-      'Kostenstelle nicht gefunden.'
+      'Kostenstelle nicht gefunden.',
+      'Ungültige oder doppelte Funktionen gefunden.',
+      'Ungültige Krankpuffer (KW < 1 oder > 53 oder puffer < 0) gefunden.',
+      'Ungültige VK-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.',
+      'Ungültige Kopf-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.'
     ].join('\n');
 
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'Kein Team',
-          default: false,
-          verteiler_default: false,
-          color: 'red',
-          krank_puffer: -1
-        },
-        -1,
-        -1
-      )
+      await Team.checkTeamInput({
+        name: 'Kein Team',
+        default: false,
+        verteiler_default: false,
+        color: 'red',
+        krank_puffer: -1,
+        id: -1,
+        kostenstelle_id: -1,
+        team_kw_krankpuffers: [{ kw: 55, puffer: -1 }],
+        team_vk_soll: [{ soll: -1, von: new Date(), bis: new Date() }],
+        team_kopf_soll: [{ soll: -1, von: new Date(), bis: new Date() }],
+        funktionen_ids: [-10, 0]
+      })
     ).toEqual(result);
   });
 
   test('name.length > 50', async () => {
     const result = ['Name darf maximal 50 Zeichen lang sein.'].join('\n');
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'a'.repeat(51),
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'a'.repeat(51),
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
   });
 
   test('name.includes("_")', async () => {
     const result = ['Name darf kein "_" enthalten.'].join('\n');
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'test_test',
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'test_test',
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
   });
 
   test('name = ""', async () => {
     const result = ['Name muss ausgefüllt sein.'].join('\n');
     expect(
-      await Team.checkTeamInput(
-        {
-          name: '',
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: '',
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
   });
 
   test('name already exists', async () => {
     const result = ['Name bereits vergeben.'].join('\n');
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'NameAlreadyExists',
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'NameAlreadyExists',
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
   });
 
   test('name.toLowerCase() != kein team', async () => {
     const result = ['Name nicht zulässig.'].join('\n');
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'KEIN TEAM',
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'KEIN TEAM',
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'KeiN TeaM',
-          default: false,
-          verteiler_default: false,
-          color: '#fff',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'KeiN TeaM',
+        default: false,
+        verteiler_default: false,
+        color: '#fff',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual(result);
   });
 
   test('all checks pass', async () => {
     expect(
-      await Team.checkTeamInput(
-        {
-          name: 'NameDoesNotAlreadyExists',
-          default: false,
-          verteiler_default: false,
-          color: '#fffddd',
-          krank_puffer: 0
-        },
-        0,
-        1
-      )
+      await Team.checkTeamInput({
+        name: 'NameDoesNotAlreadyExists',
+        default: false,
+        verteiler_default: false,
+        color: '#fffddd',
+        krank_puffer: 0,
+        id: 0,
+        kostenstelle_id: 1,
+        team_kw_krankpuffers: [],
+        team_vk_soll: [],
+        team_kopf_soll: [],
+        funktionen_ids: []
+      })
     ).toEqual('');
   });
 });

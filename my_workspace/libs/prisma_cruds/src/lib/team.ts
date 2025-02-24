@@ -102,11 +102,24 @@ export type TeamInputType = {
   color: string;
 };
 
-export async function checkTeamInput(input: TeamInputType, id: number, kostenstelle_id: number) {
+export type TeamKWKrankPufferInput = { kw: number; puffer: number };
+export type TeamVKSollInput = { soll: number; von: Date; bis: Date };
+export type TeamKopfSollInput = { soll: number; von: Date; bis: Date };
+
+export type TeamCreateOrUpdate = TeamInputType & {
+  id: number;
+  kostenstelle_id: number;
+  team_kw_krankpuffers: TeamKWKrankPufferInput[];
+  team_vk_soll: TeamVKSollInput[];
+  team_kopf_soll: TeamKopfSollInput[];
+  funktionen_ids: number[];
+};
+
+export async function checkTeamInput(input: TeamCreateOrUpdate) {
   const msg = [];
-  const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [id] } } });
-  const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: kostenstelle_id } });
-  if (id < 0) msg.push('ID ist nicht zulässig.');
+  const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [input.id] } } });
+  const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: input.kostenstelle_id } });
+  if (input.id < 0) msg.push('ID ist nicht zulässig.');
   if (!input.name) msg.push('Name muss ausgefüllt sein.');
   else {
     if (nameVergeben) msg.push('Name bereits vergeben.');
@@ -119,10 +132,24 @@ export async function checkTeamInput(input: TeamInputType, id: number, kostenste
   if (!colorRegEx.test(input.color)) msg.push('Farbe nicht zulässig, nur HEX-Farben erlaubt.');
   if (input.krank_puffer < 0) msg.push('Krankpuffer muss größer oder gleich 0 sein.');
   if (!kostenStelle) msg.push('Kostenstelle nicht gefunden.');
+  if (input.funktionen_ids.length > 0) {
+    const funktionen = await prismaDb.funktions.findMany({ where: { id: { in: input.funktionen_ids } } });
+    if (funktionen.length !== input.funktionen_ids.length) msg.push('Ungültige oder doppelte Funktionen gefunden.');
+  }
+  if (input.team_kw_krankpuffers.length > 0) {
+    if (input.team_kw_krankpuffers.some((kp) => kp.kw < 1 || kp.kw > 53 || kp.puffer < 0))
+      msg.push('Ungültige Krankpuffer (KW < 1 oder > 53 oder puffer < 0) gefunden.');
+  }
+  if (input.team_vk_soll.length > 0) {
+    if (input.team_vk_soll.some((vk) => vk.soll < 0 || !vk.von.getTime() || !vk.bis.getTime()))
+      msg.push('Ungültige VK-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.');
+  }
+  if (input.team_kopf_soll.length > 0) {
+    if (input.team_kopf_soll.some((kopf) => kopf.soll < 0 || !kopf.von.getTime() || !kopf.bis.getTime()))
+      msg.push('Ungültige Kopf-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.');
+  }
   return msg.join('\n');
 }
-
-export type TeamKWKrankPufferInput = { kw: number; puffer: number };
 
 export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id: number) {
   await prismaDb.team_kw_krankpuffers.deleteMany({
@@ -162,8 +189,6 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
   });
 }
 
-export type TeamVKSollInput = { soll: number; von: Date; bis: Date };
-
 export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
   await prismaDb.team_vk_soll.deleteMany({
     where: {
@@ -182,8 +207,6 @@ export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
     }))
   });
 }
-
-export type TeamKopfSollInput = { soll: number; von: Date; bis: Date };
 
 export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number) {
   await prismaDb.team_kopf_soll.deleteMany({
@@ -217,16 +240,7 @@ export async function uncheckOldDefaultTeams(id: number) {
   });
 }
 
-export async function createOrUpdateTeam(
-  args: TeamInputType & {
-    id: number;
-    kostenstelle_id: number;
-    team_kw_krankpuffers: TeamKWKrankPufferInput[];
-    team_vk_soll: TeamVKSollInput[];
-    team_kopf_soll: TeamKopfSollInput[];
-    funktionen_ids: number[];
-  }
-) {
+export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
   const input = {
     name: args.name.trim(),
     default: args.default,
@@ -241,7 +255,15 @@ export async function createOrUpdateTeam(
     }
   };
 
-  const msg = await checkTeamInput(input, args.id, args.kostenstelle_id);
+  const msg = await checkTeamInput({
+    ...input,
+    id: args.id,
+    kostenstelle_id: args.kostenstelle_id,
+    team_kopf_soll: args.team_kopf_soll,
+    team_kw_krankpuffers: args.team_kw_krankpuffers,
+    team_vk_soll: args.team_vk_soll,
+    funktionen_ids: args.funktionen_ids
+  });
   if (msg) return msg;
 
   const record =

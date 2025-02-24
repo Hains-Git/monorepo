@@ -13,15 +13,24 @@ import { FraunhoferController } from './fraunhofer/fraunhofer.controller';
 import { FraunhoferService } from './fraunhofer/fraunhofer.service';
 import { MitarbeiterInfoController } from './mitarbeiterinfo/mitarbeiterinfo.controller';
 import { MitarbeiterInfoService } from './mitarbeiterinfo/mitarbeiterinfo.service';
+import { TeamService } from './team/team.service';
+import { TeamController } from './team/team.controller';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
   imports: [PrismaModule],
-  controllers: [AppController, AbwesenheitenController, MitarbeiterInfoController, FraunhoferController],
+  controllers: [
+    AppController,
+    AbwesenheitenController,
+    MitarbeiterInfoController,
+    TeamController,
+    FraunhoferController
+  ],
   providers: [
     AppService,
     AbwesenheitenService,
     MitarbeiterInfoService,
+    TeamService,
     FraunhoferService
     // {
     //   provide: APP_GUARD,
