@@ -204,7 +204,7 @@ export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number)
   });
 }
 
-export async function uncheckOldDefaultTeam(id: number) {
+export async function uncheckOldDefaultTeams(id: number) {
   await prismaDb.teams.updateMany({
     where: {
       default: true,
@@ -264,7 +264,7 @@ export async function createOrUpdateTeam(
   if (!record?.id) return 'Team konnte nicht erstellt oder aktualisiert werden.';
 
   if (record.default) {
-    await uncheckOldDefaultTeam(record.id);
+    await uncheckOldDefaultTeams(record.id);
   }
   await addTeamKrankpuffer(args.team_kw_krankpuffers, record.id);
   await addTeamFunktionen(args.funktionen_ids, record.id);

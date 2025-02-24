@@ -1,5 +1,6 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
 import * as Team from './team';
+import { teams } from '@prisma/client';
 
 const createTeam = async (teamName = 'NameAlreadyExists', defaultTeam = true) =>
   await prismaDb.teams.create({
@@ -383,8 +384,8 @@ describe('teams', () => {
   describe('create or update team', () => {
     let oldDefaultId = 0;
     beforeAll(async () => {
-      await createTeam();
       oldDefaultId = (await prismaDb.teams.findFirst({ where: { default: true } }))?.id || 0;
+      await createTeam();
     });
 
     afterAll(async () => {
@@ -430,6 +431,9 @@ describe('teams', () => {
       expect(result?.default).toBe(true);
       expect(result?.krank_puffer).toBe(5);
       expect(result?.color).toBe('#aaa');
+      const allDefaultTeams = await prismaDb.teams.findMany({ where: { default: true } });
+      expect(allDefaultTeams.length).toBe(1);
+      expect(allDefaultTeams[0].id).toBe(result?.id);
     });
 
     test('update team', async () => {
@@ -462,6 +466,251 @@ describe('teams', () => {
       expect(result?.krank_puffer).toBe(66);
       expect(result?.color).toBe('#ababab');
       expect(result?.verteiler_default).toBe(true);
+    });
+  });
+
+  describe('uncheckOldDefaultTeams', () => {
+    let oldDefaultId = 0;
+    let teamOne: teams | null = null;
+    let teamTwo: teams | null = null;
+    beforeAll(async () => {
+      oldDefaultId = (await prismaDb.teams.findFirst({ where: { default: true } }))?.id || 0;
+      teamOne = await createTeam('CreateNewDefaultTeam', true);
+      teamTwo = await createTeam('CreateNewNonDefaultTeam', false);
+    });
+
+    afterAll(async () => {
+      if (oldDefaultId > 0) {
+        await prismaDb.teams.update({
+          where: {
+            id: oldDefaultId
+          },
+          data: {
+            default: true
+          }
+        });
+      }
+
+      await prismaDb.teams.deleteMany({
+        where: {
+          OR: [{ name: 'CreateNewDefaultTeam' }, { name: 'CreateNewNonDefaultTeam' }]
+        }
+      });
+    });
+
+    test('Uncheck old default team', async () => {
+      if (!teamOne || !teamTwo) {
+        expect(false).toBe(true);
+        console.error('teamOne or teamTwo is null');
+        return;
+      }
+      // Unchecks all default teams except the one with the id of teamOne
+      await Team.uncheckOldDefaultTeams(teamOne.id);
+      const defaultTeams = await prismaDb.teams.findMany({ where: { default: true } });
+      expect(defaultTeams.length).toBe(1);
+      expect(defaultTeams[0].id).toBe(teamOne.id);
+
+      // Unchecks all default teams except the one with the id of teamTwo (Non-default team)
+      await Team.uncheckOldDefaultTeams(teamTwo.id);
+      const defaultTeams2 = await prismaDb.teams.findMany({ where: { default: true } });
+      expect(defaultTeams2.length).toBe(0);
+    });
+  });
+
+  describe('add properties of relational tables', () => {
+    let team: teams | null = null;
+    beforeAll(async () => {
+      team = await createTeam('CreateNewTeam', true);
+    });
+    afterAll(async () => {
+      if (team?.id) {
+        await prismaDb.teams.deleteMany({
+          where: {
+            id: team.id
+          }
+        });
+      } else {
+        console.error('Team not found', team);
+      }
+    });
+
+    test('addTeamKrankpuffer', async () => {
+      if (!team) {
+        console.error('Team not found');
+        expect(false).toBe(true);
+        return;
+      }
+      await Team.addTeamKrankpuffer(
+        [
+          {
+            kw: 1,
+            puffer: 10
+          },
+          {
+            kw: 2,
+            puffer: 20
+          }
+        ],
+        team.id
+      );
+      const findKrankpufferFirst = await prismaDb.team_kw_krankpuffers.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findKrankpufferFirst.length).toBe(2);
+      await Team.addTeamKrankpuffer(
+        [
+          {
+            kw: 3,
+            puffer: 5
+          }
+        ],
+        team.id
+      );
+      const findKrankpufferSecond = await prismaDb.team_kw_krankpuffers.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findKrankpufferSecond.length).toBe(1);
+      expect(findKrankpufferSecond[0].kw).toBe(3);
+      expect(findKrankpufferSecond[0].puffer).toBe(5);
+      await prismaDb.team_kw_krankpuffers.deleteMany({
+        where: {
+          team_id: team.id
+        }
+      });
+    });
+
+    test('addTeamFunktionen', async () => {
+      if (!team) {
+        console.error('Team not found');
+        expect(false).toBe(true);
+        return;
+      }
+      await Team.addTeamFunktionen([1, 2, 3], team.id);
+      const findFunktionenFirst = await prismaDb.team_funktions.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findFunktionenFirst.length).toBe(3);
+      await Team.addTeamFunktionen([4], team.id);
+      const findFunktionenSecond = await prismaDb.team_funktions.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findFunktionenSecond.length).toBe(1);
+      expect(findFunktionenSecond[0].funktion_id).toBe(4);
+      await prismaDb.team_funktions.deleteMany({
+        where: {
+          team_id: team.id
+        }
+      });
+    });
+
+    test('addTeamVKSoll', async () => {
+      if (!team) {
+        console.error('Team not found');
+        expect(false).toBe(true);
+        return;
+      }
+      await Team.addTeamVKSoll(
+        [
+          {
+            soll: 35,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          },
+          {
+            soll: 55,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          }
+        ],
+        team.id
+      );
+      const findVKSollFirst = await prismaDb.team_vk_soll.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findVKSollFirst.length).toBe(2);
+      await Team.addTeamVKSoll(
+        [
+          {
+            soll: 40,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          }
+        ],
+        team.id
+      );
+      const findVKSollSecond = await prismaDb.team_vk_soll.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findVKSollSecond.length).toBe(1);
+      expect(findVKSollSecond[0].soll).toBe(40);
+      await prismaDb.team_vk_soll.deleteMany({
+        where: {
+          team_id: team.id
+        }
+      });
+    });
+
+    test('addTeamKopfSoll', async () => {
+      if (!team) {
+        console.error('Team not found');
+        expect(false).toBe(true);
+        return;
+      }
+      await Team.addTeamKopfSoll(
+        [
+          {
+            soll: 35,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          },
+          {
+            soll: 59,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          }
+        ],
+        team.id
+      );
+      const findKopfSollFirst = await prismaDb.team_kopf_soll.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findKopfSollFirst.length).toBe(2);
+      await Team.addTeamKopfSoll(
+        [
+          {
+            soll: 21,
+            von: new Date('2021-01-01'),
+            bis: new Date('2021-12-31')
+          }
+        ],
+        team.id
+      );
+      const findKopfSollSecond = await prismaDb.team_kopf_soll.findMany({
+        where: {
+          team_id: team.id
+        }
+      });
+      expect(findKopfSollSecond.length).toBe(1);
+      expect(findKopfSollSecond[0].soll).toBe(21);
+      await prismaDb.team_kopf_soll.deleteMany({
+        where: {
+          team_id: team.id
+        }
+      });
     });
   });
 });
