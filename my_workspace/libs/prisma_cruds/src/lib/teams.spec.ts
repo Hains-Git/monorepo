@@ -419,7 +419,7 @@ describe('create or update team', () => {
   });
 
   test('create team', async () => {
-    const result = await Team.createOrUpdateTeam({
+    const input = {
       id: 0,
       name: 'CreateNewTeam',
       default: true,
@@ -431,7 +431,11 @@ describe('create or update team', () => {
       team_vk_soll: [],
       funktionen_ids: [],
       team_kw_krankpuffers: []
-    });
+    };
+    const resultWrongInput = await Team.createOrUpdateTeam({ ...input, id: -1 });
+    expect(typeof resultWrongInput).toBe('string');
+
+    const result = await Team.createOrUpdateTeam(input);
 
     expect(result).not.toBeNull();
     expect(typeof result).toBe('object');
