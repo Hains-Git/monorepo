@@ -45,7 +45,7 @@ describe('checkTeamInput', () => {
       'Farbe nicht zulässig, nur HEX-Farben erlaubt.',
       'Krankpuffer muss größer oder gleich 0 sein.',
       'Kostenstelle nicht gefunden.',
-      'Ungültige oder doppelte Funktionen gefunden.',
+      'Ungültige Funktionen gefunden.',
       'Ungültige Krankpuffer (KW < 1 oder > 53 oder puffer < 0) gefunden.',
       'Ungültige VK-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.',
       'Ungültige Kopf-Soll Werte (soll < 0, von/bis kein gültiges Datum) gefunden.'

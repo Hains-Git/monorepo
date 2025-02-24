@@ -133,8 +133,14 @@ export async function checkTeamInput(input: TeamCreateOrUpdate) {
   if (input.krank_puffer < 0) msg.push('Krankpuffer muss größer oder gleich 0 sein.');
   if (!kostenStelle) msg.push('Kostenstelle nicht gefunden.');
   if (input.funktionen_ids.length > 0) {
-    const funktionen = await prismaDb.funktions.findMany({ where: { id: { in: input.funktionen_ids } } });
-    if (funktionen.length !== input.funktionen_ids.length) msg.push('Ungültige oder doppelte Funktionen gefunden.');
+    const l = input.funktionen_ids.length;
+    for (let i = 0; i < l; i++) {
+      const funktion = await prismaDb.funktions.findFirst({ where: { id: input.funktionen_ids[i] } });
+      if (!funktion) {
+        msg.push('Ungültige Funktionen gefunden.');
+        break;
+      }
+    }
   }
   if (input.team_kw_krankpuffers.length > 0) {
     if (input.team_kw_krankpuffers.some((kp) => kp.kw < 1 || kp.kw > 53 || kp.puffer < 0))
