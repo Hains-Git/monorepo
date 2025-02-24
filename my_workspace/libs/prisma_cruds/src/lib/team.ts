@@ -1,18 +1,6 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { colorRegEx, newDate } from '@my-workspace/utils';
 
-export const teamsBaseIncludes = {
-  kostenstelle: true,
-  team_kw_krankpuffers: true,
-  team_kopf_soll: true,
-  team_vk_soll: true,
-  team_funktions: {
-    include: {
-      funktion: true
-    }
-  }
-};
-
 export async function getAllTeams() {
   return await prismaDb.teams.findMany();
 }
@@ -27,7 +15,17 @@ export async function getDefaultTeam() {
 
 export async function getAllTeamsWithMainIncludes() {
   return await prismaDb.teams.findMany({
-    include: teamsBaseIncludes
+    include: {
+      kostenstelle: true,
+      team_kw_krankpuffers: true,
+      team_kopf_soll: true,
+      team_vk_soll: true,
+      team_funktions: {
+        include: {
+          funktion: true
+        }
+      }
+    }
   });
 }
 
