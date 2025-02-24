@@ -25,7 +25,7 @@ Innerhalb des hains_monorepo Containers ausführen!
 - Next.js Komponente erstellen:
   `npx nx g @nx/next:component apps/hains/components/my-new-component`
 - Test mit NX aufrufen, Beispielaufruf Tests der prisma_cruds-Library:
-  `npx nx test prisma_cruds (teams.spec.ts)`
+  `npx nx test prisma_cruds (teams.spec.ts) (--coverage)`
 
 ### Create new app.
 
