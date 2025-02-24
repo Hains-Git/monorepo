@@ -160,13 +160,15 @@ export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id:
 
   if (!kwpuffer.length) return;
 
+  const now = newDate();
   await prismaDb.team_kw_krankpuffers.createMany({
     data: kwpuffer.map((kp) => ({
       ...kp,
       team_id: id,
-      created_at: newDate(),
-      updated_at: newDate()
-    }))
+      created_at: now,
+      updated_at: now
+    })),
+    skipDuplicates: true
   });
 }
 
@@ -179,13 +181,15 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
 
   if (!funktionenIds.length) return;
 
+  const now = newDate();
   await prismaDb.team_funktions.createMany({
     data: funktionenIds.map((funktion_id) => ({
       team_id: id,
       funktion_id,
-      updated_at: newDate(),
-      created_at: newDate()
-    }))
+      updated_at: now,
+      created_at: now
+    })),
+    skipDuplicates: true
   });
 }
 
@@ -197,14 +201,16 @@ export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
   });
 
   if (!vkSoll.length) return;
+  const now = newDate();
 
   await prismaDb.team_vk_soll.createMany({
     data: vkSoll.map((soll) => ({
       ...soll,
       team_id: id,
-      created_at: newDate(),
-      updated_at: newDate()
-    }))
+      created_at: now,
+      updated_at: now
+    })),
+    skipDuplicates: true
   });
 }
 
@@ -217,13 +223,15 @@ export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number)
 
   if (!kopfSoll.length) return;
 
+  const now = newDate();
   await prismaDb.team_kopf_soll.createMany({
     data: kopfSoll.map((soll) => ({
       ...soll,
       team_id: id,
-      created_at: newDate(),
-      updated_at: newDate()
-    }))
+      created_at: now,
+      updated_at: now
+    })),
+    skipDuplicates: true
   });
 }
 

@@ -11,7 +11,11 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class TeamService {
   async deleteTeam(id: number) {
-    return await destroyOneTeam(id);
+    const msg = await destroyOneTeam(Number(id) || 0);
+    return {
+      info: msg,
+      destroyed: !msg
+    };
   }
 
   async listTeams() {

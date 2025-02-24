@@ -6,7 +6,7 @@ export class TeamController {
   constructor(private readonly teamService: TeamService) {}
   @Post('team/delete/:id')
   async deleteTeam(@Param('id') id: number) {
-    return this.teamService.deleteTeam(Number(id) || 0);
+    return this.teamService.deleteTeam(id);
   }
 
   @Get('team/list')
