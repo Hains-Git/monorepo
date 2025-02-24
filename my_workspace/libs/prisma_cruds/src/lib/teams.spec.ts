@@ -440,15 +440,16 @@ describe('create or update team', () => {
     expect(result).not.toBeNull();
     expect(typeof result).toBe('object');
 
-    if (typeof result !== 'object') return;
-    expect(result?.name).toBe('CreateNewTeam');
-    expect(result?.id).toBeGreaterThan(0);
-    expect(result?.default).toBe(true);
-    expect(result?.krank_puffer).toBe(5);
-    expect(result?.color).toBe('#aaa');
+    if (!Array.isArray(result)) return;
+    const team = result.find((t) => t.name === 'CreateNewTeam');
+    expect(team?.name).toBe('CreateNewTeam');
+    expect(team?.id).toBeGreaterThan(0);
+    expect(team?.default).toBe(true);
+    expect(team?.krank_puffer).toBe(5);
+    expect(team?.color).toBe('#aaa');
     const allDefaultTeams = await prismaDb.teams.findMany({ where: { default: true } });
     expect(allDefaultTeams.length).toBe(1);
-    expect(allDefaultTeams[0].id).toBe(result?.id);
+    expect(allDefaultTeams[0].id).toBe(team?.id);
   });
 
   test('update team', async () => {
@@ -473,13 +474,13 @@ describe('create or update team', () => {
     expect(result).not.toBeNull();
     expect(typeof result).toBe('object');
 
-    if (typeof result !== 'object') return;
-    expect(result?.id).toBe(nameAlreadyExistsTeamId);
-    expect(result?.name).toBe('NameAlreadyExists');
-    expect(result?.default).toBe(false);
-    expect(result?.krank_puffer).toBe(66);
-    expect(result?.color).toBe('#ababab');
-    expect(result?.verteiler_default).toBe(true);
+    if (!Array.isArray(result)) return;
+    const team = result.find((t) => t.id === nameAlreadyExistsTeamId);
+    expect(team?.name).toBe('NameAlreadyExists');
+    expect(team?.default).toBe(false);
+    expect(team?.krank_puffer).toBe(66);
+    expect(team?.color).toBe('#ababab');
+    expect(team?.verteiler_default).toBe(true);
   });
 });
 
