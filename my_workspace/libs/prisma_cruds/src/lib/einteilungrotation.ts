@@ -21,11 +21,10 @@ export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) 
   });
 }
 
-export async function getRotationenInRange<TInclude extends Prisma.einteilung_rotationsInclude>(
-  anfang: Date,
-  ende: Date,
-  include?: TInclude
-) {
+export async function getRotationenInRange<
+  TInclude extends Prisma.einteilung_rotationsInclude,
+  TOrderBy extends Prisma.einteilung_rotationsOrderByWithRelationInput
+>(anfang: Date, ende: Date, include?: TInclude, orderBy?: TOrderBy) {
   return ((await prismaDb.einteilung_rotations.findMany({
     where: {
       OR: [
@@ -43,8 +42,9 @@ export async function getRotationenInRange<TInclude extends Prisma.einteilung_ro
         platzhalter: false
       }
     },
-    include
-  })) || []) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[];
+    include,
+    orderBy
+  })) || []) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude; orderBy: TOrderBy }>[];
 }
 
 export async function getRotationenByKontingentFlag() {

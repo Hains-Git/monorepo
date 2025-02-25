@@ -2,21 +2,6 @@ type HashObjType<T> = Record<string | number, T | T[]>;
 
 export const colorRegEx = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
-export function newDate(tag: string | Date | number = ''): Date {
-  if (!tag) return new Date();
-  const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
-  let date = new Date(tag);
-  // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
-  if (typeof tag === 'string' && dateRegEx.test(tag)) {
-    tag = new Date(`${tag}T12:00:00.000Z`);
-  }
-  return date;
-}
-
-export function newDateYearMonthDay(year: number, month: number, day: number): Date {
-  return new Date(year, month, day, 12);
-}
-
 /**
  * Maps an array of objects to a hash object based on a specified key.
  *

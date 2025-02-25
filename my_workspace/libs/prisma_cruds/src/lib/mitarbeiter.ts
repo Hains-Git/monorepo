@@ -41,3 +41,36 @@ export async function getMitarbeitersWithoutAccountInfo() {
 export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes['mitarbeiters']) {
   return await prismaDb.mitarbeiters.findMany(condition);
 }
+
+export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[]) {
+  return await prismaDb.mitarbeiters.findMany({
+    where: {
+      platzhalter: false,
+      OR: [
+        {
+          aktiv: true
+        },
+        {
+          id: {
+            in: mitarbeiterIds
+          }
+        }
+      ]
+    },
+    include: {
+      urlaubssaldo_abspraches: true,
+      funktion: {
+        include: {
+          teams: true
+        }
+      },
+      account_info: true,
+      vertrags: {
+        include: {
+          vertrags_arbeitszeits: true,
+          vertrags_phases: true
+        }
+      }
+    }
+  });
+}

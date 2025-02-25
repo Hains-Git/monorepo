@@ -6,5 +6,7 @@ export * from './lib/mitarbeiter';
 export * from './lib/vertrag';
 export * from './lib/planungsinfo';
 export * from './lib/planerdate/planerdate';
-export * as Antraege from './lib/antraege';
+export * as ArbeitszeitVerteilung from './lib/arbeitszeitverteilung';
+export * as Dienstbedarf from './lib/dienstbedarf';
+export * as Urlaubssaldi from './lib/urlaubssaldi';
 export * as Fraunhofer from './lib/fraunhofer';

@@ -4,20 +4,20 @@ import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } fr
 import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 interface RegelcodeHash {
-  is_bedarf: boolean;
+  isBedarf: boolean;
   feiertage: string;
   wochentage: string;
   monatstage: string;
   wochen: string;
   monate: string;
-  feiertage_r: string[];
-  wochentage_r: string[];
-  wochen_r: string[];
-  monate_r: string[];
-  is_nicht: boolean;
-  is_auch: boolean;
-  is_nur: boolean;
-  has_feiertag: boolean;
+  feiertageR: string[];
+  wochentageR: string[];
+  wochenR: string[];
+  monateR: string[];
+  isNicht: boolean;
+  isAuch: boolean;
+  isNur: boolean;
+  hasFeiertag: boolean;
 }
 
 const ZEITRAUMREGELN_REGEX = {
@@ -56,22 +56,7 @@ async function shouldCheckDate(
 }
 
 function splitRegelcode(regelcode: string) {
-  const hash: {
-    isBedarf: boolean;
-    feiertage: string;
-    wochentage: string;
-    monatstage: string;
-    wochen: string;
-    monate: string;
-    feiertageR: string[];
-    wochentageR: string[];
-    wochenR: string[];
-    monateR: string[];
-    isNicht: boolean;
-    isAuch: boolean;
-    isNur: boolean;
-    hasFeiertag: boolean;
-  } = {
+  const hash: RegelcodeHash = {
     isBedarf: regelcode === '',
     feiertage: '',
     wochentage: '',
@@ -152,7 +137,9 @@ async function checkDate(date: Date | PlanerDate, zeitraumkategorie: zeitraumkat
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
+    const originalDate = date;
     date = new PlanerDate(date);
+    await date.initializeFeiertage(originalDate);
   }
 
   const zeitraumAnfang = zeitraumkategorie.anfang;

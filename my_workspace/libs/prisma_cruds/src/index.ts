@@ -26,7 +26,7 @@ export * from './lib/einteilungrotation';
 export * from './lib/dienstkategorie';
 export * from './lib/dienstwunsch';
 export * from './lib/bedarfseintrag';
-export * from './lib/dienstbedarf';
+export * as _dienstbedarf from './lib/dienstbedarf';
 export * from './lib/kalenderwoche';
 export * from './lib/wochenbilanz';
 export * from './lib/kontingent';
