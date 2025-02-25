@@ -1,7 +1,7 @@
 import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
-import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
+import { getDefaultKontingents, getMitarbeiterById, _team } from '@my-workspace/prisma_cruds';
 import { newDate } from '@my-workspace/utils';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
@@ -19,7 +19,7 @@ export async function getDefaultTeamForMitarbeiter(
 ) {
   let team = null;
   if (!defaultTeam) {
-    defaultTeam = await getDefaultTeam();
+    defaultTeam = await _team.getDefaultTeam();
   }
   if (!defaultTeam && !defaultKontingent) {
     defaultKontingent = await getDefaultKontingents();

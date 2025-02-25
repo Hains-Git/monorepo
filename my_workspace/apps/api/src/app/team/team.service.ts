@@ -1,15 +1,9 @@
-import {
-  createOrUpdateTeam,
-  destroyOneTeam,
-  getAllTeams,
-  getAllTeamsWithMainIncludes,
-  TeamCreateOrUpdate
-} from '@my-workspace/prisma_cruds';
+import { _team } from '@my-workspace/prisma_cruds';
 import { newDate } from '@my-workspace/utils';
 import { Injectable } from '@nestjs/common';
 
 const createArgs = (body: any, id: any) => {
-  const args: TeamCreateOrUpdate = {
+  const args: _team.TeamCreateOrUpdate = {
     id: Number(id) || 0,
     name: String(body.name).trim(),
     default: body.default === 'true' || body.default === true,
@@ -63,7 +57,7 @@ const createArgs = (body: any, id: any) => {
 @Injectable()
 export class TeamService {
   async deleteTeam(id: number) {
-    const msg = await destroyOneTeam(Number(id) || 0);
+    const msg = await _team.destroyOneTeam(Number(id) || 0);
     return {
       info: msg,
       destroyed: !msg
@@ -71,14 +65,14 @@ export class TeamService {
   }
 
   async listTeams() {
-    return await getAllTeams();
+    return await _team.getAllTeams();
   }
 
   async listTeamsWithIncludes() {
-    return await getAllTeamsWithMainIncludes();
+    return await _team.getAllTeamsWithMainIncludes();
   }
 
   async createTeam(id: number, body: any) {
-    return await createOrUpdateTeam(createArgs(body, id));
+    return await _team.createOrUpdateTeam(createArgs(body, id));
   }
 }
