@@ -3,6 +3,7 @@ import { getDienstplanung } from '@my-workspace/models';
 import { getAllApiData } from '@my-workspace/models';
 import { planungsInfoCreateOrupdate } from '@my-workspace/models';
 import { newDate } from '@my-workspace/utils';
+import { getPossibleDienstfrei } from '@my-workspace/prisma_cruds';
 
 @Injectable()
 export class AppService {
@@ -25,5 +26,16 @@ export class AppService {
     };
     const planungsinfo = await planungsInfoCreateOrupdate(params);
     return planungsinfo;
+  }
+
+  async getLocalTest() {
+    if (process.env.NODE_ENV !== 'development') {
+      return { error: 'Not allowed' };
+    }
+    const dates = [];
+    for (let i = 0; i < 31; i++) {
+      dates.push(new Date(2025, 0, i));
+    }
+    return await getPossibleDienstfrei(dates);
   }
 }

@@ -175,54 +175,110 @@ export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number
   const firstDate = tage[0];
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);
-  //   .includes(:po_dienst, :mitarbeiter, :einteilungsstatus, :einteilungskontext, :bedarfs_eintrags, :dienstplan, :dienstplan => [
-  //     :dienstplanbedarf
-  //   ], :mitarbeiter => [
-  //     :accountInfo
-  //   ], :bedarfs_eintrags => [
-  //     :first_bedarfs_eintrag
-  //   ], :po_dienst => [:team])
-  //
-  // Select auf alle notwendigen Includes
-  // should_add_dienstfrei fehlt dazu auch noch
-  return await prismaDb.$queryRaw`
-    SELECT DISTINCT 
-    de.*,
-    FROM diensteinteilungs AS de
-    JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
-    JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id
-    JOIN bedarfs_eintrags AS be ON be.po_dienst_id = de.po_dienst_id 
-    AND be.tag = de.tag
-    AND de.bereich_id IS NULL OR de.bereich_id = be.bereich_id
-    LEFT OUTER JOIN dienstplans AS dpl ON (
-      dpl.dienstplanbedarf_id = be.dienstplanbedarf_id OR dpl.dienstplanbedarf_id IS NULL
-    ) AND de.dienstplan_id = dpl.id
-    JOIN bedarfs_eintrags AS be1 ON be1.first_entry = bedarfs_eintrags.first_entry
-    JOIN schichts AS s1 ON s1.bedarfs_eintrag_id = be1.id
-    JOIN arbeitszeittyps AS a1 ON a1.id = s1.arbeitszeittyp_id
-    WHERE ${onlyCounts ? 'es.counts = true' : 'es.counts = true AND es.public = true'} 
-    AND m.platzhalter = FALSE
-    ${mitarbeiterIds.length ? `AND de.mitarbeiter_id IN (${mitarbeiterIds.join(',')})` : ''}
-    AND de.tag >= ${lastMonth}
-    AND (
-      ${tage
-        .map((tag) => {
-          return `(
-          de.tag < ${tag}
-          AND be1.tag < ${tag}
-          AND (
-            be1.tag + interval '1 days'*be1.ausgleich_tage >= ${tag}
-            OR s1.anfang::DATE + interval '1 days'*be1.ausgleich_tage > ${tag}
-            OR (
-              s1.ende::DATE > ${tag}
-              AND a1.dienstzeit = FALSE
-              AND a1.arbeitszeit = FALSE
-            )
-          )
-        )`;
-        })
-        .join(' OR ')}
-      ORDER BY de.tag ASC
-    )
-  `;
+  const where: Prisma.diensteinteilungsWhereInput = {
+    tag: {
+      gte: lastMonth
+    },
+    mitarbeiters: {
+      platzhalter: false
+    },
+    einteilungsstatuses: onlyCounts ? { counts: true } : { counts: true, public: true },
+    po_diensts: {
+      bedarfs_eintrags: {
+        some: {
+          tag: {
+            in: tage
+          },
+          OR: tage.map((tag) => ({
+            first_bedarf: {
+              tag
+            }
+          }))
+        }
+      }
+    }
+  };
+  console.log(mitarbeiterIds);
+  if (mitarbeiterIds.length) {
+    where.mitarbeiter_id = {
+      in: mitarbeiterIds
+    };
+  }
+  const getEinteilungen = async (skip: number[]) =>
+    await prismaDb.diensteinteilungs.findMany({
+      where: {
+        ...where,
+        id: {
+          notIn: skip
+        }
+      },
+      take: 5000,
+      include: {
+        po_diensts: {
+          include: {
+            teams: true,
+            bedarfs_eintrags: {
+              include: {
+                first_bedarf: true
+              },
+              where: {
+                tag: {
+                  in: tage
+                }
+              }
+            }
+          }
+        },
+        mitarbeiters: {
+          include: {
+            account_info: true
+          }
+        },
+        einteilungsstatuses: true,
+        einteilungskontext: true,
+        dienstplans: {
+          include: {
+            dienstplanbedarves: true
+          }
+        }
+      },
+      orderBy: {
+        tag: 'asc'
+      }
+    });
+  // return await prismaDb.$queryRaw<diensteinteilungs[]>`
+  //   SELECT DISTINCT
+  //   de.*,
+  //   FROM diensteinteilungs AS de
+  //   JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
+  //   JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id
+  //   JOIN bedarfs_eintrags AS be ON be.po_dienst_id = de.po_dienst_id
+  //   AND be.tag = de.tag
+  //   AND de.bereich_id IS NULL OR de.bereich_id = be.bereich_id
+  //   LEFT OUTER JOIN dienstplans AS dpl ON (
+  //     dpl.dienstplanbedarf_id = be.dienstplanbedarf_id OR dpl.dienstplanbedarf_id IS NULL
+  //   ) AND de.dienstplan_id = dpl.id
+  //   JOIN bedarfs_eintrags AS be1 ON be1.first_entry = bedarfs_eintrags.first_entry
+  //   JOIN schichts AS s1 ON s1.bedarfs_eintrag_id = be1.id
+  //   JOIN arbeitszeittyps AS a1 ON a1.id = s1.arbeitszeittyp_id
+  //   AND (
+  //     ${tage
+  //       .map((tag) => {
+  //         return `(
+  //         de.tag < ${tag}
+  //         AND be1.tag < ${tag}
+  //         AND (
+  //           be1.tag + interval '1 days'*be1.ausgleich_tage >= ${tag}
+  //           OR s1.anfang::DATE + interval '1 days'*be1.ausgleich_tage > ${tag}
+  //           OR (
+  //             s1.ende::DATE > ${tag}
+  //             AND a1.dienstzeit = FALSE
+  //             AND a1.arbeitszeit = FALSE
+  //           )
+  //         )
+  //       )`;
+  //       })
+  //       .join(' OR ')}
+  //   )
+  // `;
 }

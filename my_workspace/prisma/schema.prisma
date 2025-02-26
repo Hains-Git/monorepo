@@ -579,6 +579,7 @@ model diensteinteilungs {
   info_comment          String?              @default("") @db.VarChar
   is_optional           Boolean?             @default(false)
   po_diensts            po_diensts?          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c69b8191a")
+  einteilungskontext    einteilungskontexts? @relation(fields: [einteilungskontext_id], references: [id])
   einteilungsstatuses   einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2a437cd8da")
   dienstplans           dienstplans?         @relation(fields: [dienstplan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_37afbd5ac9")
   mitarbeiters          mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8d2ed7f2ce")
@@ -972,16 +973,17 @@ model einteilung_versions {
 }
 
 model einteilungskontexts {
-  id             Int      @id @default(autoincrement())
-  name           String?  @db.VarChar
-  beschreibung   String?  @db.VarChar
-  color          String?  @default("#ffffff") @db.VarChar
-  created_at     DateTime @db.Timestamp(6)
-  updated_at     DateTime @db.Timestamp(6)
-  tagesverteiler Boolean? @default(false)
-  default        Boolean? @default(false)
-  ersatz         Boolean? @default(false)
-  einspringen    Boolean? @default(false)
+  id                Int                 @id @default(autoincrement())
+  name              String?             @db.VarChar
+  beschreibung      String?             @db.VarChar
+  color             String?             @default("#ffffff") @db.VarChar
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  tagesverteiler    Boolean?            @default(false)
+  default           Boolean?            @default(false)
+  ersatz            Boolean?            @default(false)
+  einspringen       Boolean?            @default(false)
+  diensteinteilungs diensteinteilungs[]
 }
 
 model einteilungsstatuses {
