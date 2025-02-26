@@ -2,7 +2,7 @@ import { newDate, processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
 import { mitarbeiters } from '@prisma/client';
 
-import { getMitarbeitersWithoutAccountInfo, getAccountInfoForMitarbeiterInfo } from '@my-workspace/prisma_cruds';
+import { _account_info, _mitarbeiter } from '@my-workspace/prisma_cruds';
 import { vkAndVgruppeAm } from '@my-workspace/models';
 
 function createFakeAccountInfos(mitarbeiters: mitarbeiters[]) {
@@ -86,9 +86,9 @@ function vertragsVarianteVonBis(vertragsStuve) {
 }
 
 export async function getMitarbeiterInfos() {
-  const mitarbeitersWithoutAccountInfo = await getMitarbeitersWithoutAccountInfo();
+  const mitarbeitersWithoutAccountInfo = await _mitarbeiter.getMitarbeitersWithoutAccountInfo();
   const fakeAccountInfos = createFakeAccountInfos(mitarbeitersWithoutAccountInfo);
-  const accountInfos = await getAccountInfoForMitarbeiterInfo();
+  const accountInfos = await _account_info.getAccountInfoForMitarbeiterInfo();
   const allAccountInfos = [...accountInfos, ...fakeAccountInfos];
   const mitarbeiterInfos = processData('id', allAccountInfos, [addWeiterbildungsjahr, addVk]);
   return mitarbeiterInfos;

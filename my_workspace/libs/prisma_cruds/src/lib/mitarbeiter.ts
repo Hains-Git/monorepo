@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { mitarbeiters, Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { FindManyArgsTypes } from './utils/types';
 
@@ -38,6 +38,9 @@ export async function getMitarbeitersWithoutAccountInfo() {
   });
 }
 
-export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes['mitarbeiters']) {
-  return await prismaDb.mitarbeiters.findMany(condition);
+export async function getMitarbeitersByCustomQuery(
+  condition: FindManyArgsTypes['mitarbeiters']
+): Promise<mitarbeiters[] | []> {
+  const result = await prismaDb.mitarbeiters.findMany(condition);
+  return result;
 }

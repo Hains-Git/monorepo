@@ -11,10 +11,10 @@ export class MitarbeiterInfoController {
     return this.mitarbeiterInfoService.getMitarbeiterInfoData();
   }
   @Get('mitarbeiter_details')
-  getMitarbeiterDetails(@Query() query: { id: number; userId: number }) {
-    console.log('getMitarbeiterDetails');
+  getMitarbeiterDetails(@Query() query: { id: number; user_id: number }) {
+    console.log('getMitarbeiterDetails', query);
     const mitarbeiterId = query.id;
-    const userId = query.userId;
+    const userId = query.user_id;
     return this.mitarbeiterInfoService.getMitarbeiterDetails(mitarbeiterId, userId);
   }
 

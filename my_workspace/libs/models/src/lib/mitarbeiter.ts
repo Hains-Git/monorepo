@@ -8,19 +8,18 @@ import {
 } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import {
-  getDefaultTeam,
-  getMitarbeiterById,
-  getByFreigabenTypenIds,
   kontingent,
   dienstfreigabe,
   automatische_einteilung,
   arbeitszeit_absprache,
-  mitarbeiter_default_eingeteilt
+  mitarbeiter_default_eingeteilt,
+  _mitarbeiter,
+  _po_dienst,
+  _team
 } from '@my-workspace/prisma_cruds';
 
 import { newDate, processData, transformObject } from '@my-workspace/utils';
 import { formatDate } from 'date-fns';
-import { argv0 } from 'process';
 
 type TDefaultKontingents = (kontingents & { teams: teams | null }) | null;
 
@@ -37,7 +36,7 @@ export async function getDefaultTeamForMitarbeiter(
 ) {
   let team = null;
   if (!defaultTeam) {
-    defaultTeam = await getDefaultTeam();
+    defaultTeam = await _team.getDefaultTeam();
   }
   if (!defaultTeam && !defaultKontingent) {
     defaultKontingent = await kontingent.getDefaults();
@@ -68,7 +67,7 @@ export async function mitarbeiterTeamAm(
 ) {
   let team;
   let rotation: TRot | undefined = undefined;
-  const mitarbeiter = await getMitarbeiterById(mitarbeiterId, {
+  const mitarbeiter = await _mitarbeiter.getMitarbeiterById(mitarbeiterId, {
     funktion: {
       include: {
         teams: true
@@ -106,7 +105,7 @@ export async function mitarbeiterTeamAm(
 async function freigegebeneDienste(mitarbeiterId: number, preset = false) {
   const freigabeTypen = await dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
   const freigabeTypenIds = freigabeTypen.map((ft) => ft.freigabetyp_id).filter(Boolean) as number[];
-  const dienste = await getByFreigabenTypenIds(freigabeTypenIds);
+  const dienste = await _po_dienst.getByFreigabenTypenIds(freigabeTypenIds);
   return dienste;
 }
 
@@ -142,11 +141,13 @@ export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
       { key: 'anfang', method: arbeitszeitAbspracheEnde },
       {
         key: 'arbeitszeit_von_time',
-        method: (ae) => (ae?.arbeitszeit_von ? formatDate(ae.arbeitszeit_von, 'HH:mm') : ae.arbeitszeit_von)
+        method: (ae) =>
+          ae?.arbeitszeit_von ? formatDate(ae.arbeitszeit_von, 'HH:mm') : ae.arbeitszeit_von
       },
       {
         key: 'arbeitszeit_bis_time',
-        method: (ae) => (ae?.arbeitszeit_bis ? formatDate(ae.arbeitszeit_bis, 'HH:mm') : ae.arbeitszeit_bis)
+        method: (ae) =>
+          ae?.arbeitszeit_bis ? formatDate(ae.arbeitszeit_bis, 'HH:mm') : ae.arbeitszeit_bis
       }
     ]);
     return aaObj;
@@ -189,7 +190,11 @@ type TResult = {
   counted_in_kontingent: object;
 };
 
-function createKontingentEingeteiltDefault(kontingent: kontingents, kontingentId = 0, resultObj: TResult) {
+function createKontingentEingeteiltDefault(
+  kontingent: kontingents,
+  kontingentId = 0,
+  resultObj: TResult
+) {
   if (resultObj.kontingente[kontingentId]) {
     return resultObj;
   }

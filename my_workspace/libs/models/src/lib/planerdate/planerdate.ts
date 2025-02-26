@@ -1,6 +1,6 @@
 import { format, formatDate } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
-import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
+import { _planerdate } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
 import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
@@ -13,7 +13,20 @@ type Feiertag = {
 
 export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-  private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  private static MONTHS = [
+    'Jan',
+    'Feb',
+    'Mär',
+    'Apr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Dez'
+  ];
 
   private static feiertage: Record<string, Record<string, Feiertag[]>> = {};
   private static last_week: Record<string, number> = {};
@@ -224,7 +237,7 @@ export class PlanerDate {
         jahr: osterDatum.getFullYear()
       };
 
-      await createPlanerDate(data);
+      await _planerdate.createPlanerDate(data);
     }
   }
 
@@ -242,13 +255,13 @@ export class PlanerDate {
 
   static async getFeiertag(date: Date) {
     const yearStr = date.getFullYear();
-    const exist = await existFeiertagEntryByYear(yearStr);
+    const exist = await _planerdate.existFeiertagEntryByYear(yearStr);
 
     if (!exist) {
       await PlanerDate.calcFeiertage(yearStr);
     }
 
-    const feiertag = await getPlanerDateFeiertage(date);
+    const feiertag = await _planerdate.getPlanerDateFeiertage(date);
 
     return feiertag || '';
   }
@@ -282,13 +295,19 @@ export class PlanerDate {
     const week1 = newDateYearMonthDay(date.getFullYear(), 0, 4);
     week1.setHours(0, 0, 0, 0);
     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+    return (
+      1 +
+      Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+    );
   }
 
   private getDayOfYear(date: Date): number {
     const start = newDateYearMonthDay(date.getFullYear(), 0, 0);
     start.setHours(0, 0, 0, 0);
-    const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+    const diff =
+      date.getTime() -
+      start.getTime() +
+      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
   }

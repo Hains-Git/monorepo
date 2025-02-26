@@ -56,3 +56,24 @@ export async function getRotationenByKontingentFlag() {
     }
   });
 }
+
+export async function sortedByVon(mitarbeiterId: number) {
+  const result = await prismaDb.einteilung_rotations.findMany({
+    where: {
+      mitarbeiter_id: Number(mitarbeiterId)
+    },
+    orderBy: [{ prioritaet: 'asc' }, { von: 'asc' }]
+  });
+  return result;
+}
+
+export async function getPublished(mitarbeiterId: number) {
+  const result = await prismaDb.einteilung_rotations.findMany({
+    where: {
+      mitarbeiter_id: Number(mitarbeiterId),
+      published: true
+    },
+    orderBy: [{ prioritaet: 'asc' }, { von: 'asc' }]
+  });
+  return result;
+}

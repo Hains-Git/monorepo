@@ -7,3 +7,5 @@ export * from './lib/vertrag';
 export * from './lib/planungsinfo';
 export * from './lib/planerdate/planerdate';
 export * as Fraunhofer from './lib/fraunhofer';
+export * as User from './lib/user';
+export * as Geraetepass from './lib/geraetepass';
