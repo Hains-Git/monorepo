@@ -261,11 +261,10 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       const date = days[j];
       const key = getDateStr(date);
       // Nur Bedarfe hinzufügen, die noch nicht im Hash sind
-      if (!dienstBedarfe[key]?.[bereichId]) continue;
+      if (dienstBedarfe[key]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
       if (!(await checkDateOnDienstbedarf(date, bedarf))) continue;
       const currSaldi = createDefaultsForTeamSaldo(key, teamId, saldi);
-      const resultTeamBedarfe = saldi[teamId].dates[key];
       dienstBedarfe[key] ||= {};
       dienstBedarfe[key][bereichId] = {
         bedarf,
@@ -276,8 +275,8 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       dienstfreis[bedarf.id] ||= {};
       // Nur gewisse Bedarfe nicht im Urlaubssaldo berücksichtigen
       if (!bedarf.ignore_in_urlaubssaldo) {
-        resultTeamBedarfe.bedarfe_min += min;
-        resultTeamBedarfe.bedarfe_opt += opt;
+        currSaldi.bedarfe_min += min;
+        currSaldi.bedarfe_opt += opt;
       }
       if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren
