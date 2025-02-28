@@ -23,7 +23,7 @@ export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) 
 
 export async function getRotationenInRange<
   TInclude extends Prisma.einteilung_rotationsInclude,
-  TOrderBy extends Prisma.einteilung_rotationsOrderByWithRelationInput
+  TOrderBy extends Prisma.einteilung_rotationsOrderByWithRelationInput[]
 >(anfang: Date, ende: Date, include?: TInclude, orderBy?: TOrderBy) {
   return ((await prismaDb.einteilung_rotations.findMany({
     where: {

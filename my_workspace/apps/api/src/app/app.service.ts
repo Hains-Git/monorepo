@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { getDienstplanung } from '@my-workspace/models';
+import { getDienstplanung, Urlaubssaldi } from '@my-workspace/models';
 import { getAllApiData } from '@my-workspace/models';
 import { planungsInfoCreateOrupdate } from '@my-workspace/models';
 import { newDate } from '@my-workspace/utils';
-import { getPossibleDienstfrei } from '@my-workspace/prisma_cruds';
 
 @Injectable()
 export class AppService {
@@ -32,10 +31,9 @@ export class AppService {
     if (process.env.NODE_ENV !== 'development') {
       return { error: 'Not allowed' };
     }
-    const dates = [];
-    for (let i = 0; i < 31; i++) {
-      dates.push(new Date(2025, 0, i));
-    }
-    return await getPossibleDienstfrei(dates);
+    const timeNow = new Date().getTime();
+    const result = await Urlaubssaldi.getSaldi(new Date(2025, 0, 1), new Date(2025, 0, 31));
+    console.log('time', (new Date().getTime() - timeNow) / 1000, 's');
+    return result;
   }
 }
