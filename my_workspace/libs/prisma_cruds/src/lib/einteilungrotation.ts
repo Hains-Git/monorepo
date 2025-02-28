@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
+import { whereRotationIn } from './utils/crud_helper';
 
 export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) {
   return await prismaDb.einteilung_rotations.findMany({
@@ -27,17 +28,7 @@ export async function getRotationenInRange<
 >(anfang: Date, ende: Date, include?: TInclude, orderBy?: TOrderBy) {
   return ((await prismaDb.einteilung_rotations.findMany({
     where: {
-      OR: [
-        {
-          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }]
-        },
-        {
-          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }]
-        },
-        {
-          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }]
-        }
-      ],
+      ...whereRotationIn(anfang, ende),
       mitarbeiters: {
         platzhalter: false
       }

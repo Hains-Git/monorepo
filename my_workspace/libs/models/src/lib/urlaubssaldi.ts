@@ -2,15 +2,13 @@ import {
   _team,
   _arbeitszeittyp,
   _dienstbedarf,
-  getRotationenInRange,
   getAllPoDiensts,
   getDefaultKontingents,
   getMitarbeiterEinteilungenNachTagen,
   getMitarbeiterForUrlaubssaldis,
   getPossibleDienstfrei,
   Dienstfrei,
-  getEinteilungBlockTage,
-  mitarbeiterUrlaubssaldoAktivAm
+  getEinteilungBlockTage
 } from '@my-workspace/prisma_cruds';
 import { getDateStr, newDate } from '@my-workspace/utils';
 import {
@@ -30,7 +28,7 @@ import {
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
-import { mitarbeiterTeamAm } from './mitarbeiter';
+import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
 
 const saldiDefaultValues = {
   verfuegbar: 0,
@@ -412,28 +410,9 @@ async function checkMitarbeiterVerfuegbarkeit(
   const dates = result.dates;
   const saldi = result.saldi;
   const defaultTeam = result.default_team;
-  const rotationen = (
-    await getRotationenInRange(
-      dates[0],
-      dates[dates.length - 1],
-      {
-        kontingents: {
-          include: {
-            teams: true
-          }
-        }
-      },
-      [{ prioritaet: 'asc' }, { von: 'asc' }]
-    )
-  ).reduce((acc: RotationenHash, rotation) => {
-    const mId = rotation.mitarbeiter_id || 0;
-    acc[mId] ||= [];
-    acc[mId].push(rotation);
-    return acc;
-  }, {});
   const infos: MitarbeiterInfos = {
     team_ids: {},
-    rotationen: rotationen
+    rotationen: {}
   };
   const diensteHash = (await getAllPoDiensts()).reduce((acc: Record<number, po_diensts>, d) => {
     acc[d.id] = d;
@@ -460,7 +439,11 @@ async function checkMitarbeiterVerfuegbarkeit(
     return teamId;
   };
 
-  const mitarbeiter = await getMitarbeiterForUrlaubssaldis(mitarbeiterIds.map((m) => Number(m)));
+  const mitarbeiter = await getMitarbeiterForUrlaubssaldis(
+    mitarbeiterIds.map((m) => Number(m)),
+    dates[0],
+    dates[dates.length - 1]
+  );
   const dienstfreiEingeteilt: Record<string, Record<number, Record<number, DFInfo>>> = {};
   await getPossibleDienstfrei(
     dates,
@@ -494,6 +477,7 @@ async function checkMitarbeiterVerfuegbarkeit(
     const m = mitarbeiter[i];
     const mId = m.id;
     if (m.platzhalter) continue;
+    infos.rotationen[mId] = m.einteilung_rotations;
     mitarbeiterEinteilungen[mId] ||= {};
     infos.team_ids[mId] ||= {};
     const teamIds = infos.team_ids[mId];
@@ -501,16 +485,15 @@ async function checkMitarbeiterVerfuegbarkeit(
     const accountInfo = m.platzhalter ? null : m.account_info;
     const funktion = m.funktion;
     const funktionId = m.funktion_id || 0;
-    const rot = rotationen[mId] || [];
     const datesLength = dates.length;
     for (let i = 0; i < datesLength; i++) {
       const date = dates[i];
       const dateKey = getDateStr(date);
       teamIds[dateKey] ||= [];
-      const team = await mitarbeiterTeamAm(date, rot, defaultTeam, defaultKontingent, mId);
+      const team = await mitarbeiterTeamAmByMitarbeiter(m, date, defaultTeam, defaultKontingent);
       einteilungen[dateKey] ||= [];
       let notVerfuegbar = false;
-      const aktiv = !!(accountInfo && (await mitarbeiterUrlaubssaldoAktivAm(date, mId)));
+      const aktiv = !!(accountInfo && (await mitarbeiterUrlaubssaldoAktivAm(m, date)));
       const einteilungenLength = einteilungen[dateKey].length;
       for (let j = 0; j < einteilungenLength; j++) {
         // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
@@ -617,5 +600,8 @@ export async function getSaldi(start: Date, ende: Date) {
   const result = await getSaldiBase(start, ende);
   const bedarfeProDienstTagBereich = await checkTeamBedarfe(result.dates, result.saldi);
   result.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
-  return result;
+  return {
+    ...result,
+    dates: result.dates.map((d) => getDateStr(d))
+  };
 }
