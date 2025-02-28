@@ -30,7 +30,22 @@ import {
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
 import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
 
-const saldiDefaultValues = {
+type SaldiValues = {
+  verfuegbar: number;
+  einteilungen: number;
+  urlaub: number;
+  krank: number;
+  sonstige: number;
+  bedarfe_min: number;
+  bedarfe_opt: number;
+  bedarfe: Record<number, dienstbedarves>;
+  bedarfe_eingeteilt_min: number;
+  bedarfe_eingeteilt_opt: number;
+  bedarfe_eingeteilt_opt_markiert: number;
+  defaultTeam: number;
+};
+
+const saldiDefaultValues: SaldiValues = {
   verfuegbar: 0,
   einteilungen: 0,
   urlaub: 0,
@@ -38,6 +53,7 @@ const saldiDefaultValues = {
   sonstige: 0,
   bedarfe_min: 0,
   bedarfe_opt: 0,
+  bedarfe: {},
   bedarfe_eingeteilt_min: 0,
   bedarfe_eingeteilt_opt: 0,
   bedarfe_eingeteilt_opt_markiert: 0,
@@ -277,6 +293,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       if (!bedarf.ignore_in_urlaubssaldo) {
         currSaldi.bedarfe_min += min;
         currSaldi.bedarfe_opt += opt;
+        currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
       if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren

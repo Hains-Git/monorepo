@@ -22,7 +22,12 @@ export async function checkDateOnDienstbedarf(
     date = new PlanerDate(date);
     await date.initializeFeiertage(originalDate);
   }
-  if (!bedarf.zeitraumkategories || (bedarf.end_date && bedarf.end_date <= date.full_date)) {
+  if (
+    !bedarf.zeitraumkategories ||
+    (bedarf.end_date &&
+      Number(getDateStr(bedarf.end_date).split('-').join('')) <=
+        Number(getDateStr(newDate(date.full_date)).split('-').join('')))
+  ) {
     return false;
   }
   return await checkDate(date, bedarf.zeitraumkategories);

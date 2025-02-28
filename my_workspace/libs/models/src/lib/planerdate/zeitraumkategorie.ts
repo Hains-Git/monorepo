@@ -1,7 +1,7 @@
 import { zeitraumkategories } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 interface RegelcodeHash {
   isBedarf: boolean;
@@ -46,11 +46,12 @@ async function shouldCheckDate(
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
+  const dateNr = Number(getDateStr(newDate(fullDate)).split('-').join(''));
   if (zeitraumAnfang != null) {
-    thisStart = fullDate >= zeitraumAnfang;
+    thisStart = dateNr >= Number(getDateStr(zeitraumAnfang).split('-').join(''));
   }
   if (zeitraumEnde != null) {
-    thisEnd = fullDate < zeitraumEnde;
+    thisEnd = dateNr < Number(getDateStr(zeitraumEnde).split('-').join(''));
   }
   return thisStart && thisEnd;
 }
