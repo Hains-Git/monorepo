@@ -8,7 +8,9 @@ import {
   getMitarbeiterEinteilungenNachTagen,
   getMitarbeiterForUrlaubssaldis,
   getPossibleDienstfrei,
-  Dienstfrei
+  Dienstfrei,
+  getEinteilungBlockTage,
+  mitarbeiterUrlaubssaldoAktivAm
 } from '@my-workspace/prisma_cruds';
 import { getDateStr, newDate } from '@my-workspace/utils';
 import {
@@ -16,6 +18,7 @@ import {
   bedarfs_eintrags,
   dienstbedarves,
   einteilung_rotations,
+  funktions,
   kontingents,
   po_diensts,
   schichts,
@@ -27,6 +30,7 @@ import {
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
+import { mitarbeiterTeamAm } from './mitarbeiter';
 
 const saldiDefaultValues = {
   verfuegbar: 0,
@@ -42,21 +46,46 @@ const saldiDefaultValues = {
   defaultTeam: 0
 };
 
+type RotationenHash = Record<
+  number,
+  (einteilung_rotations & {
+    kontingents:
+      | (kontingents & {
+          teams: teams | null;
+        })
+      | null;
+  })[]
+>;
+
+type DFInfo = {
+  tag: Date;
+  dienst: string;
+  mitarbeiter: string;
+  team: string;
+  teamId: number;
+};
+
 type SaldiTeamDate = typeof saldiDefaultValues & {
   ID: number;
-  funktionen: Record<string, any>;
-  mitarbeiter: any[];
+  funktionen: Record<
+    number,
+    {
+      count: number;
+      funktion: (funktions & { teams: teams | null }) | null;
+    }
+  >;
+  mitarbeiter: string[];
   einteilungen_info: {
-    bedarf: any[];
-    ohne_bedarf: any[];
-    dienstfrei: any[];
-    optional: any[];
+    bedarf: (string | number)[][];
+    ohne_bedarf: (string | number)[][];
+    dienstfrei: DFInfo[];
+    optional: (string | number | boolean)[][];
   };
   bedarfe_dienstfrei: {
     count: number;
     eingeteilt: number;
     total: number;
-    einteilungen: any[];
+    einteilungen: DFInfo[];
     [x: number]: {
       dienst: string;
       team: string;
@@ -79,10 +108,15 @@ type Saldi = Record<
   }
 >;
 
+type MitarbeiterInfos = {
+  team_ids: Record<string, Record<string, number[]>>;
+  rotationen: RotationenHash;
+};
+
 type SaldiBase = {
   dates: Date[];
   saldi: Saldi;
-  mitarbeiter_infos: Record<string, any>;
+  mitarbeiter_infos: MitarbeiterInfos;
   default_team: SaldiTeamBase | null;
 };
 
@@ -128,7 +162,10 @@ async function getSaldiBase(start: Date, ende: Date) {
         dates: {}
       }
     },
-    mitarbeiter_infos: {},
+    mitarbeiter_infos: {
+      team_ids: {},
+      rotationen: {}
+    },
     default_team: null
   };
 
@@ -229,7 +266,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       if (!dienstBedarfe[key]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
       if (!(await checkDateOnDienstbedarf(date, bedarf))) continue;
-      createDefaultsForTeamSaldo(key, teamId, saldi);
+      const currSaldi = createDefaultsForTeamSaldo(key, teamId, saldi);
       const resultTeamBedarfe = saldi[teamId].dates[key];
       dienstBedarfe[key] ||= {};
       dienstBedarfe[key][bereichId] = {
@@ -249,8 +286,8 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       calculateDienstfreiFromDienstbedarf(date, arbeitszeittypen, computedSchichten[azvId], bedarf, (day, dayStr) => {
         if (dienstfreis[bedarf.id][dayStr] || !daysHash[dayStr]) return;
         dienstfreis[bedarf.id][dayStr] = true;
-        createDefaultsForTeamSaldo(dayStr, teamId, saldi);
-        const df = saldi[teamId].dates[dayStr].bedarfe_dienstfrei;
+        const currSaldi = createDefaultsForTeamSaldo(dayStr, teamId, saldi);
+        const df = currSaldi.bedarfe_dienstfrei;
         df[dienstId] ||= {
           dienst: dienst.planname || '',
           team: team.name || '',
@@ -300,7 +337,7 @@ function checkSchichten(
   });
 }
 
-function shouldAddDienstfrei(
+async function shouldAddDienstfrei(
   df: Dienstfrei,
   date: Date,
   eingeteiltId = '',
@@ -337,17 +374,20 @@ function shouldAddDienstfrei(
     return shouldAdd;
   }
   if (currBedarf.is_block) {
-    eingeteilt[tagKey].bloecke[currBedarf.first_entry || 0] ||= {};
-    if (eingeteilt[tagKey].bloecke[currBedarf.id][mitarbeiterId]) return shouldAdd;
-    eingeteilt[tagKey].bloecke[currBedarf.id][mitarbeiterId] = 1;
+    const firstEntry = currBedarf.first_entry || 0;
+    eingeteilt[tagKey].bloecke[firstEntry] ||= {};
+    if (eingeteilt[tagKey].bloecke[firstEntry]?.[mitarbeiterId]) return shouldAdd;
+    eingeteilt[tagKey].bloecke[firstEntry][mitarbeiterId] ||= 1;
     const currFirstBedarf = currBedarf.first_bedarf;
     const block = currFirstBedarf?.block_bedarfe;
     if (!currFirstBedarf || !block) return shouldAdd;
     const be = block[block.length - 1];
     if (!be?.tag) return shouldAdd;
-    //     # Ist Mitarbeiter in alle Blocktage eingeteilt?
-    //     block_size = Diensteinteilung.as_block(self.mitarbeiter_id, @curr_bedarf.first_entry, date, onlyCounts).size
-    //     return should_add unless be.tag < date && block_size == bedarfs_eintraege_block.length
+    const dates = block.map((b) => b.tag || newDate());
+    const einteilungenBlockSize = (await getEinteilungBlockTage(mitarbeiterId, dates, currFirstBedarf.id, onlyCounts))
+      .length;
+    if (einteilungenBlockSize === block.length && Number(getDateStr(be.tag).split('-').join('')) < dateNr)
+      return shouldAdd;
     const ausgleichDate = newDate(be.tag);
     ausgleichDate.setDate(ausgleichDate.getDate() + (be.ausgleich_tage || 0));
     shouldAdd = Number(getDateStr(ausgleichDate).split('-').join('')) >= dateNr;
@@ -385,28 +425,13 @@ async function checkMitarbeiterVerfuegbarkeit(
       },
       [{ prioritaet: 'asc' }, { von: 'asc' }]
     )
-  ).reduce(
-    (
-      acc: Record<
-        number,
-        (einteilung_rotations & {
-          kontingents:
-            | (kontingents & {
-                teams: teams | null;
-              })
-            | null;
-        })[]
-      >,
-      rotation
-    ) => {
-      const mId = rotation.mitarbeiter_id || 0;
-      acc[mId] ||= [];
-      acc[mId].push(rotation);
-      return acc;
-    },
-    {}
-  );
-  const infos = {
+  ).reduce((acc: RotationenHash, rotation) => {
+    const mId = rotation.mitarbeiter_id || 0;
+    acc[mId] ||= [];
+    acc[mId].push(rotation);
+    return acc;
+  }, {});
+  const infos: MitarbeiterInfos = {
     team_ids: {},
     rotationen: rotationen
   };
@@ -418,7 +443,13 @@ async function checkMitarbeiterVerfuegbarkeit(
   const noTeamId = 0;
   const mitarbeiterEinteilungen = await getMitarbeiterEinteilungenNachTagen(dates[0], dates[dates.length - 1]);
   const mitarbeiterIds = Object.keys(mitarbeiterEinteilungen);
-  const addTeamId = (noTeamId: number, team: teams | null, teamIds: Record<string, number[]>, date: string) => {
+
+  const addTeamId = (
+    noTeamId: number,
+    team: { id: number } | null,
+    teamIds: Record<string, number[]>,
+    date: string
+  ) => {
     let teamId = noTeamId;
     if (team) {
       teamId = team.id || noTeamId;
@@ -428,22 +459,9 @@ async function checkMitarbeiterVerfuegbarkeit(
     }
     return teamId;
   };
+
   const mitarbeiter = await getMitarbeiterForUrlaubssaldis(mitarbeiterIds.map((m) => Number(m)));
-  const dienstfreiEingeteilt: Record<
-    string,
-    Record<
-      number,
-      Record<
-        number,
-        {
-          tag: Date;
-          dienst: string;
-          mitarbeiter: string;
-          team: string;
-        }
-      >
-    >
-  > = {};
+  const dienstfreiEingeteilt: Record<string, Record<number, Record<number, DFInfo>>> = {};
   await getPossibleDienstfrei(
     dates,
     mitarbeiter.map((m) => m.id),
@@ -463,137 +481,141 @@ async function checkMitarbeiterVerfuegbarkeit(
             tag: df.tag || newDate(),
             dienst: df.po_diensts?.planname || '',
             mitarbeiter: df.mitarbeiters?.planname || '',
-            team: df.po_diensts?.teams?.name || ''
+            team: df.po_diensts?.teams?.name || '',
+            teamId: df.po_diensts?.team_id || 0
           };
         });
       });
       return [];
     }
   );
-  //     ApplicationRecord.measure("--Mitarbeiter each") {
-  //       mitarbeiter.each do |m|
-  //         m_id = m.id
-  //         next if m.platzhalter
-  //         unless mitarbeiter_einteilungen.has_key?(m_id)
-  //           mitarbeiter_einteilungen[m_id] = {}
-  //         end
-  //         unless infos[:team_ids].has_key?(m_id)
-  //           infos[:team_ids][m_id] = {}
-  //         end
-  //         team_ids = infos[:team_ids][m_id]
-  //         einteilungen = mitarbeiter_einteilungen[m_id]
-  //         accountInfo = m.platzhalter ? nil : m.accountInfo
-  //         funktion = m.funktion
-  //         funktion_id = m.funktion_id
-  //         rot = rotationen[m_id].present? ? rotationen[m_id] : []
-  //         dates.each do |date|
-  //           if team_ids[date].nil?
-  //             team_ids[date] = []
-  //           end
-  //           team = m.team_am(date, rot, default_team, default_kontingent)
-  //           einteilungen[date.to_s] ||= []
-  //           not_verfuegbar = false
-  //           aktiv = accountInfo.present? && m.urlaubssaldo_aktiv_am(date)
-  //           # Iteriert über die Einteilungen und zählt die Einteilungen pro Team
-  //           # Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
-  //           einteilungen[date.to_s].each do |e|
-  //             dienst_id = e[1].to_i
-  //             bereich_id = e[6].to_i
-  //             is_optional = e[7] == "1"
-  //             as_abwesenheit = e[8] == "1"
-  //             # Einteilungen mit Bedarf werden dem Team des Dienstes zugeordnet
-  //             is_bedarf_einteilung = e[5] != "false"
-  //             if is_bedarf_einteilung
-  //               einteilung_team = { id: e[0].to_i }
-  //             else
-  //               einteilung_team = team
-  //             end
-  //             bedarf = nil
-  //             bedarfeBlock = nil
-  //             # Einteilungen in Dienste mit pre_dienst_gruppe werden nicht berücksichtigt
-  //             if is_bedarf_einteilung && bedarfe_pro_dienst_tag_bereich[dienst_id].present?
-  //               bedarfe = bedarfe_pro_dienst_tag_bereich[dienst_id][date]
-  //               if bedarfe.present?
-  //                 bedarfeBlock = bereich_id == 0 ? bedarfe.values.first : bedarfe[bereich_id]
-  //                 if bedarfeBlock.present?
-  //                   bedarf = bedarfeBlock[:bedarf]
-  //                   next if bedarf.present? && bedarf.ignore_in_urlaubssaldo
-  //                 end
-  //               end
-  //             end
-  //             team_id = add_team_id.call(no_team_id, einteilung_team, team_ids, date)
-  //             Antraege.create_defaults_for_team_saldo(date, team_id, result, default_values)
-  //             key = :einteilungen
-  //             if e[2] == "true"
-  //               key = :krank
-  //             elsif e[3] == "true"
-  //               key = :urlaub
-  //             elsif e[4] == "true"
-  //               key = :sonstige
-  //             end
-  //             result[team_id][:dates][date][key] += 1
-  //             not_verfuegbar = as_abwesenheit unless not_verfuegbar
-  //             if is_bedarf_einteilung && bedarf.present? && !bedarf.ignore_in_urlaubssaldo
-  //               result[team_id][:dates][date][:einteilungen_info][:bedarf] << [m.planname, dienste_hash[dienst_id].planname, bereich_id]
-  //               if !is_optional && bedarf.min > 0 && bedarfeBlock[:eingeteilt_min] < bedarf.min
-  //                 not_verfuegbar = true
-  //                 bedarfeBlock[:eingeteilt_min] += 1
-  //                 result[team_id][:dates][date][:bedarfe_eingeteilt_min] += 1
-  //               elsif is_optional
-  //                 # Als optional markierte Bedarfe gelten nicht als verfügbar
-  //                 not_verfuegbar = true
-  //                 bedarfeBlock[:eingeteilt_opt_markiert] += 1
-  //                 result[team_id][:dates][date][:bedarfe_eingeteilt_opt_markiert] += 1
-  //               else
-  //                 # Optionale Bedarfe gelten als verfügbar
-  //                 bedarfeBlock[:eingeteilt_opt] += 1
-  //                 result[team_id][:dates][date][:bedarfe_eingeteilt_opt] += 1
-  //                 result[team_id][:dates][date][:einteilungen_info][:optional] << [m.planname, dienste_hash[dienst_id].planname, bereich_id, not_verfuegbar]
-  //               end
-  //             else
-  //               not_verfuegbar = true
-  //               key = bedarf.present? ? :bedarf : :ohne_bedarf
-  //               result[team_id][:dates][date][:einteilungen_info][key] << [m.planname, dienste_hash[dienst_id].planname, bereich_id]
-  //             end
-  //           end
-  //           dfDate = dienstfrei_eingeteilt[date]
-  //           if dfDate.present? && dfDate.has_key?(m_id)
-  //             not_verfuegbar = true
-  //             dfDate[m_id].each do |po_dienst_id, df|
-  //               # Dienstfrei wird dem Team des Dienstes zugeordnet
-  //               team_id = add_team_id.call(no_team_id, df[:team], team_ids, date)
-  //               Antraege.create_defaults_for_team_saldo(date, team_id, result, default_values)
-  //               result[team_id][:dates][date][:einteilungen_info][:dienstfrei] << df
-  //               result[team_id][:dates][date][:bedarfe_dienstfrei][:eingeteilt] += 1
-  //               result[team_id][:dates][date][:bedarfe_dienstfrei][:total] -= 1
-  //               result[team_id][:dates][date][:bedarfe_dienstfrei][:einteilungen] << df
-  //               if result[team_id][:dates][date][:bedarfe_dienstfrei][:total] < 0
-  //                 result[team_id][:dates][date][:bedarfe_dienstfrei][:total] = 0
-  //               end
-  //             end
-  //           elsif aktiv && !not_verfuegbar
-  //             team_id = add_team_id.call(no_team_id, team, team_ids, date)
-  //             Antraege.create_defaults_for_team_saldo(date, team_id, result, default_values)
-  //             result[team_id][:dates][date][:verfuegbar] += 1
-  //             unless result[team_id][:dates][date][:funktionen].has_key?(funktion_id)
-  //               result[team_id][:dates][date][:funktionen][funktion_id] = {
-  //                 count: 0,
-  //                 funktion: funktion
-  //               }
-  //             end
-  //             result[team_id][:dates][date][:mitarbeiter] << m.planname
-  //             result[team_id][:dates][date][:funktionen][funktion_id][:count] += 1
-  //           end
-  //         end
-  //       end
-  //     }
-  //     infos
-  //   end
+  const mitarbeiterLength = mitarbeiter.length;
+  for (let i = 0; i < mitarbeiterLength; i++) {
+    const m = mitarbeiter[i];
+    const mId = m.id;
+    if (m.platzhalter) continue;
+    mitarbeiterEinteilungen[mId] ||= {};
+    infos.team_ids[mId] ||= {};
+    const teamIds = infos.team_ids[mId];
+    const einteilungen = mitarbeiterEinteilungen[mId];
+    const accountInfo = m.platzhalter ? null : m.account_info;
+    const funktion = m.funktion;
+    const funktionId = m.funktion_id || 0;
+    const rot = rotationen[mId] || [];
+    const datesLength = dates.length;
+    for (let i = 0; i < datesLength; i++) {
+      const date = dates[i];
+      const dateKey = getDateStr(date);
+      teamIds[dateKey] ||= [];
+      const team = await mitarbeiterTeamAm(date, rot, defaultTeam, defaultKontingent, mId);
+      einteilungen[dateKey] ||= [];
+      let notVerfuegbar = false;
+      const aktiv = !!(accountInfo && (await mitarbeiterUrlaubssaldoAktivAm(date, mId)));
+      const einteilungenLength = einteilungen[dateKey].length;
+      for (let j = 0; j < einteilungenLength; j++) {
+        // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
+        const e = einteilungen[dateKey][j];
+        const dienstId = parseInt(e[1], 10);
+        const bereichId = parseInt(e[6], 10);
+        const isOptional = e[7] === '1';
+        const asAbwesenheit = e[8] === '1';
+        const isBedarfEinteilung = e[5] !== 'false';
+        const einteilungTeam = isBedarfEinteilung ? { id: parseInt(e[0], 10) } : team;
+        let bedarf: dienstbedarves | null = null;
+        let bedarfeBlock: {
+          bedarf: dienstbedarves;
+          eingeteilt_min: number;
+          eingeteilt_opt: number;
+          eingeteilt_opt_markiert: number;
+        } | null = null;
+        if (isBedarfEinteilung && bedarfeProDienstTagBereich[dienstId]) {
+          const bedarfe = bedarfeProDienstTagBereich[dienstId][dateKey];
+          if (bedarfe) {
+            bedarfeBlock = bereichId === 0 ? Object.values(bedarfe)[0] : bedarfe[bereichId];
+            if (bedarfeBlock) {
+              bedarf = bedarfeBlock.bedarf;
+              if (bedarf?.ignore_in_urlaubssaldo) continue;
+            }
+          }
+        }
+        const teamId = addTeamId(noTeamId, einteilungTeam, teamIds, dateKey);
+        const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+        let key: keyof typeof currSaldi = 'einteilungen';
+        if (e[2] === 'true') {
+          key = 'krank';
+        } else if (e[3] === 'true') {
+          key = 'urlaub';
+        } else if (e[4] === 'true') {
+          key = 'sonstige';
+        }
+        currSaldi[key] += 1;
+        if (!notVerfuegbar) {
+          notVerfuegbar = asAbwesenheit;
+        }
+        if (isBedarfEinteilung && !bedarf?.ignore_in_urlaubssaldo && bedarf && bedarfeBlock) {
+          currSaldi.einteilungen_info.bedarf.push([m.planname || '', diensteHash[dienstId]?.planname || '', bereichId]);
+          const min = bedarf.min || 0;
+          if (!isOptional && min > 0 && bedarfeBlock?.eingeteilt_min < min) {
+            notVerfuegbar = true;
+            bedarfeBlock.eingeteilt_min += 1;
+            currSaldi.bedarfe_eingeteilt_min += 1;
+          } else if (isOptional) {
+            notVerfuegbar = true;
+            bedarfeBlock.eingeteilt_opt_markiert += 1;
+            currSaldi.bedarfe_eingeteilt_opt_markiert += 1;
+          } else {
+            bedarfeBlock.eingeteilt_opt += 1;
+            currSaldi.bedarfe_eingeteilt_opt += 1;
+            currSaldi.einteilungen_info.optional.push([
+              m.planname || '',
+              diensteHash[dienstId].planname || '',
+              bereichId,
+              notVerfuegbar
+            ]);
+          }
+        } else {
+          notVerfuegbar = true;
+          const key = bedarf ? 'bedarf' : 'ohne_bedarf';
+          currSaldi.einteilungen_info[key].push([m.planname || '', diensteHash[dienstId]?.planname || '', bereichId]);
+        }
+      }
+
+      const dfDate = dienstfreiEingeteilt[dateKey];
+      if (dfDate && dfDate[mId]) {
+        notVerfuegbar = true;
+        const df = dfDate[mId];
+        for (const poDienstId in df) {
+          // Dienstfrei wird dem Team des Dienstes zugeordnet
+          const dfInfo = df[poDienstId];
+          const teamId = addTeamId(noTeamId, { id: dfInfo.teamId }, teamIds, dateKey);
+          const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+          currSaldi.einteilungen_info.dienstfrei.push(dfInfo);
+          currSaldi.bedarfe_dienstfrei.eingeteilt += 1;
+          currSaldi.bedarfe_dienstfrei.total -= 1;
+          currSaldi.bedarfe_dienstfrei.einteilungen.push(dfInfo);
+          if (currSaldi.bedarfe_dienstfrei.total < 0) {
+            currSaldi.bedarfe_dienstfrei.total = 0;
+          }
+        }
+      } else if (aktiv && !notVerfuegbar) {
+        const teamId = addTeamId(noTeamId, team, teamIds, dateKey);
+        const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+        currSaldi.verfuegbar += 1;
+        currSaldi.funktionen[funktionId] ||= {
+          count: 0,
+          funktion
+        };
+        currSaldi.mitarbeiter.push(m.planname || '');
+        currSaldi.funktionen[funktionId].count += 1;
+      }
+    }
+  }
+  return infos;
 }
 
 export async function getSaldi(start: Date, ende: Date) {
   const result = await getSaldiBase(start, ende);
   const bedarfeProDienstTagBereich = await checkTeamBedarfe(result.dates, result.saldi);
-  await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
+  result.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
   return result;
 }

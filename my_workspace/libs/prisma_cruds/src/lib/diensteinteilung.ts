@@ -344,3 +344,31 @@ export async function getPossibleDienstfrei(
   }
   return results;
 }
+
+export async function getEinteilungBlockTage(
+  mitarbeiterId: number,
+  dates: Date[],
+  firstEntry: number,
+  onlyCounts = false
+) {
+  return await prismaDb.diensteinteilungs.findMany({
+    distinct: ['tag'],
+    select: {
+      tag: true
+    },
+    where: {
+      mitarbeiter_id: mitarbeiterId,
+      tag: {
+        in: dates
+      },
+      einteilungsstatuses: onlyCounts ? { counts: true } : { counts: true, public: true },
+      po_diensts: {
+        bedarfs_eintrags: {
+          some: {
+            first_entry: firstEntry
+          }
+        }
+      }
+    }
+  });
+}

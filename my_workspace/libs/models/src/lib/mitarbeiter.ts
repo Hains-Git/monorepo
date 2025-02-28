@@ -44,11 +44,11 @@ type TRot = einteilung_rotations & {
 export async function mitarbeiterTeamAm(
   date = newDate(),
   rotationen: TRot[] | null = null,
-  defaultTeam = null,
-  defaultKontingent = null,
+  defaultTeam: teams | null = null,
+  defaultKontingent: TDefaultKontingents | null = null,
   mitarbeiterId: number
 ) {
-  let team;
+  let team: teams | null = null;
   let rotation: TRot | undefined = undefined;
   const mitarbeiter = await getMitarbeiterById(mitarbeiterId, {
     funktion: {
@@ -79,8 +79,8 @@ export async function mitarbeiterTeamAm(
   }
 
   if (!team) {
-    team = getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
+    team = await getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
   }
 
-  return;
+  return team;
 }

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { FindManyArgsTypes } from './utils/types';
+import { whereMitarbeiterAktivNoPlatzhalter } from './utils/crud_helper';
 
 export async function getMitarbeiterById<TInclude extends Prisma.mitarbeitersInclude>(
   id: number | string,
@@ -71,6 +72,18 @@ export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[]) {
           vertrags_phases: true
         }
       }
+    }
+  });
+}
+
+export async function mitarbeiterUrlaubssaldoAktivAm(date: Date, id: number) {
+  return await prismaDb.mitarbeiters.findFirst({
+    where: {
+      id,
+      urlaubssaldo_abspraches: {
+        none: { von: { lte: date }, bis: { gte: date } }
+      },
+      ...whereMitarbeiterAktivNoPlatzhalter(date, date)
     }
   });
 }
