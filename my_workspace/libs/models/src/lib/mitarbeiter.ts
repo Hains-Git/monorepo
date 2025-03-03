@@ -8,14 +8,15 @@ import {
 } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import {
-  kontingent,
-  dienstfreigabe,
-  automatische_einteilung,
-  arbeitszeit_absprache,
-  mitarbeiter_default_eingeteilt,
+  _kontingent,
+  _dienstfreigabe,
+  _automatische_einteilung,
+  _arbeitszeit_absprache,
+  _mitarbeiter_default_eingeteilt,
   _mitarbeiter,
   _po_dienst,
-  _team
+  _team,
+  TResultEinteilungenInKontingente
 } from '@my-workspace/prisma_cruds';
 
 import { newDate, processData, transformObject } from '@my-workspace/utils';
@@ -30,7 +31,7 @@ export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   return weiterbildungsjahr;
 }
 
-export async function getDefaultTeamForMitarbeiter(
+async function getDefaultTeamForMitarbeiter(
   defaultTeam: teams | null = null,
   defaultKontingent: TDefaultKontingents = null
 ) {
@@ -39,7 +40,7 @@ export async function getDefaultTeamForMitarbeiter(
     defaultTeam = await _team.getDefaultTeam();
   }
   if (!defaultTeam && !defaultKontingent) {
-    defaultKontingent = await kontingent.getDefaults();
+    defaultKontingent = await _kontingent.getDefaults();
   }
 
   if (defaultTeam) {
@@ -103,7 +104,7 @@ export async function mitarbeiterTeamAm(
 }
 
 async function freigegebeneDienste(mitarbeiterId: number, preset = false) {
-  const freigabeTypen = await dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
+  const freigabeTypen = await _dienstfreigabe.getFreigabenTypenIdsByMitarbeiterId(mitarbeiterId);
   const freigabeTypenIds = freigabeTypen.map((ft) => ft.freigabetyp_id).filter(Boolean) as number[];
   const dienste = await _po_dienst.getByFreigabenTypenIds(freigabeTypenIds);
   return dienste;
@@ -114,7 +115,7 @@ export async function getFreigegebeneDienste(mitarbeiterId: number) {
 }
 
 export async function getAutomatischeEinteilungen(mitarbeiterId: number) {
-  let automatischeEinteilungen = await automatische_einteilung.getByMitarbeiterId(mitarbeiterId);
+  let automatischeEinteilungen = await _automatische_einteilung.getByMitarbeiterId(mitarbeiterId);
   automatischeEinteilungen = automatischeEinteilungen.map((ae) => {
     const aeObj = transformObject(ae, [
       {
@@ -134,7 +135,7 @@ export async function getAutomatischeEinteilungen(mitarbeiterId: number) {
 }
 
 export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
-  let arbeitszeitAbsprachen = await arbeitszeit_absprache.getByMitarbeiterId(mitarbeiterId);
+  let arbeitszeitAbsprachen = await _arbeitszeit_absprache.getByMitarbeiterId(mitarbeiterId);
   arbeitszeitAbsprachen = arbeitszeitAbsprachen.map((aa) => {
     const aaObj = transformObject(aa, [
       { key: 'anfang', method: arbeitszeitAbspracheAnfang },
@@ -162,18 +163,32 @@ type TResult = {
     [key: number]: [];
   };
   kontingente: {
-    [key: number]: kontingents & {
+    [key: number]: ({
+      id: number;
+      name: string | null;
+    } & {
+      [K in Exclude<keyof kontingents, 'id' | 'name'>]?: kontingents[K];
+    }) & {
       default_last_year?: number;
       einteilungen?: {
         while_in_rotation: {
           default_eingeteilt: number;
           eingeteilt_sum: number;
-          rotationen: object;
+          rotationen: {
+            [key: number]: any;
+          };
         };
         all: {
           default_eingeteilt: number;
           eingeteilt_sum: number;
-          rotationen: object;
+          einteilungen: {
+            [key: number]: {
+              tage: string[];
+              eingeteilt_count_factor: number;
+              value: number;
+              name: string;
+            };
+          };
         };
       };
     };
@@ -187,11 +202,20 @@ type TResult = {
     },
     false
   >;
-  counted_in_kontingent: object;
+  counted_in_kontingent: {
+    [key: number]: {
+      [key: string]: {
+        [key: string]: {
+          all: number[];
+          in_rot: number[];
+        };
+      };
+    };
+  };
 };
 
 function createKontingentEingeteiltDefault(
-  kontingent: kontingents,
+  kontingent: Partial<kontingents> & Pick<kontingents, 'id' | 'name'>,
   kontingentId = 0,
   resultObj: TResult
 ) {
@@ -212,19 +236,155 @@ function createKontingentEingeteiltDefault(
     all: {
       default_eingeteilt: defaultValue,
       eingeteilt_sum: defaultValue,
-      rotationen: {}
+      einteilungen: {}
     }
   };
 }
 
-export async function getKontingentEingeteiltBasis(mitarbeiterId: number) {
-  const kontingente = await kontingent.getAll();
+function addAndRound(value: number, add: number, roundValue = 2) {
+  return Number((value + add).toFixed(roundValue));
+}
+
+function countEinteilungInKontingent(
+  mitarbeiterId: number,
+  einteilung: TResultEinteilungenInKontingente,
+  hash: TResult
+) {
+  const konId = einteilung.kontingent_id;
+  let factor = 0;
+  let eingeteiltCountFactor = 0;
+  if (einteilung.factor > 0) {
+    eingeteiltCountFactor = einteilung.factor;
+    factor = Number((1 / eingeteiltCountFactor).toFixed(2));
+  }
+
+  const countedInKontingent = hash.counted_in_kontingent;
+  createKontingentEingeteiltDefault(
+    {
+      name: einteilung.kontingent_name,
+      id: konId
+    },
+    konId,
+    hash
+  );
+
+  let einteilungenHash = hash.kontingente[konId].einteilungen;
+  let allEinteilungenHash = einteilungenHash?.all?.einteilungen;
+  const defaultLastYear = hash.kontingente[konId].default_last_year || 0;
+
+  if (einteilung.mitarbeiter_id === mitarbeiterId || hash.kontingente[konId] || factor > 0) {
+    if (!countedInKontingent[konId]) {
+      countedInKontingent[konId] = {};
+    }
+    const rotId = einteilung.id;
+    const dateTag = einteilung.tag;
+    const tag = dateTag.toDateString();
+    const dienstId = einteilung.po_dienst_id;
+    const isInRot = einteilung.in_rot;
+
+    if (!countedInKontingent[konId][tag]) {
+      countedInKontingent[konId][tag] = {};
+    }
+    if (!countedInKontingent[konId][tag][dienstId]) {
+      countedInKontingent[konId][tag][dienstId] = {
+        all: [],
+        in_rot: []
+      };
+    }
+
+    if (!allEinteilungenHash) {
+      allEinteilungenHash = {};
+    }
+
+    if (!einteilungenHash) {
+      einteilungenHash = {
+        while_in_rotation: {
+          default_eingeteilt: 0,
+          eingeteilt_sum: 0,
+          rotationen: {}
+        },
+        all: {
+          default_eingeteilt: 0,
+          eingeteilt_sum: 0,
+          einteilungen: {}
+        }
+      };
+    }
+
+    if (!allEinteilungenHash?.[dienstId]) {
+      allEinteilungenHash[dienstId] = {
+        tage: [],
+        eingeteilt_count_factor: eingeteiltCountFactor,
+        value: factor,
+        name: einteilung.po_dienst_name
+      };
+    }
+
+    const isTagBiggerLastDefaultYear = new Date(einteilung.tag).getFullYear() > defaultLastYear;
+    if (countedInKontingent[konId][tag][dienstId].all.length === 0 && isTagBiggerLastDefaultYear) {
+      einteilungenHash.all.eingeteilt_sum = addAndRound(einteilungenHash.all.eingeteilt_sum, factor, 2);
+      allEinteilungenHash[dienstId].tage.push(tag);
+    }
+
+    if (isInRot) {
+      if (!einteilungenHash.while_in_rotation.rotationen[rotId]) {
+        einteilungenHash.while_in_rotation.rotationen[rotId] = {
+          von: einteilung.von,
+          bis: einteilung.bis,
+          eingeteilt: 0,
+          eingeteilt_sum: 0,
+          einteilungen: {}
+        };
+      }
+      const inRotCounter = einteilungenHash.while_in_rotation.rotationen[rotId];
+      if (!inRotCounter.einteilungen[dienstId]) {
+        inRotCounter.einteilungen[dienstId] = {
+          tage: [],
+          eingeteilt_count_factor: eingeteiltCountFactor,
+          value: factor,
+          name: einteilung.po_dienst_name
+        };
+      }
+
+      if (countedInKontingent[konId][tag][dienstId].in_rot.length === 0) {
+        einteilungenHash.while_in_rotation.eingeteilt_sum = addAndRound(
+          einteilungenHash.while_in_rotation.eingeteilt_sum,
+          factor,
+          2
+        );
+        einteilungenHash.while_in_rotation.rotationen[rotId].eingeteilt_sum = addAndRound(
+          einteilungenHash.while_in_rotation.rotationen[rotId].eingeteilt_sum,
+          factor,
+          2
+        );
+      }
+
+      if (!inRotCounter.einteilungen[dienstId].tage.includes(tag)) {
+        inRotCounter.einteilungen[dienstId].tage.push(tag);
+        einteilungenHash.while_in_rotation.rotationen[rotId].eingeteilt = addAndRound(
+          einteilungenHash.while_in_rotation.rotationen[rotId].eingeteilt,
+          factor,
+          2
+        );
+      }
+      countedInKontingent[konId][tag][dienstId].in_rot.push(rotId);
+    }
+    countedInKontingent[konId][tag][dienstId].all.push(rotId);
+  }
+  return hash;
+}
+
+export async function getKontingentEingeteiltBasis(
+  mitarbeiterId: number,
+  einteilungenInKontingenten: TResultEinteilungenInKontingente[]
+) {
+  const kontingente = await _kontingent.getAll();
   const kontigentDefaultEingeteiltSum =
-    await mitarbeiter_default_eingeteilt.getKontingentDefaultEingeteiltsSum(mitarbeiterId);
+    await _mitarbeiter_default_eingeteilt.getKontingentDefaultEingeteiltsSum(mitarbeiterId);
 
   const defaults = processData('id', kontigentDefaultEingeteiltSum);
 
-  const result = {
+  const result: TResult = {
     rotationen: {},
     kontingente: {},
     defaults,
@@ -234,5 +394,10 @@ export async function getKontingentEingeteiltBasis(mitarbeiterId: number) {
   for (const kontingent of kontingente) {
     createKontingentEingeteiltDefault(kontingent, kontingent.id, result);
   }
+
+  for (const einteilung of einteilungenInKontingenten) {
+    countEinteilungInKontingent(mitarbeiterId, einteilung, result);
+  }
+
   return result;
 }

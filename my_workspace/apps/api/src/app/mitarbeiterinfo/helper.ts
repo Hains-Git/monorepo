@@ -3,7 +3,7 @@ import { formatDate, isValid, startOfToday } from 'date-fns';
 import { mitarbeiters } from '@prisma/client';
 
 import { _account_info, _mitarbeiter } from '@my-workspace/prisma_cruds';
-import { vkAndVgruppeAm } from '@my-workspace/models';
+import { Vertrag } from '@my-workspace/models';
 
 function createFakeAccountInfos(mitarbeiters: mitarbeiters[]) {
   const fakeAccountInfos: any[] = [];
@@ -65,7 +65,7 @@ function addVk(accountInfo) {
   const vertrags = accountInfo.mitarbeiter.vertrags;
   // if (accountInfo.id == 4) {
   // console.log(JSON.stringify(vertrags, null, 2));
-  const vkAndVgruppe = vkAndVgruppeAm(startOfToday(), vertrags);
+  const vkAndVgruppe = Vertrag.vkAndVgruppeAm(startOfToday(), vertrags);
   // }
   accountInfo.mitarbeiter.vk_and_vgruppe_am = vkAndVgruppe;
   return accountInfo;

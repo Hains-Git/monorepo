@@ -9,7 +9,7 @@ export async function isRotationsPlaner(userId: number) {
     }
   });
   if (!user) return false;
-  return user?.user_gruppes?.find((userGrouppes) => {
+  return !!user?.user_gruppes?.find((userGrouppes) => {
     return userGrouppes.gruppes?.name === ' Rotationsplaner Anästhesie HD';
   });
 }

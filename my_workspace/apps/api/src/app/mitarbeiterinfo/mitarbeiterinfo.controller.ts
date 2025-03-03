@@ -13,8 +13,8 @@ export class MitarbeiterInfoController {
   @Get('mitarbeiter_details')
   getMitarbeiterDetails(@Query() query: { id: number; user_id: number }) {
     console.log('getMitarbeiterDetails', query);
-    const mitarbeiterId = query.id;
-    const userId = query.user_id;
+    const mitarbeiterId = Number(query.id);
+    const userId = Number(query.user_id);
     return this.mitarbeiterInfoService.getMitarbeiterDetails(mitarbeiterId, userId);
   }
 

@@ -16,12 +16,12 @@ import {
 import { PlanerDate } from './planerdate/planerdate';
 
 import { processData, mapIdToKeys, newDateYearMonthDay, newDate } from '@my-workspace/utils';
-import { planungsInfoGetAll } from './planungsinfo';
+import { PlanungsInfo } from '..';
 
 import {
   getZeitraumkategorienInterval,
-  dienstwunsch,
-  kontingent,
+  _dienstwunsch,
+  _kontingent,
   _einteilung_rotation,
   _dienstplanung,
   _mitarbeiter,
@@ -197,7 +197,7 @@ async function getDienstkategories() {
 }
 
 async function getWuensche(windowAnfang: Date, windowEnde: Date) {
-  const wuensche = await dienstwunsch.getDienstWuenscheInRange(windowAnfang, windowEnde, {
+  const wuensche = await _dienstwunsch.getDienstWuenscheInRange(windowAnfang, windowEnde, {
     mitarbeiters: true
   });
   return getDataByHash(wuensche);
@@ -505,7 +505,7 @@ function computeBedarfsEintraege(bedarfsEintraege: any, dates: any) {
 }
 
 async function getKontingenteDienste(diensteArr: any) {
-  const kontingenteWithPoDienst = await kontingent.getAll({ kontingent_po_diensts: true });
+  const kontingenteWithPoDienst = await _kontingent.getAll({ kontingent_po_diensts: true });
   if (!kontingenteWithPoDienst) return [];
   const kontingentDienste = kontingenteWithPoDienst.reduce((hashObj: any, value: any) => {
     const kontingentId = value.id;
@@ -697,7 +697,7 @@ export async function getDienstplanung(dpl_id: number, loadVorschlaege: boolean)
 
   const { anfang, ende, anfang_frame, ende_frame } = get_dpl_anfang_ende(dienstplan);
   const data = await loadBasics(anfang_frame, ende_frame, dienstplan, loadVorschlaege);
-  const planungsinfos = await planungsInfoGetAll(anfang, ende);
+  const planungsinfos = await PlanungsInfo.planungsInfoGetAll(anfang, ende);
 
   if (!data) {
     return '';
