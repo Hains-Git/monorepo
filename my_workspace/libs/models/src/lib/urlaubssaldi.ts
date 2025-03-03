@@ -126,7 +126,6 @@ type Saldi = Record<
 type MitarbeiterInfos = {
   team_ids: Record<string, Record<string, number[]>>;
   rotationen: RotationenHash;
-  dienstfreis?: any;
 };
 
 type SaldiBase = {
@@ -278,14 +277,14 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
     // Alle Tage testen, ob Bedarf auf diese fällt
     for (let j = 0; j < daysLength; j++) {
       const date = days[j];
-      const key = getDateStr(date);
+      const day = getDateStr(date);
       // Nur Bedarfe hinzufügen, die noch nicht im Hash sind
-      if (dienstBedarfe[key]?.[bereichId]) continue;
+      if (dienstBedarfe[day]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
       if (!(await checkDateOnDienstbedarf(date, bedarf))) continue;
-      const currSaldi = createDefaultsForTeamSaldo(key, teamId, saldi);
-      dienstBedarfe[key] ||= {};
-      dienstBedarfe[key][bereichId] = {
+      const currSaldi = createDefaultsForTeamSaldo(day, teamId, saldi);
+      dienstBedarfe[day] ||= {};
+      dienstBedarfe[day][bereichId] = {
         bedarf,
         eingeteilt_min: 0,
         eingeteilt_opt: 0,
@@ -411,7 +410,6 @@ async function shouldAddDienstfrei(
     shouldAdd = Number(getDateStr(ausgleichDate).split('-').join('')) >= dateNr;
     if (!shouldAdd) {
       shouldAdd = checkSchichten(be.schichts, date, be.ausgleich_tage || 0);
-      console.log('schichten', shouldAdd);
     }
   } else {
     const ausgleichtage = newDate(currBedarf.tag);
@@ -422,6 +420,36 @@ async function shouldAddDienstfrei(
     }
   }
   return shouldAdd;
+}
+
+async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[]) {
+  const dienstfreiEingeteilt: Record<string, Record<number, Record<number, DFInfo>>> = {};
+  const dienstfrei = await getPossibleDienstfrei(dates, mitarbeiterIds, true);
+  const dienstfreiLength = dienstfrei.length;
+  const datesLength = dates.length;
+  for (let i = 0; i < dienstfreiLength; i++) {
+    const df = dienstfrei[i];
+    if (df.mitarbeiters?.platzhalter) continue;
+    const mitarbeiterId = df.mitarbeiter_id || 0;
+    const dienstId = df.po_dienst_id || 0;
+    for (let j = 0; j < datesLength; j++) {
+      const date = dates[j];
+      const dateKey = getDateStr(date);
+      const check = await shouldAddDienstfrei(df, date);
+      if (!check) continue;
+      dienstfreiEingeteilt[dateKey] ||= {};
+      dienstfreiEingeteilt[dateKey][mitarbeiterId] ||= {};
+      dienstfreiEingeteilt[dateKey][mitarbeiterId][dienstId] ||= {
+        id: df.id,
+        tag: df.tag || newDate(),
+        dienst: df.po_diensts?.planname || '',
+        mitarbeiter: df.mitarbeiters?.planname || '',
+        team: df.po_diensts?.teams?.name || '',
+        teamId: df.po_diensts?.team_id || 0
+      };
+    }
+  }
+  return dienstfreiEingeteilt;
 }
 
 async function checkMitarbeiterVerfuegbarkeit(
@@ -465,37 +493,11 @@ async function checkMitarbeiterVerfuegbarkeit(
     dates[0],
     dates[dates.length - 1]
   );
-  const dienstfreiEingeteilt: Record<string, Record<number, Record<number, DFInfo>>> = {};
-  const dienstfrei = await getPossibleDienstfrei(
+  const dienstfreiEingeteilt = await calculateDienstfrei(
     dates,
-    mitarbeiter.map((m) => m.id),
-    true
+    mitarbeiter.map((m) => m.id)
   );
-  const dienstfreiLength = dienstfrei.length;
   const datesLength = dates.length;
-  for (let i = 0; i < dienstfreiLength; i++) {
-    const df = dienstfrei[i];
-    if (df.mitarbeiters?.platzhalter) continue;
-    const mitarbeiterId = df.mitarbeiter_id || 0;
-    const dienstId = df.po_dienst_id || 0;
-    for (let j = 0; j < datesLength; j++) {
-      const date = dates[j];
-      const dateKey = getDateStr(date);
-      const check = await shouldAddDienstfrei(df, date);
-      if (!check) continue;
-      dienstfreiEingeteilt[dateKey] ||= {};
-      dienstfreiEingeteilt[dateKey][mitarbeiterId] ||= {};
-      dienstfreiEingeteilt[dateKey][mitarbeiterId][dienstId] ||= {
-        id: df.id,
-        tag: df.tag || newDate(),
-        dienst: df.po_diensts?.planname || '',
-        mitarbeiter: df.mitarbeiters?.planname || '',
-        team: df.po_diensts?.teams?.name || '',
-        teamId: df.po_diensts?.team_id || 0
-      };
-    }
-  }
-  infos.dienstfreis = dienstfreiEingeteilt;
   const mitarbeiterLength = mitarbeiter.length;
   const mitarbeiterTeamAm: Record<number, Record<string, teams>> = {};
   for (let i = 0; i < mitarbeiterLength; i++) {
