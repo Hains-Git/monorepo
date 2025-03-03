@@ -86,3 +86,7 @@ export function calculateDienstfreiFromDienstbedarf(
   });
   return dienstfreis;
 }
+
+export async function previewBedarfe() {
+  //
+}

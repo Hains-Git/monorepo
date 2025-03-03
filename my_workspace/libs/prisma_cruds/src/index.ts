@@ -19,6 +19,7 @@ export * from './lib/podienst';
 export * as _team from './lib/team';
 export * from './lib/vertrag';
 export * from './lib/zeitraumkategorie';
+export * as _zeitraumregel from './lib/zeitraumregel';
 export * from './lib/thema';
 export * from './lib/standort';
 export * from './lib/accountinfo';

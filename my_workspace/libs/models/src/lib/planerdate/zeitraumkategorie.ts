@@ -1,7 +1,8 @@
-import { zeitraumkategories } from '@prisma/client';
+import { zeitraumkategories, zeitraumregels } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
 import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { _zeitraumregel, getAllZeitraumKategories, getZeitraumKategoriesInRange } from '@my-workspace/prisma_cruds';
 
 interface RegelcodeHash {
   isBedarf: boolean;
@@ -276,4 +277,39 @@ function checkValidDate(year: number, month: number, day: number): Date {
   return result;
 }
 
-export { checkDate };
+async function previewZeitraumkategorien(year: number | string) {
+  const dates: PlanerDate[] = [];
+  let weekCounter = 0;
+  if (typeof year === 'string') {
+    year = parseInt(year, 10);
+  }
+  const anfang = newDateYearMonthDay(year, 0, 1);
+  const ende = newDateYearMonthDay(year + 1, 0, 1);
+  const zeitraumkategorien = await getZeitraumKategoriesInRange(anfang, ende);
+  while (anfang < ende) {
+    const planerDate = new PlanerDate(anfang, weekCounter);
+    await planerDate.initializeFeiertage(anfang, zeitraumkategorien);
+    dates.push(planerDate);
+    if (anfang.getDay() === 5) {
+      weekCounter++;
+    }
+    anfang.setDate(anfang.getDate() + 1);
+  }
+  const result = {
+    zeitraumkategorien: (await getAllZeitraumKategories()).reduce((acc: Record<number, zeitraumkategories>, curr) => {
+      acc[curr.id] = curr;
+      return acc;
+    }, {}),
+    zeitraumregeln: (await _zeitraumregel.getAllZeitraumregeln()).reduce(
+      (acc: Record<number, zeitraumregels>, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+      },
+      {}
+    ),
+    dates
+  };
+  return result;
+}
+
+export { checkDate, previewZeitraumkategorien };

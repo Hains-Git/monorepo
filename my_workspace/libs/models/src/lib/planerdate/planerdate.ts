@@ -82,7 +82,6 @@ export class PlanerDate {
 
   async initializeFeiertage(date: Date, zeitraumkategorien: zeitraumkategories[] = []) {
     const _feiertag = await PlanerDate.getFeiertag(date);
-
     if (_feiertag) {
       this.feiertag = {
         name: _feiertag.name || '',

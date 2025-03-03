@@ -211,12 +211,7 @@ export type Dienstfrei = diensteinteilungs & {
     | null;
 };
 
-export async function getPossibleDienstfrei(
-  tage: Date[],
-  mitarbeiterIds: number[] = [],
-  onlyCounts = false,
-  callback?: (tag: string, dienstfreis: Dienstfrei[]) => Dienstfrei[]
-) {
+export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number[] = [], onlyCounts = false) {
   const firstDate = tage[0];
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -305,11 +300,12 @@ export async function getPossibleDienstfrei(
               include: {
                 schichts: {
                   include: {
+                    arbeitszeittyps: true
+                  },
+                  where: {
                     arbeitszeittyps: {
-                      where: {
-                        arbeitszeit: false,
-                        dienstzeit: false
-                      }
+                      arbeitszeit: false,
+                      dienstzeit: false
                     }
                   }
                 },
@@ -319,11 +315,12 @@ export async function getPossibleDienstfrei(
                       include: {
                         schichts: {
                           include: {
+                            arbeitszeittyps: true
+                          },
+                          where: {
                             arbeitszeittyps: {
-                              where: {
-                                arbeitszeit: false,
-                                dienstzeit: false
-                              }
+                              arbeitszeit: false,
+                              dienstzeit: false
                             }
                           }
                         }
@@ -340,7 +337,7 @@ export async function getPossibleDienstfrei(
         }
       }
     });
-    results.push(...(callback ? callback(tag, einteilungen) : einteilungen));
+    results.push(...einteilungen);
   }
   return results;
 }
