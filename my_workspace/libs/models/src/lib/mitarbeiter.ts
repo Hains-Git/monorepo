@@ -2,7 +2,7 @@ import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import { getDefaultKontingents, getMitarbeiterById, _team, mitarbeiterUrlaubssaldo } from '@my-workspace/prisma_cruds';
-import { newDate } from '@my-workspace/utils';
+import { getDateStr, newDate } from '@my-workspace/utils';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const aSeit = mitarbeiter.a_seit;
@@ -97,15 +97,16 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   defaultKontingent: TDefaultKontingents | null = null
 ) {
   let team: teams | null = null;
-  if (mitarbeiter.einteilung_rotations) {
-    team =
-      mitarbeiter.einteilung_rotations.find((rot) => {
-        if (rot.von && rot.bis) {
-          return rot.von <= date && rot.bis >= date;
-        }
-        return false;
-      })?.kontingents?.teams || null;
-  }
+  const dateNr = Number(getDateStr(date).split('-').join(''));
+  team =
+    mitarbeiter.einteilung_rotations.find((rot) => {
+      if (rot.von && rot.bis) {
+        const vonNr = Number(getDateStr(rot.von).split('-').join(''));
+        const bisNr = Number(getDateStr(rot.bis).split('-').join(''));
+        return vonNr <= dateNr && bisNr >= dateNr;
+      }
+      return false;
+    })?.kontingents?.teams || null;
   if (!team && mitarbeiter.funktion?.teams) {
     team = mitarbeiter.funktion?.teams;
   }
@@ -123,7 +124,7 @@ export async function mitarbeiterAktivAm(mitarbeiter: mitarbeiterUrlaubssaldo, d
   if (aktiv && mitarbeiter.aktiv_von) {
     aktiv = mitarbeiter.aktiv_von <= date;
   }
-  if (aktiv && mitarbeiter.vertrags.length) {
+  if (aktiv) {
     aktiv = !!mitarbeiter.vertrags.find((v) => {
       if (v.anfang && v.ende) {
         return (

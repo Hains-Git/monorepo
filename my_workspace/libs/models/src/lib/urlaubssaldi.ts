@@ -593,7 +593,7 @@ async function checkMitarbeiterVerfuegbarkeit(
       }
 
       const dfDate = dienstfreiEingeteilt[dateKey];
-      if (dfDate && dfDate[mId]) {
+      if (dfDate?.[mId]) {
         notVerfuegbar = true;
         const df = dfDate[mId];
         for (const poDienstId in df) {
