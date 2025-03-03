@@ -1,7 +1,7 @@
 import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
-import { getDefaultTeam, getDefaultKontingents, getMitarbeiterById } from '@my-workspace/prisma_cruds';
+import { getDefaultKontingents, getMitarbeiterById, _team, mitarbeiterUrlaubssaldo } from '@my-workspace/prisma_cruds';
 import { newDate } from '@my-workspace/utils';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
@@ -19,7 +19,7 @@ export async function getDefaultTeamForMitarbeiter(
 ) {
   let team = null;
   if (!defaultTeam) {
-    defaultTeam = await getDefaultTeam();
+    defaultTeam = await _team.getDefaultTeam();
   }
   if (!defaultTeam && !defaultKontingent) {
     defaultKontingent = await getDefaultKontingents();
@@ -44,11 +44,11 @@ type TRot = einteilung_rotations & {
 export async function mitarbeiterTeamAm(
   date = newDate(),
   rotationen: TRot[] | null = null,
-  defaultTeam = null,
-  defaultKontingent = null,
+  defaultTeam: teams | null = null,
+  defaultKontingent: TDefaultKontingents | null = null,
   mitarbeiterId: number
 ) {
-  let team;
+  let team: teams | null = null;
   let rotation: TRot | undefined = undefined;
   const mitarbeiter = await getMitarbeiterById(mitarbeiterId, {
     funktion: {
@@ -79,8 +79,85 @@ export async function mitarbeiterTeamAm(
   }
 
   if (!team) {
-    team = getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
+    team = await getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
   }
 
-  return;
+  return team;
+}
+
+export async function mitarbeiterTeamAmByMitarbeiter(
+  mitarbeiter: mitarbeiters & {
+    einteilung_rotations: TRot[];
+    funktion: {
+      teams: teams | null;
+    } | null;
+  },
+  date = newDate(),
+  defaultTeam: teams | null = null,
+  defaultKontingent: TDefaultKontingents | null = null
+) {
+  let team: teams | null = null;
+  if (mitarbeiter.einteilung_rotations) {
+    team =
+      mitarbeiter.einteilung_rotations.find((rot) => {
+        if (rot.von && rot.bis) {
+          return rot.von <= date && rot.bis >= date;
+        }
+        return false;
+      })?.kontingents?.teams || null;
+  }
+  if (!team && mitarbeiter.funktion?.teams) {
+    team = mitarbeiter.funktion?.teams;
+  }
+  if (!team) {
+    team = await getDefaultTeamForMitarbeiter(defaultTeam, defaultKontingent);
+  }
+  return team;
+}
+
+export async function mitarbeiterAktivAm(mitarbeiter: mitarbeiterUrlaubssaldo, date = newDate()) {
+  let aktiv = !!mitarbeiter.aktiv;
+  if (aktiv && mitarbeiter.aktiv_bis) {
+    aktiv = mitarbeiter.aktiv_bis >= date;
+  }
+  if (aktiv && mitarbeiter.aktiv_von) {
+    aktiv = mitarbeiter.aktiv_von <= date;
+  }
+  if (aktiv && mitarbeiter.vertrags.length) {
+    aktiv = !!mitarbeiter.vertrags.find((v) => {
+      if (v.anfang && v.ende) {
+        return (
+          v.anfang <= date &&
+          v.ende >= date &&
+          v.vertrags_phases.find((p) => {
+            if (p.von && p.bis) {
+              return p.von <= date && p.bis >= date;
+            }
+            return false;
+          }) &&
+          v.vertrags_arbeitszeits.find((a) => {
+            if (a.von && a.bis) {
+              const vk = Number(a.vk || 0);
+              const tageWoche = a.tage_woche || 0;
+              return a.von <= date && a.bis >= date && vk > 0 && vk <= 1 && tageWoche > 0 && tageWoche <= 7;
+            }
+            return false;
+          })
+        );
+      }
+      return false;
+    });
+  }
+  return aktiv;
+}
+
+export async function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: mitarbeiterUrlaubssaldo, date = newDate()) {
+  const aktiv = !mitarbeiter.urlaubssaldo_abspraches.find((a) => {
+    if (a.von && a.bis) {
+      return a.von <= date && a.bis >= date;
+    }
+    return false;
+  });
+  if (!aktiv) return aktiv;
+  return await mitarbeiterAktivAm(mitarbeiter, date);
 }

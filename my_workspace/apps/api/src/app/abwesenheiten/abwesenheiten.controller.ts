@@ -10,4 +10,9 @@ export class AbwesenheitenController {
   getAbwesenheitsData(@Body() body: { init: boolean; direction: string; date_view: string; left_side_date: string }) {
     return this.abwesenheitenService.getAbwesenheitsData(body);
   }
+
+  @Post('get_saldi')
+  getSaldi(@Body() body: { start: string; ende: string }) {
+    return this.abwesenheitenService.getSaldi(body);
+  }
 }

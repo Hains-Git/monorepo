@@ -18,7 +18,7 @@ import {
   schichts,
   themas
 } from '@prisma/client';
-import { Fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
+import { _fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
 import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 const defaultPlanData: FraunhoferTypes.PlanData = {
@@ -289,7 +289,7 @@ async function getDienstplanPerMonth(start: Date, end: Date) {
   const dienstplaene: DienstPlan[] = [];
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
-    const dpl = await Fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
+    const dpl = await _fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
     if (!dpl) continue;
     dienstplaene.push(dpl);
   }
@@ -604,7 +604,7 @@ export async function getFraunhoferPlanData(
 ): Promise<FraunhoferTypes.PlanData> {
   const result: FraunhoferTypes.PlanData = { ...defaultPlanData };
 
-  const isValid = await Fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
   if (!isValid) {
     result.msg = 'Nicht authorisiert!';
     return result;
@@ -623,7 +623,7 @@ export async function getFraunhoferPlanData(
     }
 
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } =
-      await Fraunhofer.getFraunhoferData(start, end);
+      await _fraunhofer.getFraunhoferData(start, end);
 
     const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
       createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
@@ -633,7 +633,7 @@ export async function getFraunhoferPlanData(
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
       getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
 
-    const fixedEinteilungen = await Fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
 
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
@@ -705,7 +705,7 @@ export async function getFraunhoferPlanData(
       });
     });
 
-    result.AuslgeichsfreiDienstID = await Fraunhofer.getAusgleichsDienstfreiId();
+    result.AuslgeichsfreiDienstID = await _fraunhofer.getAusgleichsDienstfreiId();
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
@@ -763,7 +763,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
     updated: false
   };
 
-  const isValid = await Fraunhofer.isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
   if (!isValid) {
     result.msg = 'Nicht authorisiert!\n';
     return result;
@@ -782,34 +782,34 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
     const parameter = typeof body.Parameter === 'string' ? body.Parameter.trim() : '';
     const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
 
-    const dienstplanStatusVorschlagId = await Fraunhofer.getDienstplanstatusVorschlagId();
+    const dienstplanStatusVorschlagId = await _fraunhofer.getDienstplanstatusVorschlagId();
 
     if (!dienstplanStatusVorschlagId) {
       result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungsstatusVorschlagId = await Fraunhofer.getEinteilungsstatusVorschlagId();
+    const einteilungsstatusVorschlagId = await _fraunhofer.getEinteilungsstatusVorschlagId();
     if (!einteilungsstatusVorschlagId) {
       result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungskontextAutoId = await Fraunhofer.getEinteilungskontextAutoId();
+    const einteilungskontextAutoId = await _fraunhofer.getEinteilungskontextAutoId();
     if (!einteilungskontextAutoId) {
       result.msg = 'Einteilungskontext Auto nicht gefunden!\n';
       return result;
     }
 
-    const parametersetId = await Fraunhofer.getParametersetId();
+    const parametersetId = await _fraunhofer.getParametersetId();
     if (!parametersetId) {
       result.msg = 'Parameterset nicht gefunden!\n';
       return result;
     }
 
-    const mitarbeiterHash = await Fraunhofer.getMitarbeiterHash();
-    const diensteHash = await Fraunhofer.getDiensteHash();
-    const bereicheHash = await Fraunhofer.getBereicheHash();
+    const mitarbeiterHash = await _fraunhofer.getMitarbeiterHash();
+    const diensteHash = await _fraunhofer.getDiensteHash();
+    const bereicheHash = await _fraunhofer.getBereicheHash();
 
     const dates: Record<
       string,
@@ -866,14 +866,14 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
 
     for (const monthYear in dates) {
       const { start, end, einteilungen } = dates[monthYear];
-      const dienstplanBedarfId = await Fraunhofer.getDienstplanbedarfId(start, end);
+      const dienstplanBedarfId = await _fraunhofer.getDienstplanbedarfId(start, end);
       if (!dienstplanBedarfId) {
         result.msg += `Keine Bedarf für ${start.toLocaleDateString('de-De')} - ${end.toLocaleDateString(
           'de-De'
         )} gefunden!\n`;
         continue;
       }
-      const dienstplan = await Fraunhofer.createDienstplan({
+      const dienstplan = await _fraunhofer.createDienstplan({
         data: {
           name,
           beschreibung,
@@ -891,7 +891,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
         continue;
       }
 
-      await Fraunhofer.createManyDiensteinteilungs({
+      await _fraunhofer.createManyDiensteinteilungs({
         skipDuplicates: true,
         data: einteilungen.map((e) => ({
           tag: e.Tag,

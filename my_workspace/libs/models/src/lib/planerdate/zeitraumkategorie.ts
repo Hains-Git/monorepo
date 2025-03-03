@@ -1,23 +1,24 @@
-import { zeitraumkategories } from '@prisma/client';
+import { zeitraumkategories, zeitraumregels } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { _zeitraumregel, getAllZeitraumKategories, getZeitraumKategoriesInRange } from '@my-workspace/prisma_cruds';
 
 interface RegelcodeHash {
-  is_bedarf: boolean;
+  isBedarf: boolean;
   feiertage: string;
   wochentage: string;
   monatstage: string;
   wochen: string;
   monate: string;
-  feiertage_r: string[];
-  wochentage_r: string[];
-  wochen_r: string[];
-  monate_r: string[];
-  is_nicht: boolean;
-  is_auch: boolean;
-  is_nur: boolean;
-  has_feiertag: boolean;
+  feiertageR: string[];
+  wochentageR: string[];
+  wochenR: string[];
+  monateR: string[];
+  isNicht: boolean;
+  isAuch: boolean;
+  isNur: boolean;
+  hasFeiertag: boolean;
 }
 
 const ZEITRAUMREGELN_REGEX = {
@@ -46,32 +47,18 @@ async function shouldCheckDate(
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
+  const dateNr = Number(getDateStr(newDate(fullDate)).split('-').join(''));
   if (zeitraumAnfang != null) {
-    thisStart = fullDate >= zeitraumAnfang;
+    thisStart = dateNr >= Number(getDateStr(zeitraumAnfang).split('-').join(''));
   }
   if (zeitraumEnde != null) {
-    thisEnd = fullDate < zeitraumEnde;
+    thisEnd = dateNr < Number(getDateStr(zeitraumEnde).split('-').join(''));
   }
   return thisStart && thisEnd;
 }
 
 function splitRegelcode(regelcode: string) {
-  const hash: {
-    isBedarf: boolean;
-    feiertage: string;
-    wochentage: string;
-    monatstage: string;
-    wochen: string;
-    monate: string;
-    feiertageR: string[];
-    wochentageR: string[];
-    wochenR: string[];
-    monateR: string[];
-    isNicht: boolean;
-    isAuch: boolean;
-    isNur: boolean;
-    hasFeiertag: boolean;
-  } = {
+  const hash: RegelcodeHash = {
     isBedarf: regelcode === '',
     feiertage: '',
     wochentage: '',
@@ -152,7 +139,9 @@ async function checkDate(date: Date | PlanerDate, zeitraumkategorie: zeitraumkat
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
+    const originalDate = date;
     date = new PlanerDate(date);
+    await date.initializeFeiertage(originalDate);
   }
 
   const zeitraumAnfang = zeitraumkategorie.anfang;
@@ -288,4 +277,39 @@ function checkValidDate(year: number, month: number, day: number): Date {
   return result;
 }
 
-export { checkDate };
+async function previewZeitraumkategorien(year: number | string) {
+  const dates: PlanerDate[] = [];
+  let weekCounter = 0;
+  if (typeof year === 'string') {
+    year = parseInt(year, 10);
+  }
+  const anfang = newDateYearMonthDay(year, 0, 1);
+  const ende = newDateYearMonthDay(year + 1, 0, 1);
+  const zeitraumkategorien = await getZeitraumKategoriesInRange(anfang, ende);
+  while (anfang < ende) {
+    const planerDate = new PlanerDate(anfang, weekCounter);
+    await planerDate.initializeFeiertage(anfang, zeitraumkategorien);
+    dates.push(planerDate);
+    if (anfang.getDay() === 5) {
+      weekCounter++;
+    }
+    anfang.setDate(anfang.getDate() + 1);
+  }
+  const result = {
+    zeitraumkategorien: (await getAllZeitraumKategories()).reduce((acc: Record<number, zeitraumkategories>, curr) => {
+      acc[curr.id] = curr;
+      return acc;
+    }, {}),
+    zeitraumregeln: (await _zeitraumregel.getAllZeitraumregeln()).reduce(
+      (acc: Record<number, zeitraumregels>, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+      },
+      {}
+    ),
+    dates
+  };
+  return result;
+}
+
+export { checkDate, previewZeitraumkategorien };

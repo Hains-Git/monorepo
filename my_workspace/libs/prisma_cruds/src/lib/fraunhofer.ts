@@ -2,14 +2,14 @@ import { prismaDb } from '@my-workspace/prisma_hains';
 import {
   bedarfsEintragsIncludeMainInfosNoBlock,
   getFraunhoferMitarbeiter,
-  wherePlanBedarfIn
+  whereDienstplanIn
 } from './utils/crud_helper';
 import { Prisma } from '@prisma/client';
 
 export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, start: Date, end: Date) {
   return await prismaDb.dienstplans.findFirst({
     where: {
-      ...wherePlanBedarfIn(monthStart, monthEnd),
+      ...whereDienstplanIn(monthStart, monthEnd),
       dienstplanbedarves: {
         isNot: null
       }
