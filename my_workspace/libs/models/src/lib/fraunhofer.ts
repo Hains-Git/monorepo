@@ -709,12 +709,14 @@ export async function getFraunhoferPlanData(
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
+        const dienst = dienstHash[e.po_dienst_id];
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
           BereichID: e.bereich_id,
-          IstRelevantFürDoppelWhopper: !!dienstHash[e.po_dienst_id]?.IstRelevantFürDoppelWhopper
+          IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
+          Typ: dienst.Typ
         });
       }
       return acc;
