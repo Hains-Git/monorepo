@@ -185,7 +185,6 @@ async function getSaldiBase(start: Date, ende: Date) {
     },
     default_team: null
   };
-  console.log('result', result);
 
   const teams = await _team.getAllTeamsWithMainIncludes();
   teams.forEach((t) => {
@@ -647,7 +646,6 @@ export async function getSaldi(start: Date, ende: Date) {
   const result = await getSaldiBase(start, ende);
   const bedarfeProDienstTagBereich = await checkTeamBedarfe(result.dates, result.saldi);
   result.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
-  console.log('Ende', result.saldi);
   return {
     ...result,
     dates: result.dates.map((d) => getDateStr(d))
