@@ -184,20 +184,21 @@ async function getSaldiBase(start: Date, ende: Date) {
     },
     default_team: null
   };
+  console.log('result', result);
 
   const teams = await _team.getAllTeamsWithMainIncludes();
   teams.forEach((t) => {
     result.saldi[t.id] = {
       team: {
         ...t,
-        funktionen_ids: t.team_funktions.map((f) => f.id)
+        funktionen_ids: t.team_funktions.map((f) => f.funktion_id)
       },
       dates: {}
     };
     if (t.default) {
       result.default_team = {
         ...t,
-        funktionen_ids: t.team_funktions.map((f) => f.id)
+        funktionen_ids: t.team_funktions.map((f) => f.funktion_id)
       };
     }
   });
@@ -274,6 +275,9 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
     if (checkDienstfrei) {
       computedSchichten[azvId] ||= createSchichtenDaysFromArbeitszeitverteilung(azv, arbeitszeittypen);
     }
+    if ([5, 6, 203].includes(bedarf.id)) {
+      console.log('Bedarf: ', bedarf, JSON.stringify(computedSchichten[azvId]));
+    }
     // Alle Tage testen, ob Bedarf auf diese fällt
     for (let j = 0; j < daysLength; j++) {
       const date = days[j];
@@ -298,6 +302,9 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
         currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
       if (!checkDienstfrei) continue;
+      if ([5, 6, 203].includes(bedarf.id)) {
+        console.log('Calculate', getDateStr(date));
+      }
       // Dienstfrei initialisieren
       calculateDienstfreiFromDienstbedarf(date, arbeitszeittypen, computedSchichten[azvId], bedarf, (day, dayStr) => {
         if (dienstfreis[bedarf.id][dayStr] || !daysHash[dayStr]) return;
@@ -504,7 +511,7 @@ async function checkMitarbeiterVerfuegbarkeit(
     const m = mitarbeiter[i];
     const mId = m.id;
     if (m.platzhalter) continue;
-    infos.rotationen[mId] = m.einteilung_rotations;
+    if (m.einteilung_rotations?.length) infos.rotationen[mId] = m.einteilung_rotations;
     mitarbeiterEinteilungen[mId] ||= {};
     infos.team_ids[mId] ||= {};
     const teamIds = infos.team_ids[mId];
@@ -629,6 +636,7 @@ export async function getSaldi(start: Date, ende: Date) {
   const result = await getSaldiBase(start, ende);
   const bedarfeProDienstTagBereich = await checkTeamBedarfe(result.dates, result.saldi);
   result.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
+  console.log('Ende', result.saldi);
   return {
     ...result,
     dates: result.dates.map((d) => getDateStr(d))

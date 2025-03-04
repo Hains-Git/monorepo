@@ -384,7 +384,7 @@ function calculateBedarfArbeitszeit(
       // Bereitschaftsdienst mitzählen und Rufdienst ignorieren.
       if (!azt.rufbereitschaft) acc += s.arbeitszeit;
       if (!wochenende && azt?.dienstzeit) {
-        const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getHours() < 5;
+        const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getUTCHours() < 5;
         const endTime = s.ende.toTimeString().split(' ')[0];
         const endTimeAsNumber = parseInt(endTime.split(':').join(''), 10);
         const endsFridayAfterNine = s.ende.getDay() === 5 && endTimeAsNumber > 210000;

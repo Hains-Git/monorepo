@@ -22,13 +22,17 @@ export type ArbeitszeitverteilungSchichtDays = {
 };
 
 function formatZeiten(arbeitszeitverteilung: arbeitszeitverteilungs) {
-  return arbeitszeitverteilung.verteilung.map((zeit) => {
-    const time = `${zeit.getHours().toString().padStart(2, '0')}:${zeit.getMinutes().toString().padStart(2, '0')}`;
+  const result = arbeitszeitverteilung.verteilung.map((zeit) => {
+    const time = `${zeit.getUTCHours().toString().padStart(2, '0')}:${zeit
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}`;
     return {
       zeit: time,
       zeitZahl: parseInt(time.replace(':', ''), 10)
     };
   });
+  return result;
 }
 
 function createSchichtenFromArbeitszeitverteilung(
