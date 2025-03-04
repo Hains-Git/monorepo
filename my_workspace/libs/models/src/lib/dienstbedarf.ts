@@ -59,7 +59,7 @@ export function calculateDienstfreiFromDienstbedarf(
       const anfang = newDate(date);
       anfang.setDate(anfang.getDate() + schicht.tagAnfang);
       anfang.setHours(parseInt(schicht.anfangSplit[0], 10), parseInt(schicht.anfangSplit[1], 10));
-      const ende = newDate(tag);
+      const ende = newDate(date);
       ende.setDate(ende.getDate() + schicht.tagEnde);
       ende.setHours(parseInt(schicht.endeSplit[0], 10), parseInt(schicht.endeSplit[1], 10));
       const schichtObj: SchichtObjType = {
