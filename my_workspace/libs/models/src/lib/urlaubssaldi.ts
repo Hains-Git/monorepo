@@ -29,6 +29,7 @@ import {
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
 import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
+import { PlanerDate } from './planerdate/planerdate';
 
 type SaldiValues = {
   verfuegbar: number;
@@ -256,6 +257,17 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   const computedSchichten: Record<number, ArbeitszeitverteilungSchichtDays> = {};
   const bedarfeLength = dienstbedarfe.length;
   const daysLength = days.length;
+  const planerDates: PlanerDate[] = [];
+  let weekCounter = 0;
+  for (let i = 0; i < daysLength; i++) {
+    const date = days[i];
+    const plDate = new PlanerDate(date, weekCounter);
+    await plDate.initializeFeiertage(date);
+    planerDates.push(plDate);
+    if (date.getDay() === 5) {
+      weekCounter++;
+    }
+  }
   for (let i = 0; i < bedarfeLength; i++) {
     const bedarf = dienstbedarfe[i];
     const dienst = bedarf.po_diensts;
@@ -275,17 +287,19 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
     if (checkDienstfrei) {
       computedSchichten[azvId] ||= createSchichtenDaysFromArbeitszeitverteilung(azv, arbeitszeittypen);
     }
-    if ([5, 6, 203].includes(bedarf.id)) {
-      console.log('Bedarf: ', bedarf, JSON.stringify(computedSchichten[azvId]));
-    }
     // Alle Tage testen, ob Bedarf auf diese fällt
     for (let j = 0; j < daysLength; j++) {
       const date = days[j];
+      const plDate = planerDates[j];
       const day = getDateStr(date);
       // Nur Bedarfe hinzufügen, die noch nicht im Hash sind
       if (dienstBedarfe[day]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
-      if (!(await checkDateOnDienstbedarf(date, bedarf))) continue;
+      const dateCheck = await checkDateOnDienstbedarf(plDate, bedarf);
+      if ([5, 6, 203].includes(bedarf.id)) {
+        console.log('dateCheck', bedarf.id, getDateStr(date), dateCheck);
+      }
+      if (!dateCheck) continue;
       const currSaldi = createDefaultsForTeamSaldo(day, teamId, saldi);
       dienstBedarfe[day] ||= {};
       dienstBedarfe[day][bereichId] = {
@@ -301,10 +315,10 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
         currSaldi.bedarfe_opt += opt;
         currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
-      if (!checkDienstfrei) continue;
       if ([5, 6, 203].includes(bedarf.id)) {
-        console.log('Calculate', getDateStr(date));
+        console.log('Calculate', bedarf.id, getDateStr(date), checkDienstfrei);
       }
+      if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren
       calculateDienstfreiFromDienstbedarf(date, arbeitszeittypen, computedSchichten[azvId], bedarf, (day, dayStr) => {
         if (dienstfreis[bedarf.id][dayStr] || !daysHash[dayStr]) return;
