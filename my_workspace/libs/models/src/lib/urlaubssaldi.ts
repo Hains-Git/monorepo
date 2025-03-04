@@ -39,7 +39,6 @@ type SaldiValues = {
   sonstige: number;
   bedarfe_min: number;
   bedarfe_opt: number;
-  bedarfe: Record<number, dienstbedarves>;
   bedarfe_eingeteilt_min: number;
   bedarfe_eingeteilt_opt: number;
   bedarfe_eingeteilt_opt_markiert: number;
@@ -54,7 +53,6 @@ const saldiDefaultValues: SaldiValues = {
   sonstige: 0,
   bedarfe_min: 0,
   bedarfe_opt: 0,
-  bedarfe: {},
   bedarfe_eingeteilt_min: 0,
   bedarfe_eingeteilt_opt: 0,
   bedarfe_eingeteilt_opt_markiert: 0,
@@ -310,7 +308,6 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       if (!bedarf.ignore_in_urlaubssaldo) {
         currSaldi.bedarfe_min += min;
         currSaldi.bedarfe_opt += opt;
-        currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
       if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren
