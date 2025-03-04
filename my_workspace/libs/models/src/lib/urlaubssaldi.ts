@@ -238,7 +238,8 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   const lastDate = dates[dates.length - 1];
   for (; d <= lastDate; d.setDate(d.getDate() + 1)) {
     const date = newDate(d);
-    daysHash[getDateStr(date)] = date;
+    const dateStr = getDateStr(date);
+    daysHash[dateStr] = date;
     days.push(date);
   }
   const freiTypen: number[] = [];
@@ -296,9 +297,6 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       if (dienstBedarfe[day]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
       const dateCheck = await checkDateOnDienstbedarf(plDate, bedarf);
-      if ([5, 6, 203].includes(bedarf.id)) {
-        console.log('dateCheck', bedarf.id, getDateStr(date), dateCheck);
-      }
       if (!dateCheck) continue;
       const currSaldi = createDefaultsForTeamSaldo(day, teamId, saldi);
       dienstBedarfe[day] ||= {};
@@ -315,13 +313,11 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
         currSaldi.bedarfe_opt += opt;
         currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
-      if ([5, 6, 203].includes(bedarf.id)) {
-        console.log('Calculate', bedarf.id, getDateStr(date), checkDienstfrei);
-      }
       if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren
       calculateDienstfreiFromDienstbedarf(date, arbeitszeittypen, computedSchichten[azvId], bedarf, (day, dayStr) => {
         if (dienstfreis[bedarf.id][dayStr] || !daysHash[dayStr]) return;
+
         dienstfreis[bedarf.id][dayStr] = true;
         const currSaldi = createDefaultsForTeamSaldo(dayStr, teamId, saldi);
         const df = currSaldi.bedarfe_dienstfrei;
@@ -331,6 +327,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
           bereiche: {},
           bedarfe: {}
         };
+        if (df[dienstId].bereiche[bereichId]) return;
         df[dienstId].bedarfe[bedarf.id] ||= { min, date };
         df[dienstId].bereiche[bereichId] ||= 0;
         df[dienstId].bereiche[bereichId] += min;
