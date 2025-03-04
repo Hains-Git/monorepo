@@ -33,7 +33,7 @@ export class AppService {
     }
     const timeNow = new Date().getTime();
     const result = await Urlaubssaldi.getSaldi(new Date(2025, 0, 1), new Date(2025, 0, 31));
-    console.log('time', (new Date().getTime() - timeNow) / 1000, 's');
+    console.log('time', (new Date().getTime() - timeNow) / 1000, 's', result);
     return result;
   }
 }
