@@ -19,7 +19,7 @@ import {
   themas
 } from '@prisma/client';
 import { _fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 const defaultPlanData: FraunhoferTypes.PlanData = {
   Mitarbeiter: [],
@@ -241,8 +241,8 @@ function createTageAndMonths(start: Date, end: Date) {
     tage.push(date);
     const [year, month] = [date.getFullYear(), date.getMonth()];
     // 12 Uhr mittags, damit es keine Probleme mit der Zeitzone gibt
-    const firstDayStr = newDateYearMonthDay(year, month, 1).toISOString();
-    months[firstDayStr] ||= newDateYearMonthDay(year, month + 1, 0).toISOString();
+    const firstDayStr = getDateStr(newDateYearMonthDay(year, month, 1));
+    months[firstDayStr] ||= getDateStr(newDateYearMonthDay(year, month + 1, 0));
   }
 
   return { tage, months };
@@ -329,7 +329,7 @@ function calculateBedarfArbeitszeit(
   wochenende = [0, 6].includes(bedarfseintragTag.getDay());
   const dienstId = bedarfsEintrag.po_dienst_id || 0;
   const bereichId = bedarfsEintrag.bereich_id || 0;
-  const tag = bedarfseintragTag.toISOString().split('T')[0];
+  const tag = getDateStr(bedarfseintragTag);
 
   const checkPreDienstgruppen = !bedarfsEintrag.is_block || bedarfsEintrag.id === bedarfsEintrag.first_entry;
   const arbeitszeitverteilung = bedarfsEintrag.dienstbedarves?.arbeitszeitverteilungs;
@@ -431,7 +431,7 @@ function checkBedarf(
   uberschneidungSchichten: UeberschneidungSchichtenSammlung
 ) {
   if (!be.tag || !be.po_dienst_id) return;
-  const tagKey = be.tag.toISOString();
+  const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
@@ -463,7 +463,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
         const nextDayLimit = newDate(be.tag);
         nextDayLimit.setDate(nextDayLimit.getDate() + 1);
         nextDayLimit.setHours(12, 0, 0, 0);
-        const dateZahl = Number(be.tag.toISOString().split('T')[0].split('-').join(''));
+        const dateZahl = Number(getDateStr(be.tag).split('-').join(''));
         let hasFreiNextDays = false;
         const ausgleichsTage = be.ausgleich_tage || 0;
         for (let i = l; i >= 0; i--) {
@@ -471,7 +471,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
           const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
           const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
           if (!schicht.anfang || !schicht.ende) continue;
-          const endeDateZahl = Number(schicht.ende.toISOString().split('T')[0].split('-').join(''));
+          const endeDateZahl = Number(getDateStr(schicht.ende).split('-').join(''));
           // Es sind nur Schichten bis zum Tag des Bedarfs relevant
           if (endeDateZahl <= dateZahl) break;
           // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
@@ -525,7 +525,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
             if (bb.tag < start || bb.tag > end) {
-              const tagKey = bb.tag.toISOString();
+              const tagKey = getDateStr(bb.tag);
               bedarfeTageOutSideInterval[tagKey] ||= [];
               bedarfeTageOutSideInterval[tagKey].push(bb.po_dienst_id);
             }
@@ -844,7 +844,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
       e.Tag = tag;
 
       const [year, month] = [tag.getFullYear(), tag.getMonth()];
-      const monthYear = tag.toISOString().split('T')[0];
+      const monthYear = getDateStr(tag);
       if (dates[monthYear]) {
         dates[monthYear].einteilungen.push(e);
         return true;

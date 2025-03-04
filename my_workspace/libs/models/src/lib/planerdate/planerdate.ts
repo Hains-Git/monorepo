@@ -1,8 +1,8 @@
-import { format, formatDate } from 'date-fns';
+import { format } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 type Feiertag = {
   name: string;
@@ -61,7 +61,7 @@ export class PlanerDate {
     this.week_counter = week_counter;
     this.week_day = PlanerDate.WEEKDAYS[date.getDay()];
     this.local_date_string = date.toLocaleDateString('de-DE');
-    this.id = date.toISOString().split('T')[0];
+    this.id = getDateStr(date);
     this.month_nr = date.getMonth() + 1;
     this.month = PlanerDate.MONTHS[date.getMonth()];
     this.is_weekend = date.getDay() === 0 || date.getDay() === 6;
@@ -207,7 +207,7 @@ export class PlanerDate {
         name: name,
         day: osterDatum.getDate(),
         month: osterDatum.getMonth() + 1,
-        full_date: osterDatum.toISOString().split('T')[0]
+        full_date: getDateStr(osterDatum)
       };
       const monthKey = feiertag.month.toString();
       if (!PlanerDate.feiertage[yearStr][monthKey]) {
@@ -219,7 +219,7 @@ export class PlanerDate {
         name: feiertag.name,
         tag: feiertag.day,
         monat: feiertag.month,
-        datum: newDate(formatDate(osterDatum, 'yyyy-MM-dd')),
+        datum: newDate(getDateStr(osterDatum)),
         jahr: osterDatum.getFullYear()
       };
 
