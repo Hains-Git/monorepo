@@ -1,7 +1,7 @@
 import { zeitraumkategories, zeitraumregels } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
-import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 import { _zeitraumregel, getAllZeitraumKategories, getZeitraumKategoriesInRange } from '@my-workspace/prisma_cruds';
 
 interface RegelcodeHash {
@@ -47,12 +47,12 @@ async function shouldCheckDate(
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
-  const dateNr = Number(getDateStr(newDate(fullDate)).split('-').join(''));
+  const dateNr = getDateNr(fullDate);
   if (zeitraumAnfang != null) {
-    thisStart = dateNr >= Number(getDateStr(zeitraumAnfang).split('-').join(''));
+    thisStart = dateNr >= getDateNr(zeitraumAnfang);
   }
   if (zeitraumEnde != null) {
-    thisEnd = dateNr < Number(getDateStr(zeitraumEnde).split('-').join(''));
+    thisEnd = dateNr < getDateNr(zeitraumEnde);
   }
   return thisStart && thisEnd;
 }
@@ -230,17 +230,17 @@ function checkTagRhythmus(regeln: string, date: PlanerDate, monate: string[], st
     isRhythmus = wiederholung === 0 && currentDateStr === getDateStr(checkDatum);
 
     if (wiederholung > 0) {
-      const currentDateNr = Number(currentDateStr.split('-').join(''));
-      const startDatumNr = Number(getDateStr(startDatum).split('-').join(''));
-      const endDatumNr = Number(getDateStr(endDatum).split('-').join(''));
+      const currentDateNr = getDateNr(currentDateStr);
+      const startDatumNr = getDateNr(startDatum);
+      const endDatumNr = getDateNr(endDatum);
       const isInRange = currentDateNr >= startDatumNr && currentDateNr <= endDatumNr;
 
       if (isInRange) {
         let checkDatumStr = getDateStr(checkDatum);
-        let checkDatumNr = Number(checkDatumStr.split('-').join(''));
+        let checkDatumNr = getDateNr(checkDatumStr);
         let thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
 
-        let thisEndDatumNr = Number(getDateStr(thisEndDatum).split('-').join(''));
+        let thisEndDatumNr = getDateNr(thisEndDatum);
 
         // Iterate over while,
         // because the rythm has to be calculated
@@ -260,13 +260,13 @@ function checkTagRhythmus(regeln: string, date: PlanerDate, monate: string[], st
           checkDatum = newCheckDatum;
           if (isNewMonth) {
             thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
-            thisEndDatumNr = Number(getDateStr(thisEndDatum).split('-').join(''));
+            thisEndDatumNr = getDateNr(thisEndDatum);
             if (jedenMonatAbStart) {
               checkDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), startTag);
             }
           }
           checkDatumStr = getDateStr(checkDatum);
-          checkDatumNr = Number(checkDatumStr.split('-').join(''));
+          checkDatumNr = getDateNr(checkDatumStr);
         }
       }
     }

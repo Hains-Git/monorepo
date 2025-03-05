@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
-import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 type Feiertag = {
   name: string;
@@ -75,7 +75,7 @@ export class PlanerDate {
     this.day = date.getDate();
     this.year = date.getFullYear();
     this.date_id = this.id;
-    this.date_nr = Number(this.id.split('-').join(''));
+    this.date_nr = getDateNr(this.id);
     this.celebrate = '';
     this.kws_vormonat = [];
   }

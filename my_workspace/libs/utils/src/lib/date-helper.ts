@@ -23,6 +23,11 @@ export function getDateStr(date: Date) {
   return str;
 }
 
+export function getDateNr(date: Date | string) {
+  const tag = typeof date === 'string' ? date : getDateStr(date);
+  return Number(tag.split('-').join(''));
+}
+
 export function _subWeeks(date: Date | string, weeks: number) {
   let parseDate = newDate(date);
   return subWeeks(parseDate, weeks);

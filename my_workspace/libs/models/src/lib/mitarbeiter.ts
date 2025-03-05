@@ -2,7 +2,7 @@ import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import { getDefaultKontingents, getMitarbeiterById, _team, mitarbeiterUrlaubssaldo } from '@my-workspace/prisma_cruds';
-import { getDateStr, newDate } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const aSeit = mitarbeiter.a_seit;
@@ -97,12 +97,12 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   defaultKontingent: TDefaultKontingents | null = null
 ) {
   let team: teams | null = null;
-  const dateNr = Number(getDateStr(date).split('-').join(''));
+  const dateNr = getDateNr(date);
   team =
     mitarbeiter.einteilung_rotations.find((rot) => {
       if (rot.von && rot.bis) {
-        const vonNr = Number(getDateStr(rot.von).split('-').join(''));
-        const bisNr = Number(getDateStr(rot.bis).split('-').join(''));
+        const vonNr = getDateNr(rot.von);
+        const bisNr = getDateNr(rot.bis);
         return vonNr <= dateNr && bisNr >= dateNr;
       }
       return false;

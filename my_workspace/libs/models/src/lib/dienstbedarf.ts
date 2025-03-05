@@ -5,7 +5,7 @@ import {
   ArbeitszeitverteilungSchichtDays,
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
-import { getDateStr, newDate } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
 
 type SchichtObjType = {
   anfang: Date;
@@ -22,12 +22,7 @@ export async function checkDateOnDienstbedarf(
     date = new PlanerDate(date);
     await date.initializeFeiertage(originalDate);
   }
-  if (
-    !bedarf.zeitraumkategories ||
-    (bedarf.end_date &&
-      Number(getDateStr(bedarf.end_date).split('-').join('')) <=
-        Number(getDateStr(newDate(date.full_date)).split('-').join('')))
-  ) {
+  if (!bedarf.zeitraumkategories || (bedarf.end_date && getDateNr(bedarf.end_date) <= getDateNr(date.full_date))) {
     return false;
   }
   return await checkDate(date, bedarf.zeitraumkategories);
@@ -67,13 +62,13 @@ export function calculateDienstfreiFromDienstbedarf(
         ende,
         is_frei: !schicht.dienstzeit && !schicht.arbeitszeit
       };
-      const anfangNr = Number(getDateStr(anfang).split('-').join(''));
-      const endeNr = Number(getDateStr(ende).split('-').join(''));
+      const anfangNr = getDateNr(anfang);
+      const endeNr = getDateNr(ende);
       // Nur Frei-Schichten betrachten
       if (!schichtObj.is_frei) return;
       for (let d = newDate(anfang); d <= ende; d.setDate(d.getDate() + 1)) {
         const dStr = getDateStr(d);
-        const dNr = Number(dStr.split('-').join(''));
+        const dNr = getDateNr(dStr);
         // Frei Schichten >= 1 Tag gelten als Dienstfrei
         // Auch der letzte Tag gilt als Dienstfrei, wenn es sich um eine Frei-Schicht handelt
         // und der Tag zu dem berechneten Ausgleich gehört

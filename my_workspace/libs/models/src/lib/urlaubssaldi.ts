@@ -10,7 +10,7 @@ import {
   Dienstfrei,
   getEinteilungBlockTage
 } from '@my-workspace/prisma_cruds';
-import { getDateStr, newDate } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
 import {
   arbeitszeittyps,
   bedarfs_eintrags,
@@ -355,15 +355,12 @@ function checkSchichten(
 ) {
   const ausgleichDate = newDate(date);
   ausgleichDate.setDate(ausgleichDate.getDate() + ausgleichTage);
-  const dateNr = Number(getDateStr(date).split('-').join(''));
+  const dateNr = getDateNr(date);
   return !!schichten.find((s) => {
     if (s.arbeitszeittyps?.arbeitszeit || s.arbeitszeittyps?.dienstzeit || !s.anfang || !s.ende) return false;
     const dateAnfangWithAusgleich = newDate(s.anfang);
     dateAnfangWithAusgleich.setDate(dateAnfangWithAusgleich.getDate() + ausgleichTage);
-    return (
-      Number(getDateStr(dateAnfangWithAusgleich).split('-').join('')) > dateNr ||
-      Number(getDateStr(s.ende).split('-').join('')) > dateNr
-    );
+    return getDateNr(dateAnfangWithAusgleich) > dateNr || getDateNr(s.ende) > dateNr;
   });
 }
 
@@ -385,10 +382,10 @@ async function shouldAddDienstfrei(
   eingeteiltId ||= `${df.mitarbeiters?.planname}_${df.po_diensts?.planname}_${df.tag}`;
   const dateStr = getDateStr(date);
   const tagKey = df.tag ? getDateStr(df.tag) : '';
-  const dateNr = Number(dateStr.split('-').join(''));
+  const dateNr = getDateNr(dateStr);
   const bedarfsEintraege = df.po_diensts?.bedarfs_eintrags;
   if (!df.po_dienst_id || !bedarfsEintraege) return shouldAdd;
-  if (!tagKey || Number(tagKey.split('-').join('')) >= dateNr) return shouldAdd;
+  if (!tagKey || getDateNr(tagKey) >= dateNr) return shouldAdd;
   eingeteilt[tagKey] ||= {
     einteilungen: {},
     bloecke: {}
@@ -399,7 +396,7 @@ async function shouldAddDienstfrei(
   const currBedarf = bedarfsEintraege.find((be) => checkBedarf(df, be));
   if (!currBedarf?.tag) return shouldAdd;
   const bedarfTagStr = getDateStr(currBedarf.tag);
-  if (Number(bedarfTagStr.split('-').join('')) >= dateNr) {
+  if (getDateNr(bedarfTagStr) >= dateNr) {
     console.log(`Not add Dienstfrei, kein Bedarf: ${currBedarf} - ${tagKey}`);
     return shouldAdd;
   }
@@ -417,18 +414,18 @@ async function shouldAddDienstfrei(
     const einteilungenBlockSize = (await getEinteilungBlockTage(mitarbeiterId, dates, currFirstBedarf.id, onlyCounts))
       .length;
     const isFullBlock = einteilungenBlockSize === block.length;
-    const isBeforeDate = Number(getDateStr(be.tag).split('-').join('')) < dateNr;
+    const isBeforeDate = getDateNr(be.tag) < dateNr;
     if (!(isFullBlock && isBeforeDate)) return shouldAdd;
     const ausgleichDate = newDate(be.tag);
     ausgleichDate.setDate(ausgleichDate.getDate() + (be.ausgleich_tage || 0));
-    shouldAdd = Number(getDateStr(ausgleichDate).split('-').join('')) >= dateNr;
+    shouldAdd = getDateNr(ausgleichDate) >= dateNr;
     if (!shouldAdd) {
       shouldAdd = checkSchichten(be.schichts, date, be.ausgleich_tage || 0);
     }
   } else {
     const ausgleichtage = newDate(currBedarf.tag);
     ausgleichtage.setDate(ausgleichtage.getDate() + (currBedarf.ausgleich_tage || 0));
-    shouldAdd = Number(getDateStr(ausgleichtage).split('-').join('')) >= dateNr;
+    shouldAdd = getDateNr(ausgleichtage) >= dateNr;
     if (!shouldAdd) {
       shouldAdd = checkSchichten(currBedarf.schichts, date, currBedarf.ausgleich_tage || 0);
     }

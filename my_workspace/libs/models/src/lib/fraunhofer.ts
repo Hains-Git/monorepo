@@ -19,7 +19,7 @@ import {
   themas
 } from '@prisma/client';
 import { _fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
-import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 const defaultPlanData: FraunhoferTypes.PlanData = {
   Mitarbeiter: [],
@@ -463,7 +463,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
         const nextDayLimit = newDate(be.tag);
         nextDayLimit.setDate(nextDayLimit.getDate() + 1);
         nextDayLimit.setHours(12, 0, 0, 0);
-        const dateZahl = Number(getDateStr(be.tag).split('-').join(''));
+        const dateZahl = getDateNr(be.tag);
         let hasFreiNextDays = false;
         const ausgleichsTage = be.ausgleich_tage || 0;
         for (let i = l; i >= 0; i--) {
@@ -471,7 +471,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
           const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
           const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
           if (!schicht.anfang || !schicht.ende) continue;
-          const endeDateZahl = Number(getDateStr(schicht.ende).split('-').join(''));
+          const endeDateZahl = getDateNr(schicht.ende);
           // Es sind nur Schichten bis zum Tag des Bedarfs relevant
           if (endeDateZahl <= dateZahl) break;
           // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
