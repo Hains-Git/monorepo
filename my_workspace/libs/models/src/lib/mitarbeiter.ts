@@ -278,7 +278,7 @@ function countEinteilungInKontingent(
     }
     const rotId = einteilung.id;
     const dateTag = einteilung.tag;
-    const tag = dateTag.toDateString();
+    const tag = formatDate(dateTag, 'yyyy-MM-dd');
     const dienstId = einteilung.po_dienst_id;
     const isInRot = einteilung.in_rot;
 

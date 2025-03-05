@@ -1,3 +1,5 @@
+import { formatDate } from 'date-fns';
+
 type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
 
 /**

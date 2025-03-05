@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils';
-import { _abwesenheiten, _dienstplanung, _kalender_markierung } from '@my-workspace/prisma_cruds';
+import { _abwesenheiten, _diensteinteilung, _kalender_markierung } from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
 
@@ -43,7 +43,7 @@ export class AbwesenheitenService {
       }
     }
 
-    const einteilungen = await _dienstplanung.getEinteilungenOhneBedarf({
+    const einteilungen = await _diensteinteilung.getEinteilungenOhneBedarf({
       von: dateStart,
       bis: dateEnd
     });

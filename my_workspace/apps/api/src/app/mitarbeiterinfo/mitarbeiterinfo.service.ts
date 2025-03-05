@@ -10,7 +10,7 @@ import {
   _vertragsphase,
   _urlaubssaldo_absprache,
   _einteilung_rotation,
-  _dienstplanung,
+  _diensteinteilung,
   _datei,
   _funktion,
   _hains_groups,
@@ -21,7 +21,8 @@ import {
   _zeitraum_kategorie,
   _thema,
   _standort,
-  _nicht_einteilen_absprache
+  _nicht_einteilen_absprache,
+  _dienstkategorie
 } from '@my-workspace/prisma_cruds';
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
@@ -31,7 +32,9 @@ import {
   Mitarbeiter,
   Geraetepass,
   NichtEinteilenAbsprache,
-  AccountInfo
+  AccountInfo,
+  Dienstkategorie,
+  Dienstwunsch
 } from '@my-workspace/models';
 
 @Injectable()
@@ -49,17 +52,17 @@ export class MitarbeiterInfoService {
     result['mitarbeiters'] = await _mitarbeiter.getAllActiveMitarbeiter();
     result['all_mitarbeiters'] = await _mitarbeiter.getAllMitarbeiter();
     result['dienste'] = await _po_dienst.getAllPoDiensts();
-    result['teams'] = await _team.getAllTeams();
+    result['teams'] = await _team.findMany();
     result['merkmale'] = await _merkmal.getAll();
     result['standorte'] = await _standort.getAllStandorte();
-    result['themen'] = await _thema.getAllThemas();
+    result['themen'] = await _thema.findMany();
 
     return result;
   }
 
   async getEinteilungenInTime(body) {
     const { start, end, id: mitarbeiter_id } = body;
-    const einteilungen = await _dienstplanung.getPublicRangeEinteilungenForMitarbeiter(
+    const einteilungen = await _diensteinteilung.getPublicRangeEinteilungenForMitarbeiter(
       mitarbeiter_id,
       start,
       end,
@@ -131,7 +134,6 @@ export class MitarbeiterInfoService {
       isRotationsPlaner
     );
 
-    // TODO: Need to be checked!!!!
     const statistic = await Mitarbeiter.getKontingentEingeteiltBasis(
       mitarbeiterId,
       einteilungenInKontingenten
@@ -178,6 +180,11 @@ export class MitarbeiterInfoService {
     result['rollen'] = accountInfo.user.user_gruppes.map((ug) => ug.gruppes) || [];
     result['nicht_einteilen_absprachen'] =
       NichtEinteilenAbsprache.transformNichtEinteilenAbsprache(nichtEinteilenAbsprachen);
+
+    result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
+    const anfang = newDate();
+    const ende = newDate();
+    Dienstwunsch.verteilung(anfang, ende);
 
     return result;
   }

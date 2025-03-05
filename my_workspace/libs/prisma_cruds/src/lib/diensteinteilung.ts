@@ -35,7 +35,11 @@ export async function getEinteilungenOhneBedarf({
     JOIN public.po_diensts AS po ON de.po_dienst_id = po.id
     JOIN public.einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
     JOIN public.mitarbeiters AS m ON m.id = de.mitarbeiter_id
-    WHERE ${!mitarbeiterIds ? `m.aktiv = true AND m.platzhalter != true` : `m.id IN (${mitarbeiterIds.join(',')})`}
+    WHERE ${
+      !mitarbeiterIds
+        ? `m.aktiv = true AND m.platzhalter != true`
+        : `m.id IN (${mitarbeiterIds.join(',')})`
+    }
     ${!poDienstIds ? `` : `AND de.po_dienst_id IN (${poDienstIds.join(',')})`}
     AND de.tag >= $1 AND de.tag <= $2
     AND de.dienstplan_id IN (
@@ -68,12 +72,9 @@ export async function getEinteilungenOhneBedarf({
   return result;
 }
 
-export async function getPublicRangeEinteilungenForMitarbeiter<TInclude extends Prisma.diensteinteilungsInclude>(
-  id: number,
-  start: Date,
-  end: Date,
-  include?: TInclude
-) {
+export async function getPublicRangeEinteilungenForMitarbeiter<
+  TInclude extends Prisma.diensteinteilungsInclude
+>(id: number, start: Date, end: Date, include?: TInclude) {
   const startDate = formatDateForDB(start);
   const endDate = formatDateForDB(end);
 
@@ -117,4 +118,39 @@ export async function getDiensteinteilungInRange(
       { updated_at: 'asc' }
     ]
   });
+}
+
+export async function countPublicUrlaube(start: Date, ende: Date) {
+  const result = await prismaDb.diensteinteilungs.groupBy({
+    by: ['tag'],
+    where: {
+      tag: {
+        gte: start,
+        lte: ende
+      },
+      einteilungsstatuses: {
+        counts: true,
+        public: true
+      },
+      po_diensts: {
+        stundennachweis_urlaub: true
+      }
+    },
+    _count: {
+      _all: true
+    },
+    orderBy: {
+      tag: 'asc'
+    }
+  });
+
+  return result.reduce(
+    (acc, item) => {
+      if (item.tag) {
+        acc[item.tag.toISOString().split('T')[0]] = item._count._all;
+      }
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 }

@@ -6,7 +6,7 @@ export * as _user from './lib/user';
 export * from './lib/oauth';
 export * as _planungsinfo from './lib/planungsinfo';
 export * as _abwesenheiten from './lib/abwesenheiten';
-export * as _dienstplanung from './lib/diensteinteilung';
+export * as _diensteinteilung from './lib/diensteinteilung';
 export * as _planerdate from './lib/planerdate';
 export * as _kalender_markierung from './lib/kalendermarkierung';
 export * as _datei from './lib/datei';
@@ -47,3 +47,4 @@ export * as _mitarbeiter_default_eingeteilt from './lib/mitarbeiter-default-eing
 export * as _geraete_pass from './lib/geraete-pass';
 export * as _geraet from './lib/geraet';
 export * as _nicht_einteilen_absprache from './lib/nicht-einteilen-absprache';
+export * as _dienstkategorie_team from './lib/dienstkategorie-team';

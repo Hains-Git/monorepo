@@ -23,7 +23,7 @@ import {
   _dienstwunsch,
   _kontingent,
   _einteilung_rotation,
-  _dienstplanung,
+  _diensteinteilung,
   _mitarbeiter,
   _po_dienst,
   _zeitraum_kategorie,
@@ -106,7 +106,7 @@ async function getZeitraumkategorien(anfang: Date, ende: Date) {
 }
 
 async function getEinteilungen(id: number, windowAnfang: Date, windowEnde: Date) {
-  const einteilungen = await _dienstplanung.getDiensteinteilungInRange(windowAnfang, windowEnde, {
+  const einteilungen = await _diensteinteilung.getDiensteinteilungInRange(windowAnfang, windowEnde, {
     tag: {
       gte: windowAnfang,
       lte: windowEnde
@@ -190,9 +190,12 @@ async function getMitarbeiters(compute = true, as_ids = false) {
 }
 
 async function getDienstkategories() {
-  const dienstkategories = await _dienstkategorie.getAllDienstkategories({
-    dienstkategoriethemas: true
-  });
+  const dienstkategories = await _dienstkategorie.findMany(
+    {},
+    {
+      dienstkategoriethemas: true
+    }
+  );
   return getDataByHash(dienstkategories);
 }
 

@@ -10,3 +10,5 @@ export * as Fraunhofer from './lib/fraunhofer';
 export * as User from './lib/user';
 export * as Geraetepass from './lib/geraetepass';
 export * as NichtEinteilenAbsprache from './lib/nicht-einteilen-absprache';
+export * as Dienstkategorie from './lib/dienstkategorie';
+export * as Dienstwunsch from './lib/dienstwunsch';
