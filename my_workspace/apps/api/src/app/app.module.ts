@@ -17,12 +17,15 @@ import { TeamService } from './team/team.service';
 import { TeamController } from './team/team.controller';
 import { ZeitraumkategorienController } from './zeitraumkategorien/zeitraumkategorien.controller';
 import { ZeitraumkategorienService } from './zeitraumkategorien/zeitraumkategorien.service';
+import { MetricsService } from './metrics/metrics.service';
+import { MetricsController } from './metrics/metrics.controller';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
   imports: [PrismaModule],
   controllers: [
     AppController,
+    // MetricsController,
     AbwesenheitenController,
     MitarbeiterInfoController,
     TeamController,
@@ -31,6 +34,7 @@ import { ZeitraumkategorienService } from './zeitraumkategorien/zeitraumkategori
   ],
   providers: [
     AppService,
+    // MetricsService,
     AbwesenheitenService,
     MitarbeiterInfoService,
     TeamService,

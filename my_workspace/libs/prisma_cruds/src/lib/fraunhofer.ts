@@ -5,6 +5,7 @@ import {
   whereDienstplanIn
 } from './utils/crud_helper';
 import { Prisma } from '@prisma/client';
+import { newDate } from '@my-workspace/utils';
 
 export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, start: Date, end: Date) {
   return await prismaDb.dienstplans.findFirst({
@@ -68,7 +69,7 @@ export async function getFixedEinteilungen(
           }
         },
         ...Object.entries(bedarfeTageOutSideInterval).map(([tag, dienste]) => ({
-          tag: tag,
+          tag: newDate(tag),
           po_dienst_id: {
             in: dienste
           }

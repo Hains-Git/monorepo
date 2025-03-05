@@ -10,7 +10,7 @@ import {
   Dienstfrei,
   getEinteilungBlockTage
 } from '@my-workspace/prisma_cruds';
-import { getDateStr, newDate } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
 import {
   arbeitszeittyps,
   bedarfs_eintrags,
@@ -29,6 +29,7 @@ import {
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
 import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
+import { PlanerDate } from './planerdate/planerdate';
 
 type SaldiValues = {
   verfuegbar: number;
@@ -38,7 +39,6 @@ type SaldiValues = {
   sonstige: number;
   bedarfe_min: number;
   bedarfe_opt: number;
-  bedarfe: Record<number, dienstbedarves>;
   bedarfe_eingeteilt_min: number;
   bedarfe_eingeteilt_opt: number;
   bedarfe_eingeteilt_opt_markiert: number;
@@ -53,7 +53,6 @@ const saldiDefaultValues: SaldiValues = {
   sonstige: 0,
   bedarfe_min: 0,
   bedarfe_opt: 0,
-  bedarfe: {},
   bedarfe_eingeteilt_min: 0,
   bedarfe_eingeteilt_opt: 0,
   bedarfe_eingeteilt_opt_markiert: 0,
@@ -190,14 +189,14 @@ async function getSaldiBase(start: Date, ende: Date) {
     result.saldi[t.id] = {
       team: {
         ...t,
-        funktionen_ids: t.team_funktions.map((f) => f.id)
+        funktionen_ids: t.team_funktions.map((f) => f.funktion_id)
       },
       dates: {}
     };
     if (t.default) {
       result.default_team = {
         ...t,
-        funktionen_ids: t.team_funktions.map((f) => f.id)
+        funktionen_ids: t.team_funktions.map((f) => f.funktion_id)
       };
     }
   });
@@ -236,7 +235,8 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   const lastDate = dates[dates.length - 1];
   for (; d <= lastDate; d.setDate(d.getDate() + 1)) {
     const date = newDate(d);
-    daysHash[getDateStr(date)] = date;
+    const dateStr = getDateStr(date);
+    daysHash[dateStr] = date;
     days.push(date);
   }
   const freiTypen: number[] = [];
@@ -255,6 +255,17 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   const computedSchichten: Record<number, ArbeitszeitverteilungSchichtDays> = {};
   const bedarfeLength = dienstbedarfe.length;
   const daysLength = days.length;
+  const planerDates: PlanerDate[] = [];
+  let weekCounter = 0;
+  for (let i = 0; i < daysLength; i++) {
+    const date = days[i];
+    const plDate = new PlanerDate(date, weekCounter);
+    await plDate.initializeFeiertage(date);
+    planerDates.push(plDate);
+    if (date.getDay() === 5) {
+      weekCounter++;
+    }
+  }
   for (let i = 0; i < bedarfeLength; i++) {
     const bedarf = dienstbedarfe[i];
     const dienst = bedarf.po_diensts;
@@ -277,11 +288,13 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
     // Alle Tage testen, ob Bedarf auf diese fällt
     for (let j = 0; j < daysLength; j++) {
       const date = days[j];
+      const plDate = planerDates[j];
       const day = getDateStr(date);
       // Nur Bedarfe hinzufügen, die noch nicht im Hash sind
       if (dienstBedarfe[day]?.[bereichId]) continue;
       // Nur Bedarfe mit gültiger Zeitraumkategorie berücksichtigen
-      if (!(await checkDateOnDienstbedarf(date, bedarf))) continue;
+      const dateCheck = await checkDateOnDienstbedarf(plDate, bedarf);
+      if (!dateCheck) continue;
       const currSaldi = createDefaultsForTeamSaldo(day, teamId, saldi);
       dienstBedarfe[day] ||= {};
       dienstBedarfe[day][bereichId] = {
@@ -295,12 +308,12 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
       if (!bedarf.ignore_in_urlaubssaldo) {
         currSaldi.bedarfe_min += min;
         currSaldi.bedarfe_opt += opt;
-        currSaldi.bedarfe[bedarf.id] ||= bedarf;
       }
       if (!checkDienstfrei) continue;
       // Dienstfrei initialisieren
       calculateDienstfreiFromDienstbedarf(date, arbeitszeittypen, computedSchichten[azvId], bedarf, (day, dayStr) => {
         if (dienstfreis[bedarf.id][dayStr] || !daysHash[dayStr]) return;
+
         dienstfreis[bedarf.id][dayStr] = true;
         const currSaldi = createDefaultsForTeamSaldo(dayStr, teamId, saldi);
         const df = currSaldi.bedarfe_dienstfrei;
@@ -310,6 +323,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
           bereiche: {},
           bedarfe: {}
         };
+        if (df[dienstId].bereiche[bereichId]) return;
         df[dienstId].bedarfe[bedarf.id] ||= { min, date };
         df[dienstId].bereiche[bereichId] ||= 0;
         df[dienstId].bereiche[bereichId] += min;
@@ -341,15 +355,12 @@ function checkSchichten(
 ) {
   const ausgleichDate = newDate(date);
   ausgleichDate.setDate(ausgleichDate.getDate() + ausgleichTage);
-  const dateNr = Number(getDateStr(date).split('-').join(''));
+  const dateNr = getDateNr(date);
   return !!schichten.find((s) => {
     if (s.arbeitszeittyps?.arbeitszeit || s.arbeitszeittyps?.dienstzeit || !s.anfang || !s.ende) return false;
     const dateAnfangWithAusgleich = newDate(s.anfang);
     dateAnfangWithAusgleich.setDate(dateAnfangWithAusgleich.getDate() + ausgleichTage);
-    return (
-      Number(getDateStr(dateAnfangWithAusgleich).split('-').join('')) > dateNr ||
-      Number(getDateStr(s.ende).split('-').join('')) > dateNr
-    );
+    return getDateNr(dateAnfangWithAusgleich) > dateNr || getDateNr(s.ende) > dateNr;
   });
 }
 
@@ -371,10 +382,10 @@ async function shouldAddDienstfrei(
   eingeteiltId ||= `${df.mitarbeiters?.planname}_${df.po_diensts?.planname}_${df.tag}`;
   const dateStr = getDateStr(date);
   const tagKey = df.tag ? getDateStr(df.tag) : '';
-  const dateNr = Number(dateStr.split('-').join(''));
+  const dateNr = getDateNr(dateStr);
   const bedarfsEintraege = df.po_diensts?.bedarfs_eintrags;
   if (!df.po_dienst_id || !bedarfsEintraege) return shouldAdd;
-  if (!tagKey || Number(tagKey.split('-').join('')) >= dateNr) return shouldAdd;
+  if (!tagKey || getDateNr(tagKey) >= dateNr) return shouldAdd;
   eingeteilt[tagKey] ||= {
     einteilungen: {},
     bloecke: {}
@@ -385,7 +396,7 @@ async function shouldAddDienstfrei(
   const currBedarf = bedarfsEintraege.find((be) => checkBedarf(df, be));
   if (!currBedarf?.tag) return shouldAdd;
   const bedarfTagStr = getDateStr(currBedarf.tag);
-  if (Number(bedarfTagStr.split('-').join('')) >= dateNr) {
+  if (getDateNr(bedarfTagStr) >= dateNr) {
     console.log(`Not add Dienstfrei, kein Bedarf: ${currBedarf} - ${tagKey}`);
     return shouldAdd;
   }
@@ -403,18 +414,18 @@ async function shouldAddDienstfrei(
     const einteilungenBlockSize = (await getEinteilungBlockTage(mitarbeiterId, dates, currFirstBedarf.id, onlyCounts))
       .length;
     const isFullBlock = einteilungenBlockSize === block.length;
-    const isBeforeDate = Number(getDateStr(be.tag).split('-').join('')) < dateNr;
+    const isBeforeDate = getDateNr(be.tag) < dateNr;
     if (!(isFullBlock && isBeforeDate)) return shouldAdd;
     const ausgleichDate = newDate(be.tag);
     ausgleichDate.setDate(ausgleichDate.getDate() + (be.ausgleich_tage || 0));
-    shouldAdd = Number(getDateStr(ausgleichDate).split('-').join('')) >= dateNr;
+    shouldAdd = getDateNr(ausgleichDate) >= dateNr;
     if (!shouldAdd) {
       shouldAdd = checkSchichten(be.schichts, date, be.ausgleich_tage || 0);
     }
   } else {
     const ausgleichtage = newDate(currBedarf.tag);
     ausgleichtage.setDate(ausgleichtage.getDate() + (currBedarf.ausgleich_tage || 0));
-    shouldAdd = Number(getDateStr(ausgleichtage).split('-').join('')) >= dateNr;
+    shouldAdd = getDateNr(ausgleichtage) >= dateNr;
     if (!shouldAdd) {
       shouldAdd = checkSchichten(currBedarf.schichts, date, currBedarf.ausgleich_tage || 0);
     }
@@ -504,7 +515,7 @@ async function checkMitarbeiterVerfuegbarkeit(
     const m = mitarbeiter[i];
     const mId = m.id;
     if (m.platzhalter) continue;
-    infos.rotationen[mId] = m.einteilung_rotations;
+    if (m.einteilung_rotations?.length) infos.rotationen[mId] = m.einteilung_rotations;
     mitarbeiterEinteilungen[mId] ||= {};
     infos.team_ids[mId] ||= {};
     const teamIds = infos.team_ids[mId];
@@ -593,7 +604,7 @@ async function checkMitarbeiterVerfuegbarkeit(
       }
 
       const dfDate = dienstfreiEingeteilt[dateKey];
-      if (dfDate && dfDate[mId]) {
+      if (dfDate?.[mId]) {
         notVerfuegbar = true;
         const df = dfDate[mId];
         for (const poDienstId in df) {

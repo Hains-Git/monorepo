@@ -362,7 +362,10 @@ export async function getEinteilungBlockTage(
       po_diensts: {
         bedarfs_eintrags: {
           some: {
-            first_entry: firstEntry
+            first_entry: firstEntry,
+            tag: {
+              in: dates
+            }
           }
         }
       }
