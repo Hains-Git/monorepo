@@ -25,7 +25,7 @@ import { MetricsController } from './metrics/metrics.controller';
   imports: [PrismaModule],
   controllers: [
     AppController,
-    MetricsController,
+    // MetricsController,
     AbwesenheitenController,
     MitarbeiterInfoController,
     TeamController,
@@ -34,7 +34,7 @@ import { MetricsController } from './metrics/metrics.controller';
   ],
   providers: [
     AppService,
-    MetricsService,
+    // MetricsService,
     AbwesenheitenService,
     MitarbeiterInfoService,
     TeamService,
