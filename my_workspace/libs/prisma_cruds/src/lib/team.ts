@@ -1,5 +1,6 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { colorRegEx, newDate } from '@my-workspace/utils';
+import { getTeamSollInclude } from './utils/crud_helper';
 
 export async function getAllTeams() {
   return await prismaDb.teams.findMany();
@@ -13,13 +14,19 @@ export async function getDefaultTeam() {
   });
 }
 
-export async function getAllTeamsWithMainIncludes() {
+export async function getAllTeamsWithMainIncludes(start?: Date, ende?: Date) {
   return await prismaDb.teams.findMany({
     include: {
       kostenstelle: true,
       team_kw_krankpuffers: true,
-      team_kopf_soll: true,
-      team_vk_soll: true,
+      team_kopf_soll: {
+        ...getTeamSollInclude(start, ende),
+        orderBy: [{ von: 'asc' }, { bis: 'desc' }]
+      },
+      team_vk_soll: {
+        ...getTeamSollInclude(start, ende),
+        orderBy: [{ von: 'asc' }, { bis: 'desc' }]
+      },
       team_funktions: {
         include: {
           funktion: true

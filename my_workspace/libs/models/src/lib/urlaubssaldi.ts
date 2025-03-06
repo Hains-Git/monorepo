@@ -10,7 +10,7 @@ import {
   Dienstfrei,
   getEinteilungBlockTage
 } from '@my-workspace/prisma_cruds';
-import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
+import { getDateNr, getDateStr, getKW, newDate } from '@my-workspace/utils';
 import {
   arbeitszeittyps,
   bedarfs_eintrags,
@@ -20,7 +20,9 @@ import {
   kontingents,
   po_diensts,
   schichts,
+  team_kopf_soll,
   team_kw_krankpuffers,
+  team_vk_soll,
   teams
 } from '@prisma/client';
 import {
@@ -43,6 +45,7 @@ type SaldiValues = {
   bedarfe_eingeteilt_opt: number;
   bedarfe_eingeteilt_opt_markiert: number;
   defaultTeam: number;
+  saldo: number;
 };
 
 const saldiDefaultValues: SaldiValues = {
@@ -56,7 +59,8 @@ const saldiDefaultValues: SaldiValues = {
   bedarfe_eingeteilt_min: 0,
   bedarfe_eingeteilt_opt: 0,
   bedarfe_eingeteilt_opt_markiert: 0,
-  defaultTeam: 0
+  defaultTeam: 0,
+  saldo: 0
 };
 
 type RotationenHash = Record<
@@ -86,6 +90,7 @@ type SaldiTeamDate = typeof saldiDefaultValues & {
     {
       count: number;
       funktion: (funktions & { teams: teams | null }) | null;
+      substitutionsFrom: Array<{ team: string; teamId: number; count: number }>;
     }
   >;
   mitarbeiter: string[];
@@ -107,25 +112,30 @@ type SaldiTeamDate = typeof saldiDefaultValues & {
       bedarfe: Record<number, { min: number; date: Date }>;
     };
   };
+  inTeam: string[];
 };
 
 type SaldiTeamBase = teams & {
   funktionen_ids: number[];
   team_kw_krankpuffers: team_kw_krankpuffers[];
+  team_kopf_soll: team_kopf_soll[];
+  team_vk_soll: team_vk_soll[];
 };
 
-type Saldi = Record<
-  number,
-  {
-    team: SaldiTeamBase;
-    dates: Record<string, SaldiTeamDate>;
-  }
->;
+type SaldiRecordElement = {
+  team: SaldiTeamBase;
+  dates: Record<string, SaldiTeamDate>;
+  remove?: boolean;
+};
+
+type Saldi = Record<number, SaldiRecordElement>;
 
 type MitarbeiterInfos = {
-  team_ids: Record<string, Record<string, number[]>>;
+  team_ids: Record<number, Record<string, number[]>>;
   rotationen: RotationenHash;
 };
+
+type TeamIDs = MitarbeiterInfos['team_ids'][number];
 
 type SaldiBase = {
   dates: Date[];
@@ -160,6 +170,8 @@ const noTeam: SaldiTeamBase = {
   krank_puffer: 0,
   team_kw_krankpuffers: [],
   funktionen_ids: [],
+  team_kopf_soll: [],
+  team_vk_soll: [],
   created_at: newDate(),
   updated_at: newDate()
 };
@@ -174,7 +186,8 @@ async function getSaldiBase(start: Date, ende: Date) {
     saldi: {
       [noTeam.id]: {
         team: noTeam,
-        dates: {}
+        dates: {},
+        remove: true
       }
     },
     mitarbeiter_infos: {
@@ -184,7 +197,7 @@ async function getSaldiBase(start: Date, ende: Date) {
     default_team: null
   };
 
-  const teams = await _team.getAllTeamsWithMainIncludes();
+  const teams = await _team.getAllTeamsWithMainIncludes(start, ende);
   teams.forEach((t) => {
     result.saldi[t.id] = {
       team: {
@@ -221,7 +234,8 @@ function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: Saldi) 
       eingeteilt: 0,
       total: 0,
       einteilungen: []
-    }
+    },
+    inTeam: []
   };
   return saldi[teamId].dates[date];
 }
@@ -463,6 +477,86 @@ async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[]) {
   return dienstfreiEingeteilt;
 }
 
+const addTeamId = (team: { id: number } | null, teamIds: TeamIDs, date: string) => {
+  let teamId = noTeam.id;
+  if (team) {
+    teamId = team.id || noTeam.id;
+  }
+  if (!teamIds[date].includes(teamId)) {
+    teamIds[date].push(teamId);
+  }
+  return teamId;
+};
+
+async function mitarbeiterEinteilen(
+  e: string[],
+  team: teams | null,
+  dateKey: string,
+  mitarbeiterName: string,
+  saldi: Saldi,
+  dienstName: string,
+  bedarfe: BedarfeProDienstTagBereich[number][string],
+  teamIds: TeamIDs
+) {
+  let notVerfuegbar = false;
+  // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
+  const bereichId = parseInt(e[6], 10);
+  const isOptional = e[7] === '1';
+  const asAbwesenheit = e[8] === '1';
+  const isBedarfEinteilung = e[5] !== 'false';
+  const einteilungTeam = isBedarfEinteilung ? { id: parseInt(e[0], 10) || 0 } : team;
+  let bedarf: dienstbedarves | null = null;
+  let bedarfeBlock: {
+    bedarf: dienstbedarves;
+    eingeteilt_min: number;
+    eingeteilt_opt: number;
+    eingeteilt_opt_markiert: number;
+  } | null = null;
+  if (isBedarfEinteilung && bedarfe) {
+    bedarfeBlock = bereichId === 0 ? Object.values(bedarfe)[0] : bedarfe[bereichId];
+    if (bedarfeBlock) {
+      bedarf = bedarfeBlock.bedarf;
+      if (bedarf?.ignore_in_urlaubssaldo) return notVerfuegbar;
+    }
+  }
+  const teamId = addTeamId(einteilungTeam, teamIds, dateKey);
+  const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+  let key: keyof typeof currSaldi = 'einteilungen';
+  if (e[2] === 'true') {
+    key = 'krank';
+  } else if (e[3] === 'true') {
+    key = 'urlaub';
+  } else if (e[4] === 'true') {
+    key = 'sonstige';
+  }
+  currSaldi[key] += 1;
+  if (!notVerfuegbar) {
+    notVerfuegbar = asAbwesenheit;
+  }
+  if (isBedarfEinteilung && !bedarf?.ignore_in_urlaubssaldo && bedarf && bedarfeBlock) {
+    currSaldi.einteilungen_info.bedarf.push([mitarbeiterName, dienstName, bereichId]);
+    const min = bedarf.min || 0;
+    if (!isOptional && min > 0 && bedarfeBlock?.eingeteilt_min < min) {
+      notVerfuegbar = true;
+      bedarfeBlock.eingeteilt_min += 1;
+      currSaldi.bedarfe_eingeteilt_min += 1;
+    } else if (isOptional) {
+      notVerfuegbar = true;
+      bedarfeBlock.eingeteilt_opt_markiert += 1;
+      currSaldi.bedarfe_eingeteilt_opt_markiert += 1;
+    } else {
+      bedarfeBlock.eingeteilt_opt += 1;
+      currSaldi.bedarfe_eingeteilt_opt += 1;
+      currSaldi.einteilungen_info.optional.push([mitarbeiterName, dienstName, bereichId, notVerfuegbar]);
+    }
+  } else {
+    notVerfuegbar = true;
+    const key = bedarf ? 'bedarf' : 'ohne_bedarf';
+    currSaldi.einteilungen_info[key].push([mitarbeiterName, dienstName, bereichId]);
+  }
+  return notVerfuegbar;
+}
+
 async function checkMitarbeiterVerfuegbarkeit(
   bedarfeProDienstTagBereich: BedarfeProDienstTagBereich,
   result: SaldiBase
@@ -479,25 +573,8 @@ async function checkMitarbeiterVerfuegbarkeit(
     return acc;
   }, {});
   const defaultKontingent = await getDefaultKontingents();
-  const noTeamId = 0;
   const mitarbeiterEinteilungen = await getMitarbeiterEinteilungenNachTagen(dates[0], dates[dates.length - 1]);
   const mitarbeiterIds = Object.keys(mitarbeiterEinteilungen);
-
-  const addTeamId = (
-    noTeamId: number,
-    team: { id: number } | null,
-    teamIds: Record<string, number[]>,
-    date: string
-  ) => {
-    let teamId = noTeamId;
-    if (team) {
-      teamId = team.id || noTeamId;
-    }
-    if (!teamIds[date].includes(teamId)) {
-      teamIds[date].push(teamId);
-    }
-    return teamId;
-  };
 
   const mitarbeiter = await getMitarbeiterForUrlaubssaldis(
     mitarbeiterIds.map((m) => Number(m)),
@@ -535,98 +612,50 @@ async function checkMitarbeiterVerfuegbarkeit(
       let notVerfuegbar = false;
       const aktiv = !!(accountInfo && (await mitarbeiterUrlaubssaldoAktivAm(m, date)));
       const einteilungenLength = einteilungen[dateKey].length;
+
       for (let j = 0; j < einteilungenLength; j++) {
         // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
         const e = einteilungen[dateKey][j];
         const dienstId = parseInt(e[1], 10);
-        const bereichId = parseInt(e[6], 10);
-        const isOptional = e[7] === '1';
-        const asAbwesenheit = e[8] === '1';
-        const isBedarfEinteilung = e[5] !== 'false';
-        const einteilungTeam = isBedarfEinteilung ? { id: parseInt(e[0], 10) } : team;
-        let bedarf: dienstbedarves | null = null;
-        let bedarfeBlock: {
-          bedarf: dienstbedarves;
-          eingeteilt_min: number;
-          eingeteilt_opt: number;
-          eingeteilt_opt_markiert: number;
-        } | null = null;
-        if (isBedarfEinteilung && bedarfeProDienstTagBereich[dienstId]) {
-          const bedarfe = bedarfeProDienstTagBereich[dienstId][dateKey];
-          if (bedarfe) {
-            bedarfeBlock = bereichId === 0 ? Object.values(bedarfe)[0] : bedarfe[bereichId];
-            if (bedarfeBlock) {
-              bedarf = bedarfeBlock.bedarf;
-              if (bedarf?.ignore_in_urlaubssaldo) continue;
-            }
-          }
-        }
-        const teamId = addTeamId(noTeamId, einteilungTeam, teamIds, dateKey);
-        const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
-        let key: keyof typeof currSaldi = 'einteilungen';
-        if (e[2] === 'true') {
-          key = 'krank';
-        } else if (e[3] === 'true') {
-          key = 'urlaub';
-        } else if (e[4] === 'true') {
-          key = 'sonstige';
-        }
-        currSaldi[key] += 1;
-        if (!notVerfuegbar) {
-          notVerfuegbar = asAbwesenheit;
-        }
-        if (isBedarfEinteilung && !bedarf?.ignore_in_urlaubssaldo && bedarf && bedarfeBlock) {
-          currSaldi.einteilungen_info.bedarf.push([m.planname || '', diensteHash[dienstId]?.planname || '', bereichId]);
-          const min = bedarf.min || 0;
-          if (!isOptional && min > 0 && bedarfeBlock?.eingeteilt_min < min) {
-            notVerfuegbar = true;
-            bedarfeBlock.eingeteilt_min += 1;
-            currSaldi.bedarfe_eingeteilt_min += 1;
-          } else if (isOptional) {
-            notVerfuegbar = true;
-            bedarfeBlock.eingeteilt_opt_markiert += 1;
-            currSaldi.bedarfe_eingeteilt_opt_markiert += 1;
-          } else {
-            bedarfeBlock.eingeteilt_opt += 1;
-            currSaldi.bedarfe_eingeteilt_opt += 1;
-            currSaldi.einteilungen_info.optional.push([
-              m.planname || '',
-              diensteHash[dienstId].planname || '',
-              bereichId,
-              notVerfuegbar
-            ]);
-          }
-        } else {
-          notVerfuegbar = true;
-          const key = bedarf ? 'bedarf' : 'ohne_bedarf';
-          currSaldi.einteilungen_info[key].push([m.planname || '', diensteHash[dienstId]?.planname || '', bereichId]);
-        }
+        notVerfuegbar ||= await mitarbeiterEinteilen(
+          e,
+          team,
+          dateKey,
+          m.planname || '',
+          saldi,
+          diensteHash[parseInt(e[1], 10)]?.planname || '',
+          bedarfeProDienstTagBereich?.[dienstId]?.[dateKey],
+          teamIds
+        );
       }
 
+      const teamId = addTeamId(team, teamIds, dateKey);
+      const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+      currSaldi.inTeam.push(m.planname || '');
       const dfDate = dienstfreiEingeteilt[dateKey];
+
       if (dfDate?.[mId]) {
         notVerfuegbar = true;
         const df = dfDate[mId];
         for (const poDienstId in df) {
           // Dienstfrei wird dem Team des Dienstes zugeordnet
           const dfInfo = df[poDienstId];
-          const teamId = addTeamId(noTeamId, { id: dfInfo.teamId }, teamIds, dateKey);
-          const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
-          currSaldi.einteilungen_info.dienstfrei.push(dfInfo);
-          currSaldi.bedarfe_dienstfrei.eingeteilt += 1;
-          currSaldi.bedarfe_dienstfrei.total -= 1;
-          currSaldi.bedarfe_dienstfrei.einteilungen.push(dfInfo);
-          if (currSaldi.bedarfe_dienstfrei.total < 0) {
-            currSaldi.bedarfe_dienstfrei.total = 0;
+          const teamId = addTeamId({ id: dfInfo.teamId }, teamIds, dateKey);
+          const currDfSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
+          currDfSaldi.einteilungen_info.dienstfrei.push(dfInfo);
+          currDfSaldi.bedarfe_dienstfrei.eingeteilt += 1;
+          currDfSaldi.bedarfe_dienstfrei.total -= 1;
+          currDfSaldi.bedarfe_dienstfrei.einteilungen.push(dfInfo);
+          if (currDfSaldi.bedarfe_dienstfrei.total < 0) {
+            currDfSaldi.bedarfe_dienstfrei.total = 0;
           }
         }
       } else if (aktiv && !notVerfuegbar) {
-        const teamId = addTeamId(noTeamId, team, teamIds, dateKey);
-        const currSaldi = createDefaultsForTeamSaldo(dateKey, teamId, saldi);
         currSaldi.verfuegbar += 1;
         currSaldi.funktionen[funktionId] ||= {
           count: 0,
-          funktion
+          funktion,
+          substitutionsFrom: []
         };
         currSaldi.mitarbeiter.push(m.planname || '');
         currSaldi.funktionen[funktionId].count += 1;
@@ -636,10 +665,123 @@ async function checkMitarbeiterVerfuegbarkeit(
   return infos;
 }
 
+function getUrlaubssaldo(teamSaldo: SaldiRecordElement, date: string) {
+  const kw = getKW(date);
+  const teamDateSaldo = teamSaldo.dates[date];
+  if (!teamDateSaldo) return 0;
+  const kwKrankpuffer = teamSaldo.team.team_kw_krankpuffers.find((puffer) => puffer.kw === kw);
+  const krankPuffer = kwKrankpuffer ? kwKrankpuffer.puffer : teamSaldo.team.krank_puffer;
+  const puffer = krankPuffer - teamDateSaldo.krank;
+  const bedarf = teamDateSaldo.bedarfe_min - teamDateSaldo.bedarfe_eingeteilt_min;
+  return teamDateSaldo.verfuegbar - teamDateSaldo.bedarfe_dienstfrei.total - bedarf - puffer;
+}
+
+function moveNoTeamToOtherTeams(saldiBase: SaldiBase, dateStr: string) {
+  const { saldi, default_team } = saldiBase;
+  const noTeamSaldo = saldi[noTeam.id];
+  const noTeamDateSaldo = noTeamSaldo.dates[dateStr];
+  if (!noTeamDateSaldo) return;
+
+  noTeamDateSaldo.saldo = getUrlaubssaldo(noTeamSaldo, dateStr);
+  if (noTeamDateSaldo.saldo <= 0) return;
+
+  const defaultTeamId = default_team?.id;
+
+  const teams = Object.values(saldi)
+    .filter((s) => {
+      const dateTeamSaldo = s.dates[dateStr];
+      if (s.team.id !== noTeam.id && dateTeamSaldo) {
+        dateTeamSaldo.saldo = getUrlaubssaldo(s, dateStr);
+        // Get only default team and teams with negative saldo
+        return dateTeamSaldo.saldo < 0 || s.team.id === defaultTeamId;
+      }
+      return false;
+    })
+    .sort((a, b) => {
+      // Default Team is last in the list
+      if (a.team.id === defaultTeamId) return 1;
+      if (b.team.id === defaultTeamId) return -1;
+      return 0;
+    });
+
+  const teamsLength = teams.length;
+  Object.values(noTeamDateSaldo.funktionen).forEach((f) => {
+    const funktionId = f.funktion?.id || 0;
+    for (let i = 0; i < teamsLength && f.count > 0 && noTeamDateSaldo.saldo > 0; i++) {
+      const teamSaldo = teams[i];
+      const team = teamSaldo.team;
+      const isDefaultTeam = team.id === defaultTeamId;
+      // Add only to lastTeam or team with the same funktion
+      if (!isDefaultTeam && !team.funktionen_ids.includes(funktionId)) continue;
+      const teamDateSaldo = teamSaldo.dates[dateStr];
+      const negativeSaldo = teamDateSaldo.saldo;
+
+      // Verfügbare Mitarbeiter auf andere Teams verteilen, bis alle min. Bedarfe gedeckt sind.
+      const diff = isDefaultTeam && negativeSaldo + f.count > 0 ? -teamDateSaldo.saldo : f.count;
+      if (diff <= 0) continue;
+      f.count -= diff;
+      noTeamDateSaldo.verfuegbar -= diff;
+      noTeamDateSaldo.saldo = getUrlaubssaldo(noTeamSaldo, dateStr);
+      teamDateSaldo.verfuegbar += diff;
+      teamDateSaldo.funktionen[funktionId] ||= {
+        count: 0,
+        funktion: f.funktion,
+        substitutionsFrom: []
+      };
+      teamDateSaldo.funktionen[funktionId].count += diff;
+      teamDateSaldo.funktionen[funktionId].substitutionsFrom.push({
+        team: noTeam.name,
+        teamId: noTeam.id,
+        count: diff
+      });
+      teamDateSaldo.saldo = getUrlaubssaldo(teamSaldo, dateStr);
+    }
+  });
+
+  // Testen, ob alle verfügbaren Mitarbeiter verteilt wurden und keine Bedarfe existieren.
+  // Dann kann das Team entfernt werden.
+  noTeamSaldo.remove &&=
+    noTeamDateSaldo.verfuegbar > 0 || noTeamDateSaldo.bedarfe_min > 0 || noTeamDateSaldo.bedarfe_opt > 0;
+}
+
+async function kopfSollAuffuellen(saldiBase: SaldiBase) {
+  const { default_team, dates, saldi } = saldiBase;
+  const noTeamSaldo = saldi[noTeam.id];
+  const defaultTeamSaldo = default_team ? saldi[default_team.id] : null;
+  if (default_team || noTeamSaldo) {
+    const teamSaldis = Object.values(saldi).filter(
+      (s) => s.team.id !== default_team?.id && s.team.id !== noTeam.id && s.team.team_kopf_soll.length
+    );
+    // Ziel:
+    // 1. Kein Team verfügbare Mitarbeiter auf andere Teams verteilen, bis alle Bedarfe gedeckt sind.
+    // 2. Default Team verfügbare Mitarbeiter auf andere Teams verteilen, bis alle Kopf-Soll oder die Bedarfe gedeckt sind.
+    dates.forEach((date) => {
+      const dateStr = getDateStr(date);
+      // const dateNr = getDateNr(dateStr);
+      if (noTeamSaldo) moveNoTeamToOtherTeams(saldiBase, dateStr);
+      // const defaultTeamDateSaldi = defaultTeamSaldo ? defaultTeamSaldo.dates[dateStr] : noTeamSaldo?.dates[dateStr];
+      // teamSaldis.forEach((s) => {
+      //   if (defaultTeamDateSaldi.verfuegbar <= 0) return;
+      //   const soll =
+      //     s.team.team_kopf_soll.find((k) => getDateNr(k.von) <= dateNr && getDateNr(k.bis) >= dateNr)?.soll || 0;
+      //   if (soll <= 0) return;
+      //   const missingVerfuegbar = soll - s.dates[dateStr].verfuegbar;
+      // });
+    });
+  }
+
+  return saldiBase;
+}
+
 export async function getSaldi(start: Date, ende: Date) {
-  const result = await getSaldiBase(start, ende);
-  const bedarfeProDienstTagBereich = await checkTeamBedarfe(result.dates, result.saldi);
-  result.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, result);
+  const saldiBase = await getSaldiBase(start, ende);
+  const bedarfeProDienstTagBereich = await checkTeamBedarfe(saldiBase.dates, saldiBase.saldi);
+  saldiBase.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, saldiBase);
+  const result = await kopfSollAuffuellen(saldiBase);
+
+  // Entferne NoTeam aus dem Ergebnis, da dessen Werte auf die anderen Teams aufgeteilt werden.
+  if (result.saldi[noTeam.id]?.remove) delete result.saldi[noTeam.id];
+
   return {
     ...result,
     dates: result.dates.map((d) => getDateStr(d))
