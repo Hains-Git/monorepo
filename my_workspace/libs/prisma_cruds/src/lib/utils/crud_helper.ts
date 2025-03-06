@@ -66,6 +66,24 @@ export const whereVertragIn = (start: Date, end: Date) => ({
   ]
 });
 
+export const getTeamSollInclude = (start?: Date, ende?: Date) => {
+  if (start && ende) {
+    return {
+      where: {
+        ...whereVertragsphaseIn(start, ende)
+      }
+    };
+  } else if (start) {
+    return {
+      where: {
+        von: { lte: start },
+        bis: { gte: start }
+      }
+    };
+  }
+  return {};
+};
+
 export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
   aktiv: true,
   platzhalter: false,
