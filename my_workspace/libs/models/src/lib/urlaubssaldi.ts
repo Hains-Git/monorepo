@@ -667,6 +667,17 @@ async function checkMitarbeiterVerfuegbarkeit(
   return infos;
 }
 
+function getUrlaubssaldo(teamSaldo: SaldiRecordElement, date: string) {
+  const kw = getKW(date);
+  const teamDateSaldo = teamSaldo.dates[date];
+  if (!teamDateSaldo) return 0;
+  const kwKrankpuffer = teamSaldo.team.team_kw_krankpuffers.find((puffer) => puffer.kw === kw);
+  const krankPuffer = kwKrankpuffer ? kwKrankpuffer.puffer : teamSaldo.team.krank_puffer;
+  const puffer = krankPuffer - teamDateSaldo.krank;
+  const bedarf = teamDateSaldo.bedarfe_min - teamDateSaldo.bedarfe_eingeteilt_min;
+  return teamDateSaldo.verfuegbar - teamDateSaldo.bedarfe_dienstfrei.total - bedarf - puffer;
+}
+
 function moveFreeMitarbeiterToOtherTeam(
   diff: number,
   saldiFunktion: SaldiTeamDateFunctions[number],
@@ -691,22 +702,11 @@ function moveFreeMitarbeiterToOtherTeam(
   };
   toTeamDateSaldo.funktionen[funktionId].count += diff;
   toTeamDateSaldo.funktionen[funktionId].substitutionsFrom.push({
-    team: noTeam.name,
-    teamId: noTeam.id,
+    team: from.team.name,
+    teamId: from.team.id,
     count: diff
   });
   to.dates[dateStr].saldo = getUrlaubssaldo(to, dateStr);
-}
-
-function getUrlaubssaldo(teamSaldo: SaldiRecordElement, date: string) {
-  const kw = getKW(date);
-  const teamDateSaldo = teamSaldo.dates[date];
-  if (!teamDateSaldo) return 0;
-  const kwKrankpuffer = teamSaldo.team.team_kw_krankpuffers.find((puffer) => puffer.kw === kw);
-  const krankPuffer = kwKrankpuffer ? kwKrankpuffer.puffer : teamSaldo.team.krank_puffer;
-  const puffer = krankPuffer - teamDateSaldo.krank;
-  const bedarf = teamDateSaldo.bedarfe_min - teamDateSaldo.bedarfe_eingeteilt_min;
-  return teamDateSaldo.verfuegbar - teamDateSaldo.bedarfe_dienstfrei.total - bedarf - puffer;
 }
 
 function moveNoTeamToOtherTeams(saldiBase: SaldiBase, dateStr: string) {
@@ -762,10 +762,10 @@ function moveNoTeamToOtherTeams(saldiBase: SaldiBase, dateStr: string) {
     noTeamDateSaldo.verfuegbar > 0 || noTeamDateSaldo.bedarfe_min > 0 || noTeamDateSaldo.bedarfe_opt > 0;
 }
 
-async function kopfSollAuffuellen(saldiBase: SaldiBase) {
+async function fillSolls(saldiBase: SaldiBase) {
   const { default_team, dates, saldi } = saldiBase;
   const noTeamSaldo = saldi[noTeam.id];
-  const defaultTeamSaldo = default_team ? saldi[default_team.id] : noTeamSaldo;
+  const defaultTeamSaldo = saldi[default_team?.id || noTeam.id];
   if (!(defaultTeamSaldo || noTeamSaldo)) return saldiBase;
   const teamSaldis = Object.values(saldi).filter((s) => {
     return s.team.id !== noTeam.id && s.team.id !== default_team?.id;
@@ -778,27 +778,40 @@ async function kopfSollAuffuellen(saldiBase: SaldiBase) {
     const dateStr = getDateStr(date);
     // const dateNr = getDateNr(dateStr);
     if (noTeamSaldo) moveNoTeamToOtherTeams(saldiBase, dateStr);
-    const defaultTeamDateSaldi = defaultTeamSaldo ? defaultTeamSaldo.dates[dateStr] : noTeamSaldo?.dates[dateStr];
-    if (!defaultTeamDateSaldi || defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
+    const defaultTeamDateSaldi = defaultTeamSaldo.dates[dateStr];
+    if (!defaultTeamDateSaldi) return;
+
+    defaultTeamDateSaldi.saldo = getUrlaubssaldo(defaultTeamSaldo, dateStr);
+    if (defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
+    console.log(
+      'Fill Soll',
+      dateStr,
+      defaultTeamSaldo.team.name,
+      defaultTeamDateSaldi.saldo,
+      defaultTeamDateSaldi.verfuegbar,
+      noTeamSaldo.team.name,
+      noTeamSaldo.dates[dateStr],
+      teamLengths
+    );
 
     Object.values(defaultTeamDateSaldi.funktionen).forEach((defaultTeamF) => {
       for (let i = 0; i < teamLengths && defaultTeamF.count > 0 && defaultTeamDateSaldi.verfuegbar > 0; i++) {
         const teamSaldo = teamSaldis[i];
         const teamDateSaldo = teamSaldo.dates[dateStr];
         if (!teamDateSaldo) continue;
+
         teamDateSaldo.saldo = getUrlaubssaldo(teamSaldo, dateStr);
-        if (teamDateSaldo.saldo <= 0) continue;
+        if (teamDateSaldo.saldo >= 0) continue;
+
         const countInTeam =
           teamDateSaldo.inTeam.length +
           Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {
             return acc + teamF.substitutionsFrom.length;
           }, 0);
-        const isTeamFilled = countInTeam >= teamDateSaldo.bedarfe_min;
-        // Team mit positivem Saldo oder genug Mitarbeitern nicht auffüllen
-        if (isTeamFilled) return;
-        const negativeSaldo = teamDateSaldo.saldo;
-        // Verfügbare Mitarbeiter auf andere Teams verteilen, bis alle min. Bedarfe gedeckt sind.
-        const diff = negativeSaldo + defaultTeamF.count > 0 ? -teamDateSaldo.saldo : defaultTeamF.count;
+        const missing = teamDateSaldo.bedarfe_min - countInTeam;
+        if (missing <= 0) continue;
+
+        const diff = missing > defaultTeamF.count ? defaultTeamF.count : missing;
         moveFreeMitarbeiterToOtherTeam(diff, defaultTeamF, dateStr, defaultTeamSaldo, teamSaldo);
         // Falls nötig über die Kopf-Soll gehen!!!
         //   const soll =
@@ -816,7 +829,7 @@ export async function getSaldi(start: Date, ende: Date) {
   const saldiBase = await getSaldiBase(start, ende);
   const bedarfeProDienstTagBereich = await checkTeamBedarfe(saldiBase.dates, saldiBase.saldi);
   saldiBase.mitarbeiter_infos = await checkMitarbeiterVerfuegbarkeit(bedarfeProDienstTagBereich, saldiBase);
-  const result = await kopfSollAuffuellen(saldiBase);
+  const result = await fillSolls(saldiBase);
 
   // Entferne NoTeam aus dem Ergebnis, da dessen Werte auf die anderen Teams aufgeteilt werden.
   if (result.saldi[noTeam.id]?.remove) delete result.saldi[noTeam.id];
