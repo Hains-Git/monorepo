@@ -783,16 +783,6 @@ async function fillSolls(saldiBase: SaldiBase) {
 
     defaultTeamDateSaldi.saldo = getUrlaubssaldo(defaultTeamSaldo, dateStr);
     if (defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
-    console.log(
-      'Fill Soll',
-      dateStr,
-      defaultTeamSaldo.team.name,
-      defaultTeamDateSaldi.saldo,
-      defaultTeamDateSaldi.verfuegbar,
-      noTeamSaldo.team.name,
-      noTeamSaldo.dates[dateStr],
-      teamLengths
-    );
 
     Object.values(defaultTeamDateSaldi.funktionen).forEach((defaultTeamF) => {
       for (let i = 0; i < teamLengths && defaultTeamF.count > 0 && defaultTeamDateSaldi.verfuegbar > 0; i++) {
