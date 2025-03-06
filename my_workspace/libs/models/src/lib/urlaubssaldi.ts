@@ -767,6 +767,7 @@ async function fillSolls(saldiBase: SaldiBase) {
   const noTeamSaldo = saldi[noTeam.id];
   const defaultTeamSaldo = saldi[default_team?.id || noTeam.id];
   if (!(defaultTeamSaldo || noTeamSaldo)) return saldiBase;
+
   const teamSaldis = Object.values(saldi).filter((s) => {
     return s.team.id !== noTeam.id && s.team.id !== default_team?.id;
   });
@@ -776,7 +777,6 @@ async function fillSolls(saldiBase: SaldiBase) {
   // 2. Default Team verfügbare Mitarbeiter auf andere Teams verteilen, bis alle (Kopf-Soll oder die) Bedarfe gedeckt sind.
   dates.forEach((date) => {
     const dateStr = getDateStr(date);
-    // const dateNr = getDateNr(dateStr);
     if (noTeamSaldo) moveNoTeamToOtherTeams(saldiBase, dateStr);
     const defaultTeamDateSaldi = defaultTeamSaldo.dates[dateStr];
     if (!defaultTeamDateSaldi) return;
@@ -784,6 +784,7 @@ async function fillSolls(saldiBase: SaldiBase) {
     defaultTeamDateSaldi.saldo = getUrlaubssaldo(defaultTeamSaldo, dateStr);
     if (defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
 
+    // const dateNr = getDateNr(dateStr);
     Object.values(defaultTeamDateSaldi.funktionen).forEach((defaultTeamF) => {
       for (let i = 0; i < teamLengths && defaultTeamF.count > 0 && defaultTeamDateSaldi.verfuegbar > 0; i++) {
         const teamSaldo = teamSaldis[i];
