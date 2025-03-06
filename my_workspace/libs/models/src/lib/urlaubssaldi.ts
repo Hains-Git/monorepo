@@ -89,6 +89,7 @@ type SaldiTeamDateFunctions = Record<
     count: number;
     funktion: (funktions & { teams: teams | null }) | null;
     substitutionsFrom: Array<{ team: string; teamId: number; count: number }>;
+    substitutionsTo: Array<{ team: string; teamId: number; count: number }>;
   }
 >;
 
@@ -657,7 +658,8 @@ async function checkMitarbeiterVerfuegbarkeit(
         currSaldi.funktionen[funktionId] ||= {
           count: 0,
           funktion,
-          substitutionsFrom: []
+          substitutionsFrom: [],
+          substitutionsTo: []
         };
         currSaldi.mitarbeiter.push(m.planname || '');
         currSaldi.funktionen[funktionId].count += 1;
@@ -689,16 +691,22 @@ function moveFreeMitarbeiterToOtherTeam(
   const toTeamDateSaldo = to.dates?.[dateStr];
   if (diff <= 0 || !fromTeamDateSaldo || !toTeamDateSaldo) return;
   const funktionId = saldiFunktion.funktion?.id || 0;
-  saldiFunktion.count -= diff;
 
+  saldiFunktion.count -= diff;
   fromTeamDateSaldo.verfuegbar -= diff;
   fromTeamDateSaldo.saldo = getUrlaubssaldo(from, dateStr);
+  saldiFunktion.substitutionsTo.push({
+    team: to.team.name,
+    teamId: to.team.id,
+    count: -diff
+  });
 
   toTeamDateSaldo.verfuegbar += diff;
   toTeamDateSaldo.funktionen[funktionId] ||= {
     count: 0,
     funktion: saldiFunktion.funktion,
-    substitutionsFrom: []
+    substitutionsFrom: [],
+    substitutionsTo: []
   };
   toTeamDateSaldo.funktionen[funktionId].count += diff;
   toTeamDateSaldo.funktionen[funktionId].substitutionsFrom.push({
