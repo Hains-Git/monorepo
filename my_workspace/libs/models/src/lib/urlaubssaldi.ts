@@ -792,7 +792,7 @@ async function fillSolls(saldiBase: SaldiBase) {
     defaultTeamDateSaldi.saldo = getUrlaubssaldo(defaultTeamSaldo, dateStr);
     if (defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
 
-    // const dateNr = getDateNr(dateStr);
+    const dateNr = getDateNr(dateStr);
     Object.values(defaultTeamDateSaldi.funktionen).forEach((defaultTeamF) => {
       for (let i = 0; i < teamLengths && defaultTeamF.count > 0 && defaultTeamDateSaldi.verfuegbar > 0; i++) {
         const teamSaldo = teamSaldis[i];
@@ -807,16 +807,15 @@ async function fillSolls(saldiBase: SaldiBase) {
           Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {
             return acc + teamF.substitutionsFrom.length;
           }, 0);
-        const missing = teamDateSaldo.bedarfe_min - countInTeam;
+        const soll =
+          teamSaldo.team.team_kopf_soll.find((k) => getDateNr(k.von) <= dateNr && getDateNr(k.bis) >= dateNr)?.soll ||
+          0;
+        const sollValue = soll > teamDateSaldo.bedarfe_min ? soll : teamDateSaldo.bedarfe_min;
+        const missing = sollValue - countInTeam;
         if (missing <= 0) continue;
 
         const diff = missing > defaultTeamF.count ? defaultTeamF.count : missing;
         moveFreeMitarbeiterToOtherTeam(diff, defaultTeamF, dateStr, defaultTeamSaldo, teamSaldo);
-        // Falls nötig über die Kopf-Soll gehen!!!
-        //   const soll =
-        //     s.team.team_kopf_soll.find((k) => getDateNr(k.von) <= dateNr && getDateNr(k.bis) >= dateNr)?.soll || 0;
-        //   if (soll <= 0) return;
-        //   const missingVerfuegbar = soll - s.dates[dateStr].verfuegbar;
       }
     });
   });
