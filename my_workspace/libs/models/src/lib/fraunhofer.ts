@@ -402,9 +402,7 @@ function calculateBedarfArbeitszeit(
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
   uberschneidungSchichten: UeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[],
-  dplStart: Date | null,
-  dplEnd: Date | null
+  relevantTeamIds: number[]
 ): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
@@ -412,8 +410,6 @@ function createBedarf(
     uberschneidungSchichten
   );
   const teamId = bedarfsEintrag.po_diensts?.team_id;
-  const tagNr = getDateNr(bedarfsEintrag.tag);
-  const inDplDateRange = dplStart && dplEnd && tagNr >= getDateNr(dplStart) && tagNr <= getDateNr(dplEnd);
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -426,7 +422,7 @@ function createBedarf(
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
     IstWochenendEinteilung: wochenende,
-    SollAutomatischGeplantWerden: !!(inDplDateRange && teamId && relevantTeamIds.includes(teamId))
+    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
   };
 }
 
@@ -434,16 +430,14 @@ function checkBedarf(
   be: MainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
   uberschneidungSchichten: UeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[],
-  dplStart: Date | null,
-  dplEnd: Date | null
+  relevantTeamIds: number[]
 ) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds, dplStart, dplEnd);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
@@ -521,7 +515,7 @@ function getBedarfeAndBloecke(
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dpl.anfang, dpl.ende);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -534,7 +528,7 @@ function getBedarfeAndBloecke(
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dpl.anfang, dpl.ende);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
