@@ -77,6 +77,7 @@ export type Bedarf = {
   ArbeitszeitInMinuten: number;
   Belastung: number;
   IstWochenendEinteilung: boolean;
+  SollAutomatischGeplantWerden: boolean;
 };
 
 export type Bedarfsblock = {

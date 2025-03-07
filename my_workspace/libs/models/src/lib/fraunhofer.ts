@@ -154,9 +154,9 @@ function createDiensteAndMapInfos(
   dienstTypenThemen: FraunhoferTypes.DienstTypenThemen,
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
-  } & dienstkategories)[],
-  themen: themas[],
-  relevantTeamIds: number[]
+  } & dienstkategories)[]
+  // themen: themas[],
+  // relevantTeamIds: number[]
 ) {
   return dienste.reduce(
     (
@@ -203,9 +203,9 @@ function createDiensteAndMapInfos(
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       };
       // Add Dienst to DiensteArr
-      if (d.team_id && relevantTeamIds.includes(d.team_id)) {
-        acc.diensteArr.push(dienst);
-      }
+      // if (d.team_id && relevantTeamIds.includes(d.team_id)) {
+      acc.diensteArr.push(dienst);
+      // }
       acc.dienstHash[d.id] = dienst;
       return acc;
     },
@@ -414,13 +414,15 @@ function calculateBedarfArbeitszeit(
 
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
     bedarfsEintrag,
     uberschneidungSchichten
   );
+  const teamId = bedarfsEintrag.po_diensts?.team_id;
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -432,27 +434,35 @@ function createBedarf(
     IstBereitschaftsdienst: bereitschaft,
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
-    IstWochenendEinteilung: wochenende
+    IstWochenendEinteilung: wochenende,
+    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
   };
 }
 
 function checkBedarf(
   be: MainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
 }
 
-function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date, nachtdienste: number[]) {
+function getBedarfeAndBloecke(
+  dienstplaene: DienstPlan[],
+  start: Date,
+  end: Date,
+  nachtdienste: number[],
+  relevantTeamIds: number[]
+) {
   const bedarfe: FraunhoferTypes.Bedarf[] = [];
   const bloecke: FraunhoferTypes.Bedarfsblock[] = [];
   const addedBloecke: Record<number, boolean> = {};
@@ -518,7 +528,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -531,7 +541,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
@@ -638,12 +648,12 @@ export async function getFraunhoferPlanData(
       await _fraunhofer.getFraunhoferData(start, end);
 
     const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
-      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
+      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien);
 
     result.Dienste = diensteArr;
 
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
-      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
+      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds);
 
     const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(
       start,
