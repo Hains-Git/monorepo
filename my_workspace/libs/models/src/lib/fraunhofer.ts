@@ -284,12 +284,18 @@ type DienstPlan = {
     | null;
 } & dienstplans;
 
-async function getDienstplanPerMonth(start: Date, end: Date) {
+async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: number) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: DienstPlan[] = [];
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
-    const dpl = await _fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
+    const dpl = await _fraunhofer.getFraunhoferDienstplan(
+      newDate(monthStart),
+      newDate(monthEnd),
+      start,
+      end,
+      dienstplanId
+    );
     if (!dpl) continue;
     dienstplaene.push(dpl);
   }
@@ -600,7 +606,8 @@ export async function getFraunhoferPlanData(
   start: Date,
   end: Date,
   client_id: string,
-  client_secret: string
+  client_secret: string,
+  dienstplanId?: number
 ): Promise<FraunhoferTypes.PlanData> {
   const result: FraunhoferTypes.PlanData = { ...defaultPlanData };
 
@@ -616,7 +623,7 @@ export async function getFraunhoferPlanData(
   }
 
   try {
-    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end);
+    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end, dienstplanId);
     if (!dienstplaene.length) {
       result.msg = 'Dienstpläne existieren noch nicht!';
       return result;
@@ -920,4 +927,12 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
   }
 
   return result;
+}
+
+export async function getDienstplaene(): Promise<FraunhoferTypes.Dienstplan[]> {
+  return (await _fraunhofer.getDienstplaene()).map((d) => ({
+    ID: d.id,
+    Name: d.name || 'No Name',
+    Beschreibung: d.beschreibung || ''
+  }));
 }

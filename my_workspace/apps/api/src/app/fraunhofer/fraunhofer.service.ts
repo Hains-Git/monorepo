@@ -5,11 +5,15 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class FraunhoferService {
-  async getPlanData(start: string, end: string, clientId: string, clientSecret: string) {
-    return Fraunhofer.getFraunhoferPlanData(newDate(start), newDate(end), clientId, clientSecret);
+  async getPlanData(start: string, end: string, clientId: string, clientSecret: string, dienstplanId?: number) {
+    return Fraunhofer.getFraunhoferPlanData(newDate(start), newDate(end), clientId, clientSecret, dienstplanId);
   }
 
   async createPlan(plan: FraunhoferTypes.FraunhoferNewPlan) {
     return Fraunhofer.createFraunhoferPlan(plan);
+  }
+
+  async getDienstplaene() {
+    return Fraunhofer.getDienstplaene();
   }
 }

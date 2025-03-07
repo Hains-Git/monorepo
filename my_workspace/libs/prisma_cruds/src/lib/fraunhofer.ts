@@ -7,10 +7,17 @@ import {
 import { Prisma } from '@prisma/client';
 import { newDate } from '@my-workspace/utils';
 
-export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, start: Date, end: Date) {
+export async function getFraunhoferDienstplan(
+  monthStart: Date,
+  monthEnd: Date,
+  start: Date,
+  end: Date,
+  dienstplanId?: number
+) {
   return await prismaDb.dienstplans.findFirst({
     where: {
       ...whereDienstplanIn(monthStart, monthEnd),
+      ...(dienstplanId ? { id: dienstplanId } : {}),
       dienstplanbedarves: {
         isNot: null
       }
@@ -230,4 +237,8 @@ export async function createDienstplan(args: Prisma.dienstplansCreateArgs) {
 
 export async function createManyDiensteinteilungs(args: Prisma.diensteinteilungsCreateManyArgs) {
   return prismaDb.diensteinteilungs.createMany(args);
+}
+
+export async function getDienstplaene() {
+  return await prismaDb.dienstplans.findMany();
 }

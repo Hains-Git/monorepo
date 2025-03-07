@@ -131,3 +131,9 @@ export type DienstTypenThemen = Record<DienstTyp, number[]>;
 export type DienstkategorieDienste = Record<number, number[]>;
 
 export type FreigabetypenDienste = Record<number, Record<number, number>>;
+
+export type Dienstplan = {
+  ID: number;
+  Name: string;
+  Beschreibung: string;
+};
