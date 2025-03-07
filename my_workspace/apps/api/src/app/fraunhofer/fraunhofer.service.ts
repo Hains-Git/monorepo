@@ -13,7 +13,7 @@ export class FraunhoferService {
     return Fraunhofer.createFraunhoferPlan(plan);
   }
 
-  async getDienstplaene() {
-    return Fraunhofer.getDienstplaene();
+  async getDienstplaene(clientId: string, clientSecret: string) {
+    return Fraunhofer.getDienstplaene(clientId, clientSecret);
   }
 }

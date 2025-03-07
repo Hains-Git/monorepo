@@ -39,8 +39,8 @@ export class FraunhoferController {
   }
 
   @Post('dienstplaene')
-  getDienstplaene() {
-    return this.fraunhoferService.getDienstplaene();
+  getDienstplaene(@Body() body: { client_id: string; client_secret: string }) {
+    return this.fraunhoferService.getDienstplaene(body?.client_id || '', body?.client_secret || '');
   }
 
   @Post('new_plan')
