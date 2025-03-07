@@ -12,44 +12,8 @@ export async function getFraunhoferDienstplan(
   monthEnd: Date,
   start: Date,
   end: Date,
-  dienstplanId?: number,
-  firstMonth?: boolean,
-  lastMonth?: boolean
+  dienstplanId?: number
 ) {
-  let bedarfWhere: Prisma.bedarfs_eintragsWhereInput = {
-    tag: { gte: start, lte: end }
-  };
-  if (!dienstplanId) {
-    if (firstMonth && !lastMonth) {
-      bedarfWhere = {
-        AND: [
-          { tag: { lte: monthEnd } },
-          {
-            tag: { gte: start, lte: end }
-          }
-        ]
-      };
-    } else if (lastMonth && !firstMonth) {
-      bedarfWhere = {
-        AND: [
-          { tag: { gte: monthStart } },
-          {
-            tag: { gte: start, lte: end }
-          }
-        ]
-      };
-    } else if (!lastMonth && !firstMonth) {
-      bedarfWhere = {
-        AND: [
-          { tag: { gte: monthStart, lte: monthEnd } },
-          {
-            tag: { gte: start, lte: end }
-          }
-        ]
-      };
-    }
-  }
-
   return await prismaDb.dienstplans.findFirst({
     where: {
       ...whereDienstplanIn(monthStart, monthEnd),
@@ -62,7 +26,9 @@ export async function getFraunhoferDienstplan(
       dienstplanbedarves: {
         include: {
           bedarfs_eintrags: {
-            where: bedarfWhere,
+            where: {
+              tag: { gte: start, lte: end }
+            },
             include: {
               first_bedarf: {
                 include: {
