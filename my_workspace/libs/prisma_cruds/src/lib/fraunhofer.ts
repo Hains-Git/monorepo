@@ -7,10 +7,53 @@ import {
 import { Prisma } from '@prisma/client';
 import { newDate } from '@my-workspace/utils';
 
-export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, start: Date, end: Date) {
+export async function getFraunhoferDienstplan(
+  monthStart: Date,
+  monthEnd: Date,
+  start: Date,
+  end: Date,
+  dienstplanId?: number,
+  firstMonth?: boolean,
+  lastMonth?: boolean
+) {
+  let bedarfWhere: Prisma.bedarfs_eintragsWhereInput = {
+    tag: { gte: start, lte: end }
+  };
+  if (!dienstplanId) {
+    if (firstMonth && !lastMonth) {
+      bedarfWhere = {
+        AND: [
+          { tag: { lte: monthEnd } },
+          {
+            tag: { gte: start, lte: end }
+          }
+        ]
+      };
+    } else if (lastMonth && !firstMonth) {
+      bedarfWhere = {
+        AND: [
+          { tag: { gte: monthStart } },
+          {
+            tag: { gte: start, lte: end }
+          }
+        ]
+      };
+    } else if (!lastMonth && !firstMonth) {
+      bedarfWhere = {
+        AND: [
+          { tag: { gte: monthStart, lte: monthEnd } },
+          {
+            tag: { gte: start, lte: end }
+          }
+        ]
+      };
+    }
+  }
+
   return await prismaDb.dienstplans.findFirst({
     where: {
       ...whereDienstplanIn(monthStart, monthEnd),
+      ...(dienstplanId ? { id: dienstplanId } : {}),
       dienstplanbedarves: {
         isNot: null
       }
@@ -19,14 +62,7 @@ export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, 
       dienstplanbedarves: {
         include: {
           bedarfs_eintrags: {
-            where: {
-              AND: [
-                { tag: { gte: monthStart, lte: monthEnd } },
-                {
-                  tag: { gte: start, lte: end }
-                }
-              ]
-            },
+            where: bedarfWhere,
             include: {
               first_bedarf: {
                 include: {
@@ -57,27 +93,48 @@ export async function getFraunhoferDienstplan(monthStart: Date, monthEnd: Date, 
 export async function getFixedEinteilungen(
   start: Date,
   end: Date,
-  bedarfeTageOutSideInterval: Record<string, number[]>
+  bedarfeTageOutSideInterval: Record<string, number[]>,
+  dienstplanId?: number
 ) {
   const fixedEinteilungen = await prismaDb.diensteinteilungs.findMany({
     where: {
-      OR: [
+      AND: [
         {
-          tag: {
-            gte: start,
-            lte: end
-          }
+          OR: [
+            {
+              tag: {
+                gte: start,
+                lte: end
+              }
+            },
+            ...Object.entries(bedarfeTageOutSideInterval).map(([tag, dienste]) => ({
+              tag: newDate(tag),
+              po_dienst_id: {
+                in: dienste
+              }
+            }))
+          ]
         },
-        ...Object.entries(bedarfeTageOutSideInterval).map(([tag, dienste]) => ({
-          tag: newDate(tag),
-          po_dienst_id: {
-            in: dienste
-          }
-        }))
-      ],
-      einteilungsstatuses: {
-        counts: true
-      }
+        dienstplanId
+          ? {
+              OR: [
+                {
+                  einteilungsstatuses: {
+                    counts: true
+                  }
+                },
+                {
+                  dienstplan_id: dienstplanId,
+                  einteilungsstatuses: { vorschlag: true }
+                }
+              ]
+            }
+          : {
+              einteilungsstatuses: {
+                counts: true
+              }
+            }
+      ]
     }
   });
   return fixedEinteilungen;
@@ -230,4 +287,8 @@ export async function createDienstplan(args: Prisma.dienstplansCreateArgs) {
 
 export async function createManyDiensteinteilungs(args: Prisma.diensteinteilungsCreateManyArgs) {
   return prismaDb.diensteinteilungs.createMany(args);
+}
+
+export async function getDienstplaene() {
+  return await prismaDb.dienstplans.findMany();
 }

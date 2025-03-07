@@ -154,14 +154,11 @@ function createDiensteAndMapInfos(
   dienstTypenThemen: FraunhoferTypes.DienstTypenThemen,
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
-  } & dienstkategories)[],
-  themen: themas[],
-  relevantTeamIds: number[]
+  } & dienstkategories)[]
 ) {
   return dienste.reduce(
     (
       acc: {
-        diensteArr: FraunhoferTypes.Dienst[];
         freigabetypenDienste: FraunhoferTypes.FreigabetypenDienste;
         dienstkategorieDienste: FraunhoferTypes.DienstkategorieDienste;
         nachtdienste: number[];
@@ -202,15 +199,10 @@ function createDiensteAndMapInfos(
         Typ: typ,
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       };
-      // Add Dienst to DiensteArr
-      if (d.team_id && relevantTeamIds.includes(d.team_id)) {
-        acc.diensteArr.push(dienst);
-      }
       acc.dienstHash[d.id] = dienst;
       return acc;
     },
     {
-      diensteArr: [],
       freigabetypenDienste: {},
       dienstkategorieDienste: {},
       nachtdienste: [],
@@ -284,13 +276,24 @@ type DienstPlan = {
     | null;
 } & dienstplans;
 
-async function getDienstplanPerMonth(start: Date, end: Date) {
+async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: number) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: DienstPlan[] = [];
+  const monthslength = Object.keys(months).length - 1;
+  let i = 0;
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
-    const dpl = await _fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
-    if (!dpl) continue;
+    const dpl = await _fraunhofer.getFraunhoferDienstplan(
+      newDate(monthStart),
+      newDate(monthEnd),
+      start,
+      end,
+      dienstplanId,
+      i === 0,
+      i === monthslength
+    );
+    i++;
+    if (!dpl || dienstplaene.find((d) => (d.id = dpl.id))) continue;
     dienstplaene.push(dpl);
   }
 
@@ -403,13 +406,15 @@ function calculateBedarfArbeitszeit(
 
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
     bedarfsEintrag,
     uberschneidungSchichten
   );
+  const teamId = bedarfsEintrag.po_diensts?.team_id;
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -421,27 +426,35 @@ function createBedarf(
     IstBereitschaftsdienst: bereitschaft,
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
-    IstWochenendEinteilung: wochenende
+    IstWochenendEinteilung: wochenende,
+    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
   };
 }
 
 function checkBedarf(
   be: MainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
 }
 
-function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date, nachtdienste: number[]) {
+function getBedarfeAndBloecke(
+  dienstplaene: DienstPlan[],
+  start: Date,
+  end: Date,
+  nachtdienste: number[],
+  relevantTeamIds: number[]
+) {
   const bedarfe: FraunhoferTypes.Bedarf[] = [];
   const bloecke: FraunhoferTypes.Bedarfsblock[] = [];
   const addedBloecke: Record<number, boolean> = {};
@@ -507,7 +520,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -520,7 +533,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
@@ -600,7 +613,8 @@ export async function getFraunhoferPlanData(
   start: Date,
   end: Date,
   client_id: string,
-  client_secret: string
+  client_secret: string,
+  dienstplanId?: number
 ): Promise<FraunhoferTypes.PlanData> {
   const result: FraunhoferTypes.PlanData = { ...defaultPlanData };
 
@@ -616,7 +630,7 @@ export async function getFraunhoferPlanData(
   }
 
   try {
-    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end);
+    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end, dienstplanId);
     if (!dienstplaene.length) {
       result.msg = 'Dienstpläne existieren noch nicht!';
       return result;
@@ -625,15 +639,23 @@ export async function getFraunhoferPlanData(
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } =
       await _fraunhofer.getFraunhoferData(start, end);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
-      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
+    const { freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } = createDiensteAndMapInfos(
+      dienste,
+      mapThemenToDienstTypen(themen),
+      dienstkategorien
+    );
 
-    result.Dienste = diensteArr;
+    result.Dienste = Object.values(dienstHash);
 
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
-      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
+      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds);
 
-    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(
+      start,
+      end,
+      bedarfeTageOutSideInterval,
+      dienstplanId
+    );
 
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
@@ -709,14 +731,14 @@ export async function getFraunhoferPlanData(
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
-        const dienst = dienstHash[e.po_dienst_id];
+        // const dienst = dienstHash[e.po_dienst_id];
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
-          BereichID: e.bereich_id,
-          IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
-          Typ: dienst.Typ
+          BereichID: e.bereich_id
+          // IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
+          // Typ: dienst.Typ
         });
       }
       return acc;
@@ -920,4 +942,12 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
   }
 
   return result;
+}
+
+export async function getDienstplaene(): Promise<FraunhoferTypes.Dienstplan[]> {
+  return (await _fraunhofer.getDienstplaene()).map((d) => ({
+    ID: d.id,
+    Name: d.name || 'No Name',
+    Beschreibung: d.beschreibung || ''
+  }));
 }
