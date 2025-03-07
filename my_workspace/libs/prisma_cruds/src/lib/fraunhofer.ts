@@ -290,5 +290,7 @@ export async function createManyDiensteinteilungs(args: Prisma.diensteinteilungs
 }
 
 export async function getDienstplaene() {
-  return await prismaDb.dienstplans.findMany();
+  return await prismaDb.dienstplans.findMany({
+    orderBy: [{ anfang: 'asc' }, { ende: 'desc' }]
+  });
 }

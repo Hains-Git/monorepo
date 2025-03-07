@@ -407,7 +407,9 @@ function calculateBedarfArbeitszeit(
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
   uberschneidungSchichten: UeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[]
+  relevantTeamIds: number[],
+  dplStart: Date | null,
+  dplEnd: Date | null
 ): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
@@ -415,6 +417,8 @@ function createBedarf(
     uberschneidungSchichten
   );
   const teamId = bedarfsEintrag.po_diensts?.team_id;
+  const tagNr = getDateNr(bedarfsEintrag.tag);
+  const inDplDateRange = dplStart && dplEnd && tagNr >= getDateNr(dplStart) && tagNr <= getDateNr(dplEnd);
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -427,7 +431,7 @@ function createBedarf(
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
     IstWochenendEinteilung: wochenende,
-    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
+    SollAutomatischGeplantWerden: !!(inDplDateRange && teamId && relevantTeamIds.includes(teamId))
   };
 }
 
@@ -435,14 +439,16 @@ function checkBedarf(
   be: MainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
   uberschneidungSchichten: UeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[]
+  relevantTeamIds: number[],
+  dplStart: Date | null,
+  dplEnd: Date | null
 ) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds, dplStart, dplEnd);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
@@ -462,6 +468,7 @@ function getBedarfeAndBloecke(
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
   const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
   const ausgleichsdienstgruppen: Record<number, FraunhoferTypes.Ausgleichsdienstgruppe> = {};
+  // Falls Bedarfe aus vorhergehenden Monaten existieren, müssen die Blöcke richtig gruppiert werden.
 
   const addToAusgleichsDienstgruppe = (be: MainBedarfsEintrag, isLastInBlock: boolean) => {
     if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
@@ -471,35 +478,34 @@ function getBedarfeAndBloecke(
 
     if (!isK3) {
       const isDonnerstagNachtDienst = be.tag.getDay() === 4 && nachtdienste.includes(dienstId);
-      if (isLastInBlock && isDonnerstagNachtDienst) {
-        const l = be.schichts.length - 1;
-        const nextDayLimit = newDate(be.tag);
-        nextDayLimit.setDate(nextDayLimit.getDate() + 1);
-        nextDayLimit.setHours(12, 0, 0, 0);
-        const dateZahl = getDateNr(be.tag);
-        let hasFreiNextDays = false;
-        const ausgleichsTage = be.ausgleich_tage || 0;
-        for (let i = l; i >= 0; i--) {
-          const schicht = be.schichts[i];
-          const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
-          const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
-          if (!schicht.anfang || !schicht.ende) continue;
-          const endeDateZahl = getDateNr(schicht.ende);
-          // Es sind nur Schichten bis zum Tag des Bedarfs relevant
-          if (endeDateZahl <= dateZahl) break;
-          // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
-          if (isArbeitszeit && schicht.ende > nextDayLimit) {
-            return;
-          }
-          // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
-          if (isFrei) {
-            const freiAbSamstag = endeDateZahl > dateZahl + 1;
-            const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
-            hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
-          }
+      if (!(isLastInBlock && isDonnerstagNachtDienst)) return;
+      const l = be.schichts.length - 1;
+      const nextDayLimit = newDate(be.tag);
+      nextDayLimit.setDate(nextDayLimit.getDate() + 1);
+      nextDayLimit.setHours(12, 0, 0, 0);
+      const dateZahl = getDateNr(be.tag);
+      let hasFreiNextDays = false;
+      const ausgleichsTage = be.ausgleich_tage || 0;
+      for (let i = l; i >= 0; i--) {
+        const schicht = be.schichts[i];
+        const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
+        const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
+        if (!schicht.anfang || !schicht.ende) continue;
+        const endeDateZahl = getDateNr(schicht.ende);
+        // Es sind nur Schichten bis zum Tag des Bedarfs relevant
+        if (endeDateZahl <= dateZahl) break;
+        // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
+        if (isArbeitszeit && schicht.ende > nextDayLimit) {
+          return;
         }
-        if (!hasFreiNextDays) return;
-      } else return;
+        // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
+        if (isFrei) {
+          const freiAbSamstag = endeDateZahl > dateZahl + 1;
+          const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
+          hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
+        }
+      }
+      if (!hasFreiNextDays) return;
     }
 
     ausgleichsdienstgruppen[dienstId] ||= {
@@ -520,7 +526,7 @@ function getBedarfeAndBloecke(
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dpl.anfang, dpl.ende);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -533,7 +539,7 @@ function getBedarfeAndBloecke(
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dpl.anfang, dpl.ende);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
@@ -948,6 +954,8 @@ export async function getDienstplaene(): Promise<FraunhoferTypes.Dienstplan[]> {
   return (await _fraunhofer.getDienstplaene()).map((d) => ({
     ID: d.id,
     Name: d.name || 'No Name',
-    Beschreibung: d.beschreibung || ''
+    Beschreibung: d.beschreibung || '',
+    Anfang: d.anfang,
+    Ende: d.ende
   }));
 }

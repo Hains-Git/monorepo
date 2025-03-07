@@ -137,4 +137,6 @@ export type Dienstplan = {
   ID: number;
   Name: string;
   Beschreibung: string;
+  Anfang: Date | null;
+  Ende: Date | null;
 };
