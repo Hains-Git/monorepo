@@ -279,8 +279,6 @@ type DienstPlan = {
 async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: number) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: DienstPlan[] = [];
-  const monthslength = Object.keys(months).length - 1;
-  let i = 0;
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
     const dpl = await _fraunhofer.getFraunhoferDienstplan(
@@ -288,11 +286,8 @@ async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: numb
       newDate(monthEnd),
       start,
       end,
-      dienstplanId,
-      i === 0,
-      i === monthslength
+      dienstplanId
     );
-    i++;
     if (!dpl || dienstplaene.find((d) => (d.id = dpl.id))) continue;
     dienstplaene.push(dpl);
   }
@@ -462,6 +457,7 @@ function getBedarfeAndBloecke(
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
   const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
   const ausgleichsdienstgruppen: Record<number, FraunhoferTypes.Ausgleichsdienstgruppe> = {};
+  // Falls Bedarfe aus vorhergehenden Monaten existieren, müssen die Blöcke richtig gruppiert werden.
 
   const addToAusgleichsDienstgruppe = (be: MainBedarfsEintrag, isLastInBlock: boolean) => {
     if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
@@ -471,35 +467,34 @@ function getBedarfeAndBloecke(
 
     if (!isK3) {
       const isDonnerstagNachtDienst = be.tag.getDay() === 4 && nachtdienste.includes(dienstId);
-      if (isLastInBlock && isDonnerstagNachtDienst) {
-        const l = be.schichts.length - 1;
-        const nextDayLimit = newDate(be.tag);
-        nextDayLimit.setDate(nextDayLimit.getDate() + 1);
-        nextDayLimit.setHours(12, 0, 0, 0);
-        const dateZahl = getDateNr(be.tag);
-        let hasFreiNextDays = false;
-        const ausgleichsTage = be.ausgleich_tage || 0;
-        for (let i = l; i >= 0; i--) {
-          const schicht = be.schichts[i];
-          const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
-          const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
-          if (!schicht.anfang || !schicht.ende) continue;
-          const endeDateZahl = getDateNr(schicht.ende);
-          // Es sind nur Schichten bis zum Tag des Bedarfs relevant
-          if (endeDateZahl <= dateZahl) break;
-          // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
-          if (isArbeitszeit && schicht.ende > nextDayLimit) {
-            return;
-          }
-          // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
-          if (isFrei) {
-            const freiAbSamstag = endeDateZahl > dateZahl + 1;
-            const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
-            hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
-          }
+      if (!(isLastInBlock && isDonnerstagNachtDienst)) return;
+      const l = be.schichts.length - 1;
+      const nextDayLimit = newDate(be.tag);
+      nextDayLimit.setDate(nextDayLimit.getDate() + 1);
+      nextDayLimit.setHours(12, 0, 0, 0);
+      const dateZahl = getDateNr(be.tag);
+      let hasFreiNextDays = false;
+      const ausgleichsTage = be.ausgleich_tage || 0;
+      for (let i = l; i >= 0; i--) {
+        const schicht = be.schichts[i];
+        const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
+        const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
+        if (!schicht.anfang || !schicht.ende) continue;
+        const endeDateZahl = getDateNr(schicht.ende);
+        // Es sind nur Schichten bis zum Tag des Bedarfs relevant
+        if (endeDateZahl <= dateZahl) break;
+        // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
+        if (isArbeitszeit && schicht.ende > nextDayLimit) {
+          return;
         }
-        if (!hasFreiNextDays) return;
-      } else return;
+        // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
+        if (isFrei) {
+          const freiAbSamstag = endeDateZahl > dateZahl + 1;
+          const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
+          hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
+        }
+      }
+      if (!hasFreiNextDays) return;
     }
 
     ausgleichsdienstgruppen[dienstId] ||= {
@@ -948,6 +943,8 @@ export async function getDienstplaene(): Promise<FraunhoferTypes.Dienstplan[]> {
   return (await _fraunhofer.getDienstplaene()).map((d) => ({
     ID: d.id,
     Name: d.name || 'No Name',
-    Beschreibung: d.beschreibung || ''
+    Beschreibung: d.beschreibung || '',
+    Anfang: d.anfang,
+    Ende: d.ende
   }));
 }
