@@ -939,7 +939,11 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
   return result;
 }
 
-export async function getDienstplaene(): Promise<FraunhoferTypes.Dienstplan[]> {
+export async function getDienstplaene(client_id: string, client_secret: string): Promise<FraunhoferTypes.Dienstplan[]> {
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
+  if (!isValid) {
+    return [];
+  }
   return (await _fraunhofer.getDienstplaene()).map((d) => ({
     ID: d.id,
     Name: d.name || 'No Name',
