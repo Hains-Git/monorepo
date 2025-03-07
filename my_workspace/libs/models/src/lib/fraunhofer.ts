@@ -942,8 +942,17 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
 export async function getDienstplaene(client_id: string, client_secret: string): Promise<FraunhoferTypes.Dienstplan[]> {
   const isValid = await _fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
   if (!isValid) {
-    return [];
+    return [
+      {
+        ID: -1,
+        Name: 'Nicht authorisiert!',
+        Beschreibung: 'Nicht authorisiert!',
+        Anfang: null,
+        Ende: null
+      }
+    ];
   }
+
   return (await _fraunhofer.getDienstplaene()).map((d) => ({
     ID: d.id,
     Name: d.name || 'No Name',
