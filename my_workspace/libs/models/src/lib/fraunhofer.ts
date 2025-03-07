@@ -155,13 +155,10 @@ function createDiensteAndMapInfos(
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
   } & dienstkategories)[]
-  // themen: themas[],
-  // relevantTeamIds: number[]
 ) {
   return dienste.reduce(
     (
       acc: {
-        diensteArr: FraunhoferTypes.Dienst[];
         freigabetypenDienste: FraunhoferTypes.FreigabetypenDienste;
         dienstkategorieDienste: FraunhoferTypes.DienstkategorieDienste;
         nachtdienste: number[];
@@ -202,15 +199,10 @@ function createDiensteAndMapInfos(
         Typ: typ,
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       };
-      // Add Dienst to DiensteArr
-      // if (d.team_id && relevantTeamIds.includes(d.team_id)) {
-      acc.diensteArr.push(dienst);
-      // }
       acc.dienstHash[d.id] = dienst;
       return acc;
     },
     {
-      diensteArr: [],
       freigabetypenDienste: {},
       dienstkategorieDienste: {},
       nachtdienste: [],
@@ -647,10 +639,13 @@ export async function getFraunhoferPlanData(
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } =
       await _fraunhofer.getFraunhoferData(start, end);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
-      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien);
+    const { freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } = createDiensteAndMapInfos(
+      dienste,
+      mapThemenToDienstTypen(themen),
+      dienstkategorien
+    );
 
-    result.Dienste = diensteArr;
+    result.Dienste = Object.values(dienstHash);
 
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
       getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds);
@@ -736,14 +731,14 @@ export async function getFraunhoferPlanData(
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
-        const dienst = dienstHash[e.po_dienst_id];
+        // const dienst = dienstHash[e.po_dienst_id];
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
-          BereichID: e.bereich_id,
-          IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
-          Typ: dienst.Typ
+          BereichID: e.bereich_id
+          // IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
+          // Typ: dienst.Typ
         });
       }
       return acc;
