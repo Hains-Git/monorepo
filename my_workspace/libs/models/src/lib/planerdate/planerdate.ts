@@ -1,8 +1,8 @@
-import { format, formatDate } from 'date-fns';
+import { format } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
 import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateNr, getDateStr, getKW, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 type Feiertag = {
   name: string;
@@ -61,7 +61,7 @@ export class PlanerDate {
     this.week_counter = week_counter;
     this.week_day = PlanerDate.WEEKDAYS[date.getDay()];
     this.local_date_string = date.toLocaleDateString('de-DE');
-    this.id = date.toISOString().split('T')[0];
+    this.id = getDateStr(date);
     this.month_nr = date.getMonth() + 1;
     this.month = PlanerDate.MONTHS[date.getMonth()];
     this.is_weekend = date.getDay() === 0 || date.getDay() === 6;
@@ -75,14 +75,13 @@ export class PlanerDate {
     this.day = date.getDate();
     this.year = date.getFullYear();
     this.date_id = this.id;
-    this.date_nr = Number(this.id.split('-').join(''));
+    this.date_nr = getDateNr(this.id);
     this.celebrate = '';
     this.kws_vormonat = [];
   }
 
   async initializeFeiertage(date: Date, zeitraumkategorien: zeitraumkategories[] = []) {
     const _feiertag = await PlanerDate.getFeiertag(date);
-
     if (_feiertag) {
       this.feiertag = {
         name: _feiertag.name || '',
@@ -208,7 +207,7 @@ export class PlanerDate {
         name: name,
         day: osterDatum.getDate(),
         month: osterDatum.getMonth() + 1,
-        full_date: osterDatum.toISOString().split('T')[0]
+        full_date: getDateStr(osterDatum)
       };
       const monthKey = feiertag.month.toString();
       if (!PlanerDate.feiertage[yearStr][monthKey]) {
@@ -220,7 +219,7 @@ export class PlanerDate {
         name: feiertag.name,
         tag: feiertag.day,
         monat: feiertag.month,
-        datum: newDate(formatDate(osterDatum, 'yyyy-MM-dd')),
+        datum: newDate(getDateStr(osterDatum)),
         jahr: osterDatum.getFullYear()
       };
 
@@ -274,15 +273,7 @@ export class PlanerDate {
   }
 
   private getWeekNumber(dirtyDate: Date) {
-    const date = newDate(dirtyDate);
-    date.setHours(0, 0, 0, 0);
-    // Thursday in current week decides the year.
-    date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
-    // January 4 is always in week 1.
-    const week1 = newDateYearMonthDay(date.getFullYear(), 0, 4);
-    week1.setHours(0, 0, 0, 0);
-    // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-    return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+    return getKW(dirtyDate);
   }
 
   private getDayOfYear(date: Date): number {

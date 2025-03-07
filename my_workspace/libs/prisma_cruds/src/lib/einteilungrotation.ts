@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
+import { whereRotationIn } from './utils/crud_helper';
 
 export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) {
   return await prismaDb.einteilung_rotations.findMany({
@@ -21,30 +22,20 @@ export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) 
   });
 }
 
-export async function getRotationenInRange<TInclude extends Prisma.einteilung_rotationsInclude>(
-  anfang: Date,
-  ende: Date,
-  include?: TInclude
-) {
+export async function getRotationenInRange<
+  TInclude extends Prisma.einteilung_rotationsInclude,
+  TOrderBy extends Prisma.einteilung_rotationsOrderByWithRelationInput[]
+>(anfang: Date, ende: Date, include?: TInclude, orderBy?: TOrderBy) {
   return ((await prismaDb.einteilung_rotations.findMany({
     where: {
-      OR: [
-        {
-          AND: [{ von: { lte: anfang } }, { bis: { gte: anfang } }]
-        },
-        {
-          AND: [{ von: { lte: ende } }, { bis: { gte: ende } }]
-        },
-        {
-          AND: [{ von: { gte: anfang } }, { bis: { lte: ende } }]
-        }
-      ],
+      ...whereRotationIn(anfang, ende),
       mitarbeiters: {
         platzhalter: false
       }
     },
-    include
-  })) || []) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude }>[];
+    include,
+    orderBy
+  })) || []) as Prisma.einteilung_rotationsGetPayload<{ include: TInclude; orderBy: TOrderBy }>[];
 }
 
 export async function getRotationenByKontingentFlag() {

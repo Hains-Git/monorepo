@@ -20,4 +20,9 @@ export class AppController {
   getSavePlanungsComment(@Body() body: any) {
     return this.appService.savePlanungsComment(body);
   }
+
+  @Get('localtest')
+  getLocalTest() {
+    return this.appService.getLocalTest();
+  }
 }

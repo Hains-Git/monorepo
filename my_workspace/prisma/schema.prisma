@@ -579,6 +579,7 @@ model diensteinteilungs {
   info_comment          String?              @default("") @db.VarChar
   is_optional           Boolean?             @default(false)
   po_diensts            po_diensts?          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c69b8191a")
+  einteilungskontext    einteilungskontexts? @relation(fields: [einteilungskontext_id], references: [id])
   einteilungsstatuses   einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2a437cd8da")
   dienstplans           dienstplans?         @relation(fields: [dienstplan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_37afbd5ac9")
   mitarbeiters          mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8d2ed7f2ce")
@@ -972,16 +973,17 @@ model einteilung_versions {
 }
 
 model einteilungskontexts {
-  id             Int      @id @default(autoincrement())
-  name           String?  @db.VarChar
-  beschreibung   String?  @db.VarChar
-  color          String?  @default("#ffffff") @db.VarChar
-  created_at     DateTime @db.Timestamp(6)
-  updated_at     DateTime @db.Timestamp(6)
-  tagesverteiler Boolean? @default(false)
-  default        Boolean? @default(false)
-  ersatz         Boolean? @default(false)
-  einspringen    Boolean? @default(false)
+  id                Int                 @id @default(autoincrement())
+  name              String?             @db.VarChar
+  beschreibung      String?             @db.VarChar
+  color             String?             @default("#ffffff") @db.VarChar
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  tagesverteiler    Boolean?            @default(false)
+  default           Boolean?            @default(false)
+  ersatz            Boolean?            @default(false)
+  einspringen       Boolean?            @default(false)
+  diensteinteilungs diensteinteilungs[]
 }
 
 model einteilungsstatuses {
@@ -1884,13 +1886,13 @@ model tagkategories {
 }
 
 model team_funktions {
-  id          Int        @id @default(autoincrement())
-  team_id     Int?
-  funktion_id Int?
-  created_at  DateTime   @db.Timestamp(6)
-  updated_at  DateTime   @db.Timestamp(6)
-  teams       teams?     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
-  funktions   funktions? @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bec8e126a9")
+  id          Int       @id @default(autoincrement())
+  team_id     Int
+  funktion_id Int
+  created_at  DateTime  @db.Timestamp(6)
+  updated_at  DateTime  @db.Timestamp(6)
+  team        teams     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
+  funktion    funktions @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bec8e126a9")
 
   @@index([funktion_id], map: "index_team_funktions_on_funktion_id")
   @@index([team_id], map: "index_team_funktions_on_team_id")
@@ -1911,13 +1913,35 @@ model team_kw_krankpuffer_versions {
 model team_kw_krankpuffers {
   id         Int      @id @default(autoincrement())
   kw         Int      @default(0)
-  team_id    Int?
+  team_id    Int
   created_at DateTime @db.Timestamp(6)
   updated_at DateTime @db.Timestamp(6)
   puffer     Int      @default(0)
-  teams      teams?   @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
+  team       teams    @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
 
   @@index([team_id], map: "index_team_kw_krankpuffers_on_team_id")
+}
+
+model team_kopf_soll {
+  id         Int      @id @default(autoincrement())
+  team_id    Int
+  soll       Int
+  von        DateTime @db.Date
+  bis        DateTime @db.Date
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  team       teams    @relation(fields: [team_id], references: [id])
+}
+
+model team_vk_soll {
+  id         Int      @id @default(autoincrement())
+  team_id    Int
+  soll       Int
+  von        DateTime @db.Date
+  bis        DateTime @db.Date
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  team       teams    @relation(fields: [team_id], references: [id])
 }
 
 model teams {
@@ -1937,7 +1961,9 @@ model teams {
   po_diensts            po_diensts[]
   team_funktions        team_funktions[]
   team_kw_krankpuffers  team_kw_krankpuffers[]
-  kostenstelles         kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
+  team_vk_soll          team_vk_soll[]
+  team_kopf_soll        team_kopf_soll[]
+  kostenstelle          kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
   vorlages              vorlages[]
 
   @@index([kostenstelle_id], map: "index_teams_on_kostenstelle_id")
@@ -2137,8 +2163,8 @@ model vertrags {
   created_at            DateTime                @db.Timestamp(6)
   updated_at            DateTime                @db.Timestamp(6)
   vertragstyp_id        Int?
-  anfang                DateTime?               @db.Date
-  ende                  DateTime?               @db.Date
+  anfang                DateTime                @db.Date
+  ende                  DateTime                @db.Date
   unbefristet           Boolean?                @default(false)
   kommentar             String?                 @default("") @db.VarChar
   mitarbeiters          mitarbeiters?           @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b20fe19842")
@@ -2152,8 +2178,8 @@ model vertrags {
 model vertrags_arbeitszeits {
   id         Int       @id @default(autoincrement())
   vertrag_id Int?
-  von        DateTime? @db.Date
-  bis        DateTime? @db.Date
+  von        DateTime  @db.Date
+  bis        DateTime  @db.Date
   vk         Decimal?  @db.Decimal(3, 2)
   tage_woche Float?    @default(5.0)
   created_at DateTime  @db.Timestamp(6)
@@ -2166,8 +2192,8 @@ model vertrags_arbeitszeits {
 model vertrags_phases {
   id               Int             @id @default(autoincrement())
   vertrag_id       Int?
-  von              DateTime?       @db.Date
-  bis              DateTime?       @db.Date
+  von              DateTime        @db.Date
+  bis              DateTime        @db.Date
   created_at       DateTime        @db.Timestamp(6)
   updated_at       DateTime        @db.Timestamp(6)
   vertragsstufe_id Int?
@@ -2180,8 +2206,8 @@ model vertrags_phases {
 
 model vertrags_variantes {
   id             Int              @id @default(autoincrement())
-  von            DateTime?        @db.Date
-  bis            DateTime?        @db.Date
+  von            DateTime         @db.Date
+  bis            DateTime         @db.Date
   vertragstyp_id Int?
   name           String?          @db.VarChar
   wochenstunden  Int?

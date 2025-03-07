@@ -7,7 +7,7 @@ import {
   getAllPoDiensts,
   getAllMerkmal,
   getAllZeitraumKategories,
-  getAllTeams,
+  _team,
   getAllActiveMitarbeiter,
   getAllMitarbeiter,
   getAllStandorte,
@@ -36,7 +36,7 @@ export class MitarbeiterInfoService {
     result['mitarbeiters'] = await getAllActiveMitarbeiter();
     result['all_mitarbeiters'] = await getAllMitarbeiter();
     result['dienste'] = await getAllPoDiensts();
-    result['teams'] = await getAllTeams();
+    result['teams'] = await _team.getAllTeams();
     result['merkmale'] = await getAllMerkmal();
     result['standorte'] = await getAllStandorte();
     result['themen'] = await getAllThemas();
@@ -57,7 +57,7 @@ export class MitarbeiterInfoService {
     const result = {};
     const mitarbeiter = await getMitarbeiterById(mitarbeiterId, { account_info: true, funktion: true });
     const teamAm = await mitarbeiterTeamAm(newDate(), null, null, null, mitarbeiterId);
-    const teams = await getAllTeams();
+    const teams = await _team.getAllTeams();
     const accountInfo = mitarbeiter.account_info;
     result['teams'] = processData('id', teams);
     result['mitarbeiter'] = transformObject(mitarbeiter, [

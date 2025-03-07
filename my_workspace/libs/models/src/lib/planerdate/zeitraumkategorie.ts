@@ -1,30 +1,31 @@
-import { zeitraumkategories } from '@prisma/client';
+import { zeitraumkategories, zeitraumregels } from '@prisma/client';
 import { PlanerDate } from './planerdate';
 import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { _zeitraumregel, getAllZeitraumKategories, getZeitraumKategoriesInRange } from '@my-workspace/prisma_cruds';
 
 interface RegelcodeHash {
-  is_bedarf: boolean;
+  isBedarf: boolean;
   feiertage: string;
   wochentage: string;
   monatstage: string;
   wochen: string;
   monate: string;
-  feiertage_r: string[];
-  wochentage_r: string[];
-  wochen_r: string[];
-  monate_r: string[];
-  is_nicht: boolean;
-  is_auch: boolean;
-  is_nur: boolean;
-  has_feiertag: boolean;
+  feiertageR: string[];
+  wochentageR: string[];
+  wochenR: string[];
+  monateR: string[];
+  isNicht: boolean;
+  isAuch: boolean;
+  isNur: boolean;
+  hasFeiertag: boolean;
 }
 
 const ZEITRAUMREGELN_REGEX = {
-  monat: /^m([1-9])$|^m1([0-2])$/,
-  kalenderwoche: /^kw[1-9]$|^kw[1-4][0-9]$|^kw5[0-3]$/,
-  wochentag: /^Mo$|^Di$|^Mi$|^Do$|^Fr$|^Sa$|^So$/,
-  clear: /^_|_$/
+  monat: /^m([1-9])$|^m1([0-2])$/g,
+  kalenderwoche: /^kw[1-9]$|^kw[1-4][0-9]$|^kw5[0-3]$/g,
+  wochentag: /^Mo$|^Di$|^Mi$|^Do$|^Fr$|^Sa$|^So$/g,
+  clear: /^_|_$/g
 };
 
 function isPlanerDate(date: Date | PlanerDate) {
@@ -46,32 +47,18 @@ async function shouldCheckDate(
   }
 
   const fullDate = isPlanerDate(date) ? date.full_date : date;
+  const dateNr = getDateNr(fullDate);
   if (zeitraumAnfang != null) {
-    thisStart = fullDate >= zeitraumAnfang;
+    thisStart = dateNr >= getDateNr(zeitraumAnfang);
   }
   if (zeitraumEnde != null) {
-    thisEnd = fullDate < zeitraumEnde;
+    thisEnd = dateNr < getDateNr(zeitraumEnde);
   }
   return thisStart && thisEnd;
 }
 
 function splitRegelcode(regelcode: string) {
-  const hash: {
-    isBedarf: boolean;
-    feiertage: string;
-    wochentage: string;
-    monatstage: string;
-    wochen: string;
-    monate: string;
-    feiertageR: string[];
-    wochentageR: string[];
-    wochenR: string[];
-    monateR: string[];
-    isNicht: boolean;
-    isAuch: boolean;
-    isNur: boolean;
-    hasFeiertag: boolean;
-  } = {
+  const hash: RegelcodeHash = {
     isBedarf: regelcode === '',
     feiertage: '',
     wochentage: '',
@@ -131,12 +118,11 @@ function splitRegelcode(regelcode: string) {
   return hash;
 }
 
-function checkKalenderwochen(regeln: string[], date: Date | PlanerDate): boolean {
-  const currentWeek = isPlanerDate(date) ? date.week : getWeek(date, { weekStartsOn: 1 });
-  let result = regeln.includes(`kw${currentWeek}`);
+function checkKalenderwochen(regeln: string[], date: PlanerDate): boolean {
+  let result = regeln.includes(`kw${date.week}`);
 
   if (result) {
-    const lastWeek = isPlanerDate(date) ? date.last_week : getWeek(subWeeks(date, 1), { weekStartsOn: 1 });
+    const lastWeek = date.last_week;
 
     if (regeln.includes('#extra')) {
       result = lastWeek === 53;
@@ -152,41 +138,41 @@ async function checkDate(date: Date | PlanerDate, zeitraumkategorie: zeitraumkat
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
+    const originalDate = date;
     date = new PlanerDate(date);
+    await date.initializeFeiertage(originalDate);
   }
 
   const zeitraumAnfang = zeitraumkategorie.anfang;
   const zeitraumEnde = zeitraumkategorie.ende;
   const regelcode = zeitraumkategorie.regelcode || '';
-  if (await shouldCheckDate(date, zeitraumAnfang, zeitraumEnde)) {
-    const hash = splitRegelcode(regelcode);
-    isBedarf = hash.isBedarf;
+  if (!(await shouldCheckDate(date, zeitraumAnfang, zeitraumEnde))) return isBedarf;
 
-    if (!isBedarf) {
-      let isFeiertag = false;
+  const hash = splitRegelcode(regelcode);
+  isBedarf = hash.isBedarf;
 
-      if (hash.hasFeiertag) {
-        if (date.feiertag === '') {
-          isFeiertag = hash.isNicht;
-        } else {
-          // Note: Holidays seem to need to be passed as a string, otherwise some are not recognized
-          const checkFeiertagValue = hash.feiertageR.includes(date.feiertag.name.toLowerCase());
-          isFeiertag = hash.isNicht ? !checkFeiertagValue : checkFeiertagValue;
-        }
+  if (!isBedarf) {
+    let isFeiertag = false;
+
+    if (hash.hasFeiertag) {
+      if (date.feiertag === '') {
+        isFeiertag = hash.isNicht;
+      } else {
+        // Note: Holidays seem to need to be passed as a string, otherwise some are not recognized
+        const checkFeiertagValue = hash.feiertageR.includes(date.feiertag.name.toLowerCase());
+        isFeiertag = hash.isNicht ? !checkFeiertagValue : checkFeiertagValue;
       }
+    }
 
-      const monthNr = isPlanerDate(date) ? date.month_nr : (date as Date).getMonth() + 1;
+    const isKw = !regelcode.includes('#fkw') || checkKalenderwochen(hash.wochenR, date);
+    const isMonth = !regelcode.includes('#fm') || hash.monateR.includes(`m${date.month_nr}`);
+    const isWochentag = !regelcode.includes('#wr') || hash.wochentageR.includes(date.week_day);
+    const isStart = isKw && isMonth && isWochentag;
 
-      const isKw = !regelcode.includes('#fkw') || checkKalenderwochen(hash.wochenR, date);
-      const isMonth = !regelcode.includes('#fm') || hash.monateR.includes(`m${monthNr}`);
-      const isWochentag = !regelcode.includes('#wr') || hash.wochentageR.includes(date.week_day);
-      const isStart = isKw && isMonth && isWochentag;
-
-      if (hash.isAuch || !hash.hasFeiertag) {
-        isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart || isFeiertag);
-      } else if ((hash.isNur && isFeiertag) || (hash.isNicht && isFeiertag)) {
-        isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart && isFeiertag);
-      }
+    if (hash.isAuch || !hash.hasFeiertag) {
+      isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart || isFeiertag);
+    } else if ((hash.isNur && isFeiertag) || (hash.isNicht && isFeiertag)) {
+      isBedarf = checkMonatstag(regelcode, hash.monatstage, date, hash.monateR, isStart && isFeiertag);
     }
   }
 
@@ -203,7 +189,7 @@ function checkMonatstag(
   return regelcode.includes('#tr') ? checkTagRhythmus(monatstage, date, monateR, isStart) : isStart;
 }
 
-function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: string[], start: boolean): boolean {
+function checkTagRhythmus(regeln: string, date: PlanerDate, monate: string[], start: boolean): boolean {
   let isRhythmus = start;
 
   if (isRhythmus) {
@@ -224,13 +210,14 @@ function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: strin
     const wiederholung = Math.abs(parseInt(tagRegeln[1], 10));
     const endTag = parseInt(tagRegeln[2], 10);
 
-    const currentDate = date instanceof Date ? date : newDate(date.full_date); // Use full_date if it's a PlanerDate
+    const currentDate = newDate(date.full_date); // Use full_date if it's a PlanerDate
+    const currentDateStr = getDateStr(currentDate);
     const currentMonth = currentDate.getMonth(); // JavaScript months are 0-indexed
     const currentYear = currentDate.getFullYear();
 
-    // Determine start and end months from input
-    const startMonth = monate.length ? parseInt(monate[0].replace('m', ''), 10) : 0;
-    const endMonth = monate.length ? parseInt(monate[monate.length - 1].replace('m', ''), 10) : 11;
+    // Determine start and end months from input (values are 1-12) -> JS expects 0-11
+    const startMonth = (monate.length ? parseInt(monate[0].replace('m', ''), 10) : 1) - 1;
+    const endMonth = (monate.length ? parseInt(monate[monate.length - 1].replace('m', ''), 10) : 12) - 1;
 
     // Calculate valid start and end dates
     const startDatum = checkValidDate(currentYear, startMonth, startTag);
@@ -240,30 +227,46 @@ function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: strin
     let checkDatum = jedenMonatAbStart ? checkValidDate(currentYear, currentMonth, startTag) : startDatum;
 
     // Check if it matches the rhythm initially
-    isRhythmus = wiederholung === 0 && isSameDay(currentDate, checkDatum);
+    isRhythmus = wiederholung === 0 && currentDateStr === getDateStr(checkDatum);
 
     if (wiederholung > 0) {
-      const isInRange = currentDate >= startDatum && currentDate <= endDatum;
+      const currentDateNr = getDateNr(currentDateStr);
+      const startDatumNr = getDateNr(startDatum);
+      const endDatumNr = getDateNr(endDatum);
+      const isInRange = currentDateNr >= startDatumNr && currentDateNr <= endDatumNr;
+
       if (isInRange) {
+        let checkDatumStr = getDateStr(checkDatum);
+        let checkDatumNr = getDateNr(checkDatumStr);
         let thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
 
-        while (checkDatum <= endDatum && checkDatum <= currentDate) {
-          isRhythmus = isEqual(currentDate, checkDatum);
-          const newCheckDatum = addDays(checkDatum, wiederholung);
+        let thisEndDatumNr = getDateNr(thisEndDatum);
 
-          if (jedenMonatBisEnde && checkDatum > thisEndDatum) {
+        // Iterate over while,
+        // because the rythm has to be calculated
+        while (checkDatumNr <= endDatumNr && checkDatumNr <= currentDateNr) {
+          isRhythmus = checkDatumStr === currentDateStr;
+
+          const newCheckDatum = newDateYearMonthDay(
+            checkDatum.getFullYear(),
+            checkDatum.getMonth(),
+            checkDatum.getDate() + wiederholung
+          );
+          if (jedenMonatBisEnde && checkDatumNr > thisEndDatumNr) {
             isRhythmus = false;
           }
 
           const isNewMonth = newCheckDatum.getMonth() > checkDatum.getMonth();
           checkDatum = newCheckDatum;
-
           if (isNewMonth) {
             thisEndDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), endTag);
+            thisEndDatumNr = getDateNr(thisEndDatum);
             if (jedenMonatAbStart) {
               checkDatum = checkValidDate(checkDatum.getFullYear(), checkDatum.getMonth(), startTag);
             }
           }
+          checkDatumStr = getDateStr(checkDatum);
+          checkDatumNr = getDateNr(checkDatumStr);
         }
       }
     }
@@ -273,14 +276,15 @@ function checkTagRhythmus(regeln: string, date: PlanerDate | Date, monate: strin
 }
 
 function checkValidDate(year: number, month: number, day: number): Date {
-  const nextMonthDate = addMonths(newDateYearMonthDay(year, month, 1), 1);
-  const lastDayOfMonth = subDays(nextMonthDate, 1);
+  const nextMonthDate = newDateYearMonthDay(year, month + 1, 1);
+  const lastDayOfMonth = newDateYearMonthDay(year, month + 1, 0);
   let result: Date;
 
   if (day <= 0) {
-    result = addDays(nextMonthDate, day - 1); // day is negative, move back
+    result = nextMonthDate;
+    nextMonthDate.setDate(1 + (day - 1));
   } else if (day > lastDayOfMonth.getDate()) {
-    result = newDateYearMonthDay(year, month, lastDayOfMonth.getDate()); // day exceeds maximum for the month
+    result = lastDayOfMonth;
   } else {
     result = newDateYearMonthDay(year, month, day);
   }
@@ -288,4 +292,39 @@ function checkValidDate(year: number, month: number, day: number): Date {
   return result;
 }
 
-export { checkDate };
+async function previewZeitraumkategorien(year: number | string) {
+  const dates: PlanerDate[] = [];
+  let weekCounter = 0;
+  if (typeof year === 'string') {
+    year = parseInt(year, 10);
+  }
+  const anfang = newDateYearMonthDay(year, 0, 1);
+  const ende = newDateYearMonthDay(year + 1, 0, 1);
+  const zeitraumkategorien = await getZeitraumKategoriesInRange(anfang, ende);
+  while (anfang < ende) {
+    const planerDate = new PlanerDate(anfang, weekCounter);
+    await planerDate.initializeFeiertage(anfang, zeitraumkategorien);
+    dates.push(planerDate);
+    if (anfang.getDay() === 5) {
+      weekCounter++;
+    }
+    anfang.setDate(anfang.getDate() + 1);
+  }
+  const result = {
+    zeitraumkategorien: (await getAllZeitraumKategories()).reduce((acc: Record<number, zeitraumkategories>, curr) => {
+      acc[curr.id] = curr;
+      return acc;
+    }, {}),
+    zeitraumregeln: (await _zeitraumregel.getAllZeitraumregeln()).reduce(
+      (acc: Record<number, zeitraumregels>, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+      },
+      {}
+    ),
+    dates
+  };
+  return result;
+}
+
+export { checkDate, previewZeitraumkategorien };

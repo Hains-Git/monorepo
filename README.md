@@ -24,6 +24,8 @@ Innerhalb des hains_monorepo Containers ausführen!
   `npx nx g @nx/next:page apps/hains/pages/my-new-page`
 - Next.js Komponente erstellen:
   `npx nx g @nx/next:component apps/hains/components/my-new-component`
+- Test mit NX aufrufen, Beispielaufruf Tests der prisma_cruds-Library:
+  `npx nx test prisma_cruds (teams.spec.ts) (--coverage)`
 
 ### Create new app.
 
@@ -32,7 +34,6 @@ Innerhalb des hains_monorepo Containers ausführen!
   > Important here is, to specify the apiv2, that is the new folder which would be created.
 
 [^1]: Beispiel für die UI Bibliothek.
-
 [^2]: Beispiel für die Prisma Bibliothek
 
 # Prisma

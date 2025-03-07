@@ -29,7 +29,7 @@ import {
   getRotationenByKontingentFlag,
   getBedarfseintragByDienstplanBedarfId,
   getSchichtenByDienstplanbedarfId,
-  getDienstbedarfCustomQuery,
+  _dienstbedarf,
   findFirstKalernderWoche,
   createKalenderWoche,
   getWochenbilanzByKalenderWocheForMitarbeiters,
@@ -250,7 +250,7 @@ async function getSchichten(dienstplanbedarf_id: number) {
 }
 
 async function getDienstbedarfe(anfang: Date, ende: Date) {
-  const dienstbedarfe = await getDienstbedarfCustomQuery({
+  const dienstbedarfe = await _dienstbedarf.getDienstbedarfCustomQuery({
     where: {
       OR: [{ end_date: { gt: anfang } }, { end_date: null }],
       zeitraumkategories: getZeitraumkategorienInterval(anfang, ende)

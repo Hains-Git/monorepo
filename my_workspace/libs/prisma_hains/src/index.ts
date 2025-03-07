@@ -1,1 +1,1 @@
-export { prismaDb } from './lib/prisma-hains';
+export { prismaDb, prismaDbExtended } from './lib/prisma-hains';
