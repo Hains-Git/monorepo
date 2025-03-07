@@ -287,6 +287,8 @@ type DienstPlan = {
 async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: number) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: DienstPlan[] = [];
+  const monthslength = Object.keys(months).length - 1;
+  let i = 0;
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
     const dpl = await _fraunhofer.getFraunhoferDienstplan(
@@ -294,9 +296,12 @@ async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: numb
       newDate(monthEnd),
       start,
       end,
-      dienstplanId
+      dienstplanId,
+      i === 0,
+      i === monthslength
     );
-    if (!dpl) continue;
+    i++;
+    if (!dpl || dienstplaene.find((d) => (d.id = dpl.id))) continue;
     dienstplaene.push(dpl);
   }
 
@@ -640,7 +645,12 @@ export async function getFraunhoferPlanData(
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
       getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
 
-    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(
+      start,
+      end,
+      bedarfeTageOutSideInterval,
+      dienstplanId
+    );
 
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
