@@ -112,14 +112,14 @@ export function vkAndVgruppeAm(date = newDate(), vertrags: TVertragsMod[]) {
   if (va && va.vk && va.von) {
     va.von.setHours(12, 0, 0, 0);
     va.bis.setHours(12, 0, 0, 0);
-    res.vk = Number(va.vk).toPrecision(2);
+    res.vk = Number(va.vk).toFixed(2);
     res.von = getDateStr(va.von);
     res.vk_month = res.vk;
     const isVonAfterMid = va.von >= monthMid && va.von <= monthStart;
     const isBisBeforeMid = va.bis <= monthMid && va.bis >= monthEnd;
 
     if (isVonAfterMid || isBisBeforeMid) {
-      res.vk_month = (Number(va.vk) / 2).toPrecision(2);
+      res.vk_month = (Number(va.vk) / 2).toFixed(2);
     }
   }
 
@@ -156,7 +156,7 @@ export async function getTeamVks(date: Date) {
     result.mitarbeiter.push(v.mitarbeiter_id);
     const team = await mitarbeiterTeamAmByMitarbeiter(v.mitarbeiters, tag);
     const va = vertragsArbeitszeitAm(tag, [v]);
-    const vk = va?.vk ? Number(va.vk) : 0;
+    const vk = Number((va?.vk ? Number(va.vk) : 0).toFixed(2));
     const teamId = team?.id || 0;
     result.vertraege[v.id] ||= {
       mitarbeiter_id: v.mitarbeiter_id,
@@ -170,6 +170,7 @@ export async function getTeamVks(date: Date) {
       mitarbeiter: []
     };
     result.teams[teamId].vk += vk;
+    result.teams[teamId].vk = Number(result.teams[teamId].vk.toFixed(2));
     result.teams[teamId].vertreaege.push(v.id);
     result.teams[teamId].mitarbeiter.push(`${v.mitarbeiters?.planname}: ${vk} (V-ID: ${v.id}, VA-ID: ${va?.id})`);
   });
