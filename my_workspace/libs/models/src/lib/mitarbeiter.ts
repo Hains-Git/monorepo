@@ -1,8 +1,15 @@
 import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
-import { getDefaultKontingents, getMitarbeiterById, _team, mitarbeiterUrlaubssaldo } from '@my-workspace/prisma_cruds';
-import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
+import {
+  getDefaultKontingents,
+  getMitarbeiterById,
+  _team,
+  MitarbeiterUrlaubssaldo,
+  getMitarbeiterForUrlaubssaldis
+} from '@my-workspace/prisma_cruds';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { vertragsArbeitszeitAm, vertragsPhaseAm, vkAndVgruppeInMonth } from './vertrag';
 
 export function addWeiterbildungsjahr(mitarbeiter: mitarbeiters) {
   const aSeit = mitarbeiter.a_seit;
@@ -50,6 +57,7 @@ export async function mitarbeiterTeamAm(
 ) {
   let team: teams | null = null;
   let rotation: TRot | undefined = undefined;
+  date.setHours(12, 0, 0, 0);
   const mitarbeiter = await getMitarbeiterById(mitarbeiterId, {
     funktion: {
       include: {
@@ -61,6 +69,8 @@ export async function mitarbeiterTeamAm(
   if (rotationen && rotationen.length > 0) {
     rotation = rotationen.find((er) => {
       if (er.von && er.bis) {
+        er.von.setHours(12, 0, 0, 0);
+        er.bis.setHours(12, 0, 0, 0);
         return er.von <= date && er.bis >= date;
       }
       return false;
@@ -97,13 +107,14 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   defaultKontingent: TDefaultKontingents | null = null
 ) {
   let team: teams | null = null;
-  const dateNr = getDateNr(date);
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
   team =
     mitarbeiter.einteilung_rotations.find((rot) => {
       if (rot.von && rot.bis) {
-        const vonNr = getDateNr(rot.von);
-        const bisNr = getDateNr(rot.bis);
-        return vonNr <= dateNr && bisNr >= dateNr;
+        rot.von.setHours(12, 0, 0, 0);
+        rot.bis.setHours(12, 0, 0, 0);
+        return rot.von <= tag && rot.bis >= tag;
       }
       return false;
     })?.kontingents?.teams || null;
@@ -116,49 +127,152 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export async function mitarbeiterAktivAm(mitarbeiter: mitarbeiterUrlaubssaldo, date = newDate()) {
+export async function mitarbeiterAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
   let aktiv = !!mitarbeiter.aktiv;
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
   if (aktiv && mitarbeiter.aktiv_bis) {
-    aktiv = mitarbeiter.aktiv_bis >= date;
+    mitarbeiter.aktiv_bis.setHours(12, 0, 0, 0);
+    aktiv = mitarbeiter.aktiv_bis >= tag;
   }
   if (aktiv && mitarbeiter.aktiv_von) {
-    aktiv = mitarbeiter.aktiv_von <= date;
+    mitarbeiter.aktiv_von.setHours(12, 0, 0, 0);
+    aktiv = mitarbeiter.aktiv_von <= tag;
   }
   if (aktiv) {
-    aktiv = !!mitarbeiter.vertrags.find((v) => {
-      if (v.anfang && v.ende) {
-        return (
-          v.anfang <= date &&
-          v.ende >= date &&
-          v.vertrags_phases.find((p) => {
-            if (p.von && p.bis) {
-              return p.von <= date && p.bis >= date;
-            }
-            return false;
-          }) &&
-          v.vertrags_arbeitszeits.find((a) => {
-            if (a.von && a.bis) {
-              const vk = Number(a.vk || 0);
-              const tageWoche = a.tage_woche || 0;
-              return a.von <= date && a.bis >= date && vk > 0 && vk <= 1 && tageWoche > 0 && tageWoche <= 7;
-            }
-            return false;
-          })
-        );
-      }
-      return false;
-    });
+    aktiv = !!(vertragsPhaseAm(tag, mitarbeiter.vertrags) && vertragsArbeitszeitAm(tag, mitarbeiter.vertrags));
   }
   return aktiv;
 }
 
-export async function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: mitarbeiterUrlaubssaldo, date = newDate()) {
+export async function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
   const aktiv = !mitarbeiter.urlaubssaldo_abspraches.find((a) => {
     if (a.von && a.bis) {
-      return a.von <= date && a.bis >= date;
+      a.von.setHours(12, 0, 0, 0);
+      a.bis.setHours(12, 0, 0, 0);
+      return a.von <= tag && a.bis >= tag;
     }
     return false;
   });
   if (!aktiv) return aktiv;
   return await mitarbeiterAktivAm(mitarbeiter, date);
+}
+
+export async function getVKOverview(von: Date, bis: Date) {
+  const start = newDateYearMonthDay(von.getFullYear(), von.getMonth() + 1, 0);
+  const ende = newDateYearMonthDay(bis.getFullYear(), bis.getMonth() + 1, 0);
+  const result: Record<
+    string,
+    Record<
+      number,
+      ReturnType<typeof vkAndVgruppeInMonth> & {
+        planname: string;
+        aktiv: boolean;
+      }
+    >
+  > = {};
+  if (start > ende) return result;
+  const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
+
+  let date = start;
+  while (date <= ende) {
+    const dateKey = getDateStr(date);
+    result[dateKey] ||= {};
+    mitarbeiter.forEach((mit) => {
+      result[dateKey][mit.id] = {
+        ...vkAndVgruppeInMonth(date, mit.vertrags),
+        planname: mit.planname || '',
+        aktiv: !!(mit.account_info && mitarbeiterAktivAm(mit, date))
+      };
+    });
+    date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
+  }
+
+  return result;
+}
+
+type TeamVKOverview = Record<
+  string,
+  Record<
+    number,
+    {
+      vk: number;
+      team: string;
+      kontingente: Record<
+        number,
+        {
+          vk: number;
+          kontingent: string;
+          mitarbeiter: Record<number, ReturnType<typeof vkAndVgruppeInMonth> & { planname: string }>;
+        }
+      >;
+    }
+  >
+>;
+
+function addToVKKontingentResult(
+  result: TeamVKOverview,
+  team: teams | null,
+  kontingent: kontingents | null,
+  mit: MitarbeiterUrlaubssaldo,
+  date: Date,
+  vk: ReturnType<typeof vkAndVgruppeInMonth>
+) {
+  const dateKey = getDateStr(date);
+  const teamId = team?.id || 0;
+  const kontingentId = kontingent?.id || 0;
+  result[dateKey][teamId] ||= {
+    vk: 0.0,
+    kontingente: {},
+    team: team?.name || ''
+  };
+  result[dateKey][teamId].kontingente[kontingentId] ||= {
+    vk: 0.0,
+    mitarbeiter: {},
+    kontingent: kontingent?.name || 'kein Kontingent'
+  };
+  const vkNumber = Number(vk.vk_month) || 0;
+  result[dateKey][teamId].vk += vkNumber;
+  result[dateKey][teamId].kontingente[kontingentId].vk += vkNumber;
+  result[dateKey][teamId].kontingente[kontingentId].mitarbeiter[mit.id] ||= {
+    ...vk,
+    planname: mit.planname || ''
+  };
+}
+
+export async function getTeamVkOverview(von: Date, bis: Date) {
+  const start = newDateYearMonthDay(von.getFullYear(), von.getMonth() + 1, 0);
+  const ende = newDateYearMonthDay(bis.getFullYear(), bis.getMonth() + 1, 0);
+  const result: TeamVKOverview = {};
+  if (start > ende) return result;
+  const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
+
+  let date = start;
+  while (date <= ende) {
+    date.setHours(12, 0, 0, 0);
+    const dateKey = getDateStr(date);
+    result[dateKey] ||= {};
+    mitarbeiter.forEach((mit) => {
+      const vk = vkAndVgruppeInMonth(date, mit.vertrags);
+      if (!vk.vk_month) return;
+      const rotations = mit.einteilung_rotations.filter((rot) => {
+        if (!rot.von || !rot.bis) return false;
+        rot.von.setHours(12, 0, 0, 0);
+        rot.bis.setHours(12, 0, 0, 0);
+        if (rot.von <= date && rot.bis >= date) {
+          addToVKKontingentResult(result, rot?.kontingents?.teams || null, rot?.kontingents || null, mit, date, vk);
+          return true;
+        }
+        return false;
+      });
+      if (!rotations.length) {
+        addToVKKontingentResult(result, mit?.funktion?.teams || null, null, mit, date, vk);
+      }
+    });
+    date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
+  }
+
+  return result;
 }

@@ -800,8 +800,6 @@ async function fillSolls(saldiBase: SaldiBase) {
         if (!teamDateSaldo) continue;
 
         teamDateSaldo.saldo = getUrlaubssaldo(teamSaldo, dateStr);
-        if (teamDateSaldo.saldo >= 0) continue;
-
         const countInTeam =
           teamDateSaldo.inTeam.length +
           Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {

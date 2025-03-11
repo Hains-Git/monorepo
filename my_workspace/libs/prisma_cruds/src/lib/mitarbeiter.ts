@@ -48,21 +48,30 @@ export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes[
   return await prismaDb.mitarbeiters.findMany(condition);
 }
 
-export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], start: Date, ende: Date) {
+export async function getMitarbeiterForUrlaubssaldis(
+  mitarbeiterIds: number[],
+  start: Date,
+  ende: Date,
+  allNotPlatzhalter = false
+) {
   return await prismaDb.mitarbeiters.findMany({
-    where: {
-      platzhalter: false,
-      OR: [
-        {
-          aktiv: true
-        },
-        {
-          id: {
-            in: mitarbeiterIds
-          }
+    where: allNotPlatzhalter
+      ? {
+          platzhalter: false
         }
-      ]
-    },
+      : {
+          platzhalter: false,
+          OR: [
+            {
+              aktiv: true
+            },
+            {
+              id: {
+                in: mitarbeiterIds
+              }
+            }
+          ]
+        },
     include: {
       urlaubssaldo_abspraches: true,
       funktion: {
@@ -89,6 +98,13 @@ export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], s
             where: {
               ...whereVertragsphaseIn(start, ende)
             },
+            include: {
+              vertragsstuves: {
+                include: {
+                  vertragsgruppes: true
+                }
+              }
+            },
             orderBy: [{ von: 'asc' }, { bis: 'asc' }]
           }
         }
@@ -110,7 +126,7 @@ export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], s
   });
 }
 
-export type mitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
+export type MitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
 
 export async function mitarbeiterUrlaubssaldoAktivAm(date: Date, id: number) {
   return await prismaDb.mitarbeiters.findFirst({
