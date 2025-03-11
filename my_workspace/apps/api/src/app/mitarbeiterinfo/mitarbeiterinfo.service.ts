@@ -22,6 +22,7 @@ import { transformObject, processData, newDate } from '@my-workspace/utils';
 import {
   addWeiterbildungsjahr,
   getTeamVkOverview,
+  getTeamVks,
   getVKOverview,
   mitarbeiterTeamAm,
   rentenEintritt
@@ -88,5 +89,9 @@ export class MitarbeiterInfoService {
 
   async teamVkOverview(anfang: Date, ende: Date) {
     return await getTeamVkOverview(anfang, ende);
+  }
+
+  async teamVKs(tag: Date) {
+    return await getTeamVks(tag);
   }
 }

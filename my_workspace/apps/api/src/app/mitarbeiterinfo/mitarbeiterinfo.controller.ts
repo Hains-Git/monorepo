@@ -32,4 +32,9 @@ export class MitarbeiterInfoController {
   getTeamVkOverview(@Param('anfang') anfang: string, @Param('ende') ende: string) {
     return this.mitarbeiterInfoService.teamVkOverview(newDate(anfang), newDate(ende));
   }
+
+  @Get('team_vks/:tag')
+  getTeamVKs(@Param('tag') tag: string) {
+    return this.mitarbeiterInfoService.teamVKs(newDate(tag));
+  }
 }

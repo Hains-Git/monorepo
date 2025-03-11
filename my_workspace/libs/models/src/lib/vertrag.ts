@@ -1,5 +1,7 @@
+import { getVertragsForTeamVK } from '@my-workspace/prisma_cruds';
 import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 import { vertrags, vertrags_phases, vertragsgruppes, vertragsstuves, vertrags_arbeitszeits } from '@prisma/client';
+import { mitarbeiterTeamAmByMitarbeiter } from './mitarbeiter';
 
 type TVertragsMod = vertrags & {
   vertrags_phases: (vertrags_phases & {
@@ -136,5 +138,40 @@ export function vkAndVgruppeInMonth(date = newDate(), vertrags: TVertragsMod[]) 
     if (result.vk_month) return result;
     bis = newDateYearMonthDay(bis.getFullYear(), bis.getMonth(), bis.getDate() - 1);
   }
+  return result;
+}
+
+export async function getTeamVks(date: Date) {
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
+  const vertraege = await getVertragsForTeamVK(tag);
+  const result: {
+    vertraege: Record<number, { mitarbeiter_id: number; team_id: number; vk: number }>;
+    teams: Record<number, { name: string; vk: number; vertreaege: number[]; mitarbeiter: string[] }>;
+    mitarbeiter: number[];
+  } = { vertraege: {}, teams: {}, mitarbeiter: [] };
+  vertraege.forEach(async (v) => {
+    if (!v.mitarbeiter_id || !v.mitarbeiters) return;
+    if (result.mitarbeiter.includes(v.mitarbeiter_id)) return;
+    result.mitarbeiter.push(v.mitarbeiter_id);
+    const team = await mitarbeiterTeamAmByMitarbeiter(v.mitarbeiters, tag);
+    const va = vertragsArbeitszeitAm(tag, [v]);
+    const vk = va?.vk ? Number(va.vk) : 0;
+    const teamId = team?.id || 0;
+    result.vertraege[v.id] ||= {
+      mitarbeiter_id: v.mitarbeiter_id,
+      team_id: teamId,
+      vk
+    };
+    result.teams[teamId] ||= {
+      name: team ? team.name || '' : 'Kein Team',
+      vk: 0,
+      vertreaege: [],
+      mitarbeiter: []
+    };
+    result.teams[teamId].vk += vk;
+    result.teams[teamId].vertreaege.push(v.id);
+    result.teams[teamId].mitarbeiter.push(`${v.mitarbeiters?.planname}: ${vk} (V-ID: ${v.id}, VA-ID: ${va?.id})`);
+  });
   return result;
 }
