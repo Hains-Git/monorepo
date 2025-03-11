@@ -178,6 +178,8 @@ export async function getVKOverview(von: Date, bis: Date) {
   if (start > ende) return result;
   const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
 
+  const defaultTeam = await _team.getDefaultTeam();
+  const defaultKontingent = await getDefaultKontingents();
   let date = start;
   const mitarbeiterLength = mitarbeiter.length;
   while (date <= ende) {
@@ -189,7 +191,7 @@ export async function getVKOverview(von: Date, bis: Date) {
         ...vkAndVgruppeInMonth(date, mit.vertrags),
         planname: mit.planname || '',
         aktiv: !!(mit.account_info && mitarbeiterAktivAm(mit, date)),
-        team: await mitarbeiterTeamAmByMitarbeiter(mit, date),
+        team: await mitarbeiterTeamAmByMitarbeiter(mit, date, defaultTeam, defaultKontingent),
         funktion: mit.funktion
       };
     }
