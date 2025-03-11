@@ -41,6 +41,7 @@ export * as _dienstrating from './lib/dienstrating';
 export * as _vertragsphase from './lib/vertragsphase';
 export * as _automatische_einteilung from './lib/automatische-einteilung';
 export * as _arbeitszeit_absprache from './lib/arbeitszeitabsprache';
+export * as _arbeitszeittyp from './lib/arbeitszeittyp';
 export * as _urlaubssaldo_absprache from './lib/urlaubssaldo-absprache';
 export * as _mitarbeiter_default_eingeteilt from './lib/mitarbeiter-default-eingeteilt';
 export * as _geraete_pass from './lib/geraete-pass';
