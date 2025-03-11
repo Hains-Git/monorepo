@@ -1,4 +1,4 @@
-import { mitarbeiters, einteilung_rotations, kontingents, teams } from '@prisma/client';
+import { mitarbeiters, einteilung_rotations, kontingents, teams, funktions } from '@prisma/client';
 import { getWeiterbildungsjahr } from './helpers/mitarbeiter';
 import { rotationAm } from './einteilungrotation';
 import {
@@ -127,7 +127,7 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export async function mitarbeiterAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
+export function mitarbeiterAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
@@ -157,7 +157,7 @@ export async function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: MitarbeiterUrl
     return false;
   });
   if (!aktiv) return aktiv;
-  return await mitarbeiterAktivAm(mitarbeiter, date);
+  return mitarbeiterAktivAm(mitarbeiter, date);
 }
 
 export async function getVKOverview(von: Date, bis: Date) {
@@ -170,23 +170,31 @@ export async function getVKOverview(von: Date, bis: Date) {
       ReturnType<typeof vkAndVgruppeInMonth> & {
         planname: string;
         aktiv: boolean;
+        team: teams | null;
+        funktion: funktions | null;
       }
     >
   > = {};
   if (start > ende) return result;
   const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
 
+  const defaultTeam = await _team.getDefaultTeam();
+  const defaultKontingent = await getDefaultKontingents();
   let date = start;
+  const mitarbeiterLength = mitarbeiter.length;
   while (date <= ende) {
     const dateKey = getDateStr(date);
     result[dateKey] ||= {};
-    mitarbeiter.forEach((mit) => {
+    for (let i = 0; i < mitarbeiterLength; i++) {
+      const mit = mitarbeiter[i];
       result[dateKey][mit.id] = {
         ...vkAndVgruppeInMonth(date, mit.vertrags),
         planname: mit.planname || '',
-        aktiv: !!(mit.account_info && mitarbeiterAktivAm(mit, date))
+        aktiv: !!(mit.account_info && mitarbeiterAktivAm(mit, date)),
+        team: await mitarbeiterTeamAmByMitarbeiter(mit, date, defaultTeam, defaultKontingent),
+        funktion: mit.funktion
       };
-    });
+    }
     date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
   }
 
