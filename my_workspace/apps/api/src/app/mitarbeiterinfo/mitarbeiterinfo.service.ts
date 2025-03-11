@@ -19,7 +19,13 @@ import {
 
 import { getMitarbeiterInfos, proceesDataForVertragsTyps } from './helper';
 import { transformObject, processData, newDate } from '@my-workspace/utils';
-import { addWeiterbildungsjahr, getVKOverview, mitarbeiterTeamAm, rentenEintritt } from '@my-workspace/models';
+import {
+  addWeiterbildungsjahr,
+  getTeamVkOverview,
+  getVKOverview,
+  mitarbeiterTeamAm,
+  rentenEintritt
+} from '@my-workspace/models';
 
 @Injectable()
 export class MitarbeiterInfoService {
@@ -76,7 +82,11 @@ export class MitarbeiterInfoService {
     return result;
   }
 
-  async getVKOverview(anfang: Date, ende: Date) {
+  async vkOverview(anfang: Date, ende: Date) {
     return await getVKOverview(anfang, ende);
+  }
+
+  async teamVkOverview(anfang: Date, ende: Date) {
+    return await getTeamVkOverview(anfang, ende);
   }
 }

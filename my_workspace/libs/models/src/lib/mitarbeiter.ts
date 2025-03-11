@@ -174,19 +174,105 @@ export async function getVKOverview(von: Date, bis: Date) {
     >
   > = {};
   if (start > ende) return result;
-  const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende);
-  mitarbeiter.forEach((mit) => {
-    let date = start;
-    while (date <= ende) {
-      const dateKey = getDateStr(date);
-      result[dateKey] ||= {};
+  const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
+
+  let date = start;
+  while (date <= ende) {
+    const dateKey = getDateStr(date);
+    result[dateKey] ||= {};
+    mitarbeiter.forEach((mit) => {
       result[dateKey][mit.id] = {
         ...vkAndVgruppeInMonth(date, mit.vertrags),
         planname: mit.planname || '',
         aktiv: !!(mit.account_info && mitarbeiterAktivAm(mit, date))
       };
-      date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
+    });
+    date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
+  }
+
+  return result;
+}
+
+type TeamVKOverview = Record<
+  string,
+  Record<
+    number,
+    {
+      vk: number;
+      team: string;
+      kontingente: Record<
+        number,
+        {
+          vk: number;
+          kontingent: string;
+          mitarbeiter: Record<number, ReturnType<typeof vkAndVgruppeInMonth> & { planname: string }>;
+        }
+      >;
     }
-  });
+  >
+>;
+
+function addToVKKontingentResult(
+  result: TeamVKOverview,
+  team: teams | null,
+  kontingent: kontingents | null,
+  mit: MitarbeiterUrlaubssaldo,
+  date: Date,
+  vk: ReturnType<typeof vkAndVgruppeInMonth>
+) {
+  const dateKey = getDateStr(date);
+  const teamId = team?.id || 0;
+  const kontingentId = kontingent?.id || 0;
+  result[dateKey][teamId] ||= {
+    vk: 0.0,
+    kontingente: {},
+    team: team?.name || ''
+  };
+  result[dateKey][teamId].kontingente[kontingentId] ||= {
+    vk: 0.0,
+    mitarbeiter: {},
+    kontingent: kontingent?.name || 'kein Kontingent'
+  };
+  const vkNumber = Number(vk.vk_month) || 0;
+  result[dateKey][teamId].vk += vkNumber;
+  result[dateKey][teamId].kontingente[kontingentId].vk += vkNumber;
+  result[dateKey][teamId].kontingente[kontingentId].mitarbeiter[mit.id] ||= {
+    ...vk,
+    planname: mit.planname || ''
+  };
+}
+
+export async function getTeamVkOverview(von: Date, bis: Date) {
+  const start = newDateYearMonthDay(von.getFullYear(), von.getMonth() + 1, 0);
+  const ende = newDateYearMonthDay(bis.getFullYear(), bis.getMonth() + 1, 0);
+  const result: TeamVKOverview = {};
+  if (start > ende) return result;
+  const mitarbeiter = await getMitarbeiterForUrlaubssaldis([], start, ende, true);
+
+  let date = start;
+  while (date <= ende) {
+    date.setHours(12, 0, 0, 0);
+    const dateKey = getDateStr(date);
+    result[dateKey] ||= {};
+    mitarbeiter.forEach((mit) => {
+      const vk = vkAndVgruppeInMonth(date, mit.vertrags);
+      if (!vk.vk_month) return;
+      const rotations = mit.einteilung_rotations.filter((rot) => {
+        if (!rot.von || !rot.bis) return false;
+        rot.von.setHours(12, 0, 0, 0);
+        rot.bis.setHours(12, 0, 0, 0);
+        if (rot.von <= date && rot.bis >= date) {
+          addToVKKontingentResult(result, rot?.kontingents?.teams || null, rot?.kontingents || null, mit, date, vk);
+          return true;
+        }
+        return false;
+      });
+      if (!rotations.length) {
+        addToVKKontingentResult(result, mit?.funktion?.teams || null, null, mit, date, vk);
+      }
+    });
+    date = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 2, 0);
+  }
+
   return result;
 }

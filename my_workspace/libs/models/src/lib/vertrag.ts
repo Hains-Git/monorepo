@@ -83,7 +83,7 @@ export function vkAndVgruppeAm(date = newDate(), vertrags: TVertragsMod[]) {
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
   const monthStart = newDateYearMonthDay(tag.getFullYear(), tag.getMonth(), 1);
-  const monthMid = newDateYearMonthDay(tag.getFullYear(), tag.getMonth(), 14);
+  const monthMid = newDateYearMonthDay(tag.getFullYear(), tag.getMonth(), 15);
   const monthEnd = newDateYearMonthDay(tag.getFullYear(), tag.getMonth() + 1, 0);
   monthStart.setHours(12, 0, 0, 0);
   monthMid.setHours(12, 0, 0, 0);

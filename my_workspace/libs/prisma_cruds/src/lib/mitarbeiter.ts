@@ -48,21 +48,30 @@ export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes[
   return await prismaDb.mitarbeiters.findMany(condition);
 }
 
-export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], start: Date, ende: Date) {
+export async function getMitarbeiterForUrlaubssaldis(
+  mitarbeiterIds: number[],
+  start: Date,
+  ende: Date,
+  allNotPlatzhalter = false
+) {
   return await prismaDb.mitarbeiters.findMany({
-    where: {
-      platzhalter: false,
-      OR: [
-        {
-          aktiv: true
-        },
-        {
-          id: {
-            in: mitarbeiterIds
-          }
+    where: allNotPlatzhalter
+      ? {
+          platzhalter: false
         }
-      ]
-    },
+      : {
+          platzhalter: false,
+          OR: [
+            {
+              aktiv: true
+            },
+            {
+              id: {
+                in: mitarbeiterIds
+              }
+            }
+          ]
+        },
     include: {
       urlaubssaldo_abspraches: true,
       funktion: {
