@@ -1,33 +1,50 @@
-import { getAsDate } from '@my-workspace/utils';
-import { startOfToday, startOfMonth, endOfMonth, addDays, isWithinInterval, formatDate } from 'date-fns';
+import { getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 import { vertrags, vertrags_phases, vertragsgruppes, vertragsstuves, vertrags_arbeitszeits } from '@prisma/client';
 
 type TVertragsMod = vertrags & {
   vertrags_phases: (vertrags_phases & {
-    vertragsstuves: vertragsstuves & {
-      vertragsgruppes: vertragsgruppes & {};
-    };
+    vertragsstuves:
+      | (vertragsstuves & {
+          vertragsgruppes: vertragsgruppes | null;
+        })
+      | null;
   })[];
   vertrags_arbeitszeits: vertrags_arbeitszeits[];
 };
 
-export function vertragGueltigAm(tag: Date, vertrag: vertrags) {
+export function vertragGueltigAm(date: Date, vertrag: vertrags) {
   const anfang = vertrag.anfang;
   const ende = vertrag.ende;
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
+  anfang.setHours(12, 0, 0, 0);
+  ende.setHours(12, 0, 0, 0);
   return anfang && ende && tag >= anfang && tag <= ende;
 }
 
-export function vertragsPhaseGueltigAm(tag: Date, vertrag: vertrags, vertragPhase: vertrags_phases) {
+export function vertragsPhaseGueltigAm(date: Date, vertrag: vertrags, vertragPhase: vertrags_phases) {
   const von = vertragPhase.von;
   const bis = vertragPhase.bis;
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
+  von.setHours(12, 0, 0, 0);
+  bis.setHours(12, 0, 0, 0);
   return vertragGueltigAm(tag, vertrag) && von && bis && tag >= von && tag <= bis;
 }
 
-export function vertragsArbeitsZeitGueltigAm(tag: Date, vertrag: vertrags, vertragsArbeitszeit: vertrags_arbeitszeits) {
+export function vertragsArbeitsZeitGueltigAm(
+  date: Date,
+  vertrag: vertrags,
+  vertragsArbeitszeit: vertrags_arbeitszeits
+) {
   const von = vertragsArbeitszeit.von;
   const bis = vertragsArbeitszeit.bis;
   const tageWoche = vertragsArbeitszeit.tage_woche ?? 5;
-  const vk = vertragsArbeitszeit.vk ?? 0;
+  const vk = Number(vertragsArbeitszeit.vk ?? 0);
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
+  von.setHours(12, 0, 0, 0);
+  bis.setHours(12, 0, 0, 0);
 
   return (
     vertragGueltigAm(tag, vertrag) &&
@@ -35,50 +52,52 @@ export function vertragsArbeitsZeitGueltigAm(tag: Date, vertrag: vertrags, vertr
     bis &&
     tag >= von &&
     tag <= bis &&
-    (vk as number) > 0 &&
-    (vk as number) <= 1 &&
+    vk > 0 &&
+    vk <= 1 &&
     tageWoche > 0 &&
     tageWoche < 8
   );
 }
 
-export function vertragsPhaseAm(date = startOfToday(), vertrags: TVertragsMod[]) {
-  const tag = getAsDate(date);
-  const vertrag = vertrags.find((v) => vertragGueltigAm(tag, v));
+export function vertragsPhaseAm(date = newDate(), vertrags: TVertragsMod[]) {
+  const vertrag = vertrags.find((v) => vertragGueltigAm(date, v));
   const vertragsPhases = vertrag?.vertrags_phases;
   let vertragsPhase = null;
   if (vertragsPhases && vertragsPhases.length > 0) {
-    vertragsPhase = vertragsPhases.find((vp) => vertragsPhaseGueltigAm(tag, vertrag, vp));
+    vertragsPhase = vertragsPhases.find((vp) => vertragsPhaseGueltigAm(date, vertrag, vp));
   }
   return vertragsPhase;
 }
 
-export function vertragsArbeitszeitAm(date = startOfToday(), vertrags: TVertragsMod[]) {
-  const tag = getAsDate(date);
-  const vertrag = vertrags.find((v) => vertragGueltigAm(tag, v));
+export function vertragsArbeitszeitAm(date = newDate(), vertrags: TVertragsMod[]) {
+  const vertrag = vertrags.find((v) => vertragGueltigAm(date, v));
   const vertragsArbeitszeits = vertrag?.vertrags_arbeitszeits;
   let vertragsArbeitszeit = null;
   if (vertragsArbeitszeits && vertragsArbeitszeits.length > 0) {
-    vertragsArbeitszeit = vertragsArbeitszeits.find((va) => vertragsArbeitsZeitGueltigAm(tag, vertrag, va));
+    vertragsArbeitszeit = vertragsArbeitszeits.find((va) => vertragsArbeitsZeitGueltigAm(date, vertrag, va));
   }
   return vertragsArbeitszeit;
 }
 
-export function vkAndVgruppeAm(date = startOfToday(), vertrags: TVertragsMod[]) {
-  const tag = getAsDate(date);
-  const monthStart = startOfMonth(tag);
-  const monthMid = addDays(monthStart, 14);
-  const monthEnd = endOfMonth(tag);
+export function vkAndVgruppeAm(date = newDate(), vertrags: TVertragsMod[]) {
+  const tag = newDate(date);
+  tag.setHours(12, 0, 0, 0);
+  const monthStart = newDateYearMonthDay(tag.getFullYear(), tag.getMonth(), 1);
+  const monthMid = newDateYearMonthDay(tag.getFullYear(), tag.getMonth(), 14);
+  const monthEnd = newDateYearMonthDay(tag.getFullYear(), tag.getMonth() + 1, 0);
+  monthStart.setHours(12, 0, 0, 0);
+  monthMid.setHours(12, 0, 0, 0);
+  monthEnd.setHours(12, 0, 0, 0);
 
   const res = {
     vk: '',
     vgruppe: '',
-    tag: formatDate(tag, 'yyyy-MM-dd'),
+    tag: getDateStr(tag),
     vk_month: '',
     von: '',
-    month_mid: formatDate(monthMid, 'yyyy-MM-dd'),
-    month_end: formatDate(monthEnd, 'yyyy-MM-dd'),
-    month_start: formatDate(monthStart, 'yyyy-MM-dd')
+    month_mid: getDateStr(monthMid),
+    month_end: getDateStr(monthEnd),
+    month_start: getDateStr(monthStart)
   };
 
   const ph = vertragsPhaseAm(tag, vertrags);
@@ -89,17 +108,33 @@ export function vkAndVgruppeAm(date = startOfToday(), vertrags: TVertragsMod[]) 
   }
 
   if (va && va.vk && va.von) {
-    res.vk = va?.vk?.toFixed(1);
-    res.von = formatDate(va.von, 'yyyy-MM-dd');
-    res.vk_month = va.vk.toFixed(1);
-
-    const isVonAfterMid = va.von && isWithinInterval(va.von, { start: res.month_mid, end: res.month_end });
-    const isBisBeforeMid = va.bis && isWithinInterval(va.bis, { start: res.month_start, end: res.month_mid });
+    va.von.setHours(12, 0, 0, 0);
+    va.bis.setHours(12, 0, 0, 0);
+    res.vk = Number(va.vk).toPrecision(2);
+    res.von = getDateStr(va.von);
+    res.vk_month = res.vk;
+    const isVonAfterMid = va.von >= monthMid && va.von <= monthStart;
+    const isBisBeforeMid = va.bis <= monthMid && va.bis >= monthEnd;
 
     if (isVonAfterMid || isBisBeforeMid) {
-      res.vk_month = ((va.vk as unknown as number) / 2).toFixed(1);
+      res.vk_month = (Number(va.vk) / 2).toPrecision(2);
     }
   }
 
   return res;
+}
+
+export function vkAndVgruppeInMonth(date = newDate(), vertrags: TVertragsMod[]) {
+  const von = newDateYearMonthDay(date.getFullYear(), date.getMonth(), 1);
+  let bis = newDateYearMonthDay(date.getFullYear(), date.getMonth() + 1, 0);
+  let result = vkAndVgruppeAm(date, vertrags);
+  if (!vertrags.length || result.vk_month) return result;
+  // Falls Verträge existieren und Vk-Month leer ist, dann iteriere rückwärts durch die Tage und nehme den ersten gültigen Wert
+  bis = newDateYearMonthDay(bis.getFullYear(), bis.getMonth(), bis.getDate() - 1);
+  while (bis >= von) {
+    result = vkAndVgruppeAm(bis, vertrags);
+    if (result.vk_month) return result;
+    bis = newDateYearMonthDay(bis.getFullYear(), bis.getMonth(), bis.getDate() - 1);
+  }
+  return result;
 }
