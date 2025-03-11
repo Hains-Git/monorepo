@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getDienstplanung, Urlaubssaldi } from '@my-workspace/models';
+import { getDienstplanung, PlanerDate, Urlaubssaldi } from '@my-workspace/models';
 import { getAllApiData } from '@my-workspace/models';
 import { planungsInfoCreateOrupdate } from '@my-workspace/models';
 import { newDate } from '@my-workspace/utils';
@@ -35,5 +35,15 @@ export class AppService {
     const result = await Urlaubssaldi.getSaldi(new Date(2025, 0, 1), new Date(2025, 0, 31));
     console.log('time', (new Date().getTime() - timeNow) / 1000, 's');
     return result;
+  }
+
+  async getFeiertage(start: Date, ende: Date) {
+    const feiertage: Awaited<ReturnType<typeof PlanerDate.getFeiertag>>[] = [];
+    while (start <= ende) {
+      const feiertag = await PlanerDate.getFeiertag(start);
+      start.setDate(start.getDate() + 1);
+      if (feiertag) feiertage.push(feiertag);
+    }
+    return feiertage;
   }
 }

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
 
 import { AppService } from './app.service';
+import { newDate } from '@my-workspace/utils';
 
 @Controller()
 export class AppController {
@@ -24,5 +25,10 @@ export class AppController {
   @Get('localtest')
   getLocalTest() {
     return this.appService.getLocalTest();
+  }
+
+  @Get('feiertage/:start/:ende')
+  async getFeiertage(@Param('start') start: string, @Param('ende') ende: string) {
+    return this.appService.getFeiertage(newDate(start), newDate(ende));
   }
 }
