@@ -1,9 +1,19 @@
+export type DienstTyp =
+  | 'Frühdienst'
+  | 'Rufdienst'
+  | 'Nachtdienst'
+  | 'VersetzterDienst'
+  | 'LangerDienst'
+  | 'OnTopFD'
+  | 'Frei';
+
 export type Einteilung = {
   MitarbeiterID: number;
   DienstID: number;
   BereichID: number | null;
   Tag: Date;
   IstRelevantFürDoppelWhopper?: boolean;
+  Typ?: DienstTyp;
 };
 
 export type FreigabeTyp = 'qualifiziert' | 'überqualifiziert' | 'nicht qualifiziert';
@@ -33,15 +43,6 @@ export type Präferenz = {
   Dienst: number;
   Bewertung: number;
 };
-
-export type DienstTyp =
-  | 'Frühdienst'
-  | 'Rufdienst'
-  | 'Nachtdienst'
-  | 'VersetzterDienst'
-  | 'LangerDienst'
-  | 'OnTopFD'
-  | 'Frei';
 
 export type Dienst = {
   ID: number;
@@ -76,6 +77,7 @@ export type Bedarf = {
   ArbeitszeitInMinuten: number;
   Belastung: number;
   IstWochenendEinteilung: boolean;
+  SollAutomatischGeplantWerden: boolean;
 };
 
 export type Bedarfsblock = {
@@ -130,3 +132,11 @@ export type DienstTypenThemen = Record<DienstTyp, number[]>;
 export type DienstkategorieDienste = Record<number, number[]>;
 
 export type FreigabetypenDienste = Record<number, Record<number, number>>;
+
+export type Dienstplan = {
+  ID: number;
+  Name: string;
+  Beschreibung: string;
+  Anfang: Date | null;
+  Ende: Date | null;
+};

@@ -4,6 +4,7 @@ import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils'
 import { _abwesenheiten, _diensteinteilung, _kalender_markierung } from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
+import { Urlaubssaldi } from '@my-workspace/models';
 
 @Injectable()
 export class AbwesenheitenService {
@@ -67,6 +68,13 @@ export class AbwesenheitenService {
     result['urlaubssaldi'] = {};
     result['kalendermarkierung'] = kalendermarkierungen;
 
+    return result;
+  }
+
+  async getSaldi(body: { start: string; ende: string }) {
+    const start = newDate(body.start);
+    const ende = newDate(body.ende);
+    const result = await Urlaubssaldi.getSaldi(start, ende);
     return result;
   }
 }

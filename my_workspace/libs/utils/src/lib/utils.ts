@@ -1,6 +1,7 @@
 import { formatDate } from 'date-fns';
 
 type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
+export const colorRegEx = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
 /**
  * Maps an array of objects to a hash object based on a specified key.

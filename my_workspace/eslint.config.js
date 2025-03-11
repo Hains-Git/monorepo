@@ -1,4 +1,6 @@
 const nx = require('@nx/eslint-plugin');
+// const safeql = require('@ts-safeql/eslint-plugin');
+// require('dotenv').config();
 
 module.exports = [
   ...nx.configs['flat/base'],
@@ -30,4 +32,17 @@ module.exports = [
     // Override or add rules here
     rules: {},
   },
+  // safeql.configs.connections({
+  //   connections: [
+  //     {
+  //       connectionUrl: process.env.DATABASE_URL,
+  //       migrationsDir: './prisma/migrations',
+  //       targets: [
+  //         { tag: '(prisma|prismaDb|prismaDbExtended).+($queryRaw|$executeRaw|$queryRawUnsafe|$executeRawUnsafe|sql)', transform: '{type}[]' },
+  //         { tag: '*.sql' },
+  //         { wrapper: '(prisma|prismaDb|prismaDbExtended).+($queryRaw|$executeRaw|$queryRawUnsafe|$executeRawUnsafe|sql)' }
+  //       ],
+  //     },
+  //   ],
+  // })
 ];

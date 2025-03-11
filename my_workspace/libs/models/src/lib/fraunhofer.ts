@@ -18,8 +18,8 @@ import {
   schichts,
   themas
 } from '@prisma/client';
-import { Fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
-import { newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { _fraunhofer, FraunhoferTypes, getVertragArbeitszeitInMinutenAm } from '@my-workspace/prisma_cruds';
+import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 const defaultPlanData: FraunhoferTypes.PlanData = {
   Mitarbeiter: [],
@@ -154,14 +154,11 @@ function createDiensteAndMapInfos(
   dienstTypenThemen: FraunhoferTypes.DienstTypenThemen,
   dienstkategorien: ({
     dienstkategoriethemas: dienstkategoriethemas[];
-  } & dienstkategories)[],
-  themen: themas[],
-  relevantTeamIds: number[]
+  } & dienstkategories)[]
 ) {
   return dienste.reduce(
     (
       acc: {
-        diensteArr: FraunhoferTypes.Dienst[];
         freigabetypenDienste: FraunhoferTypes.FreigabetypenDienste;
         dienstkategorieDienste: FraunhoferTypes.DienstkategorieDienste;
         nachtdienste: number[];
@@ -202,15 +199,10 @@ function createDiensteAndMapInfos(
         Typ: typ,
         IstRelevantFürDoppelWhopper: istRelevantFürDoppelWhopper
       };
-      // Add Dienst to DiensteArr
-      if (d.team_id && relevantTeamIds.includes(d.team_id)) {
-        acc.diensteArr.push(dienst);
-      }
       acc.dienstHash[d.id] = dienst;
       return acc;
     },
     {
-      diensteArr: [],
       freigabetypenDienste: {},
       dienstkategorieDienste: {},
       nachtdienste: [],
@@ -241,8 +233,8 @@ function createTageAndMonths(start: Date, end: Date) {
     tage.push(date);
     const [year, month] = [date.getFullYear(), date.getMonth()];
     // 12 Uhr mittags, damit es keine Probleme mit der Zeitzone gibt
-    const firstDayStr = newDateYearMonthDay(year, month, 1).toISOString();
-    months[firstDayStr] ||= newDateYearMonthDay(year, month + 1, 0).toISOString();
+    const firstDayStr = getDateStr(newDateYearMonthDay(year, month, 1));
+    months[firstDayStr] ||= getDateStr(newDateYearMonthDay(year, month + 1, 0));
   }
 
   return { tage, months };
@@ -284,13 +276,19 @@ type DienstPlan = {
     | null;
 } & dienstplans;
 
-async function getDienstplanPerMonth(start: Date, end: Date) {
+async function getDienstplanPerMonth(start: Date, end: Date, dienstplanId?: number) {
   const { tage, months } = createTageAndMonths(start, end);
   const dienstplaene: DienstPlan[] = [];
   for (const monthStart in months) {
     const monthEnd = months[monthStart];
-    const dpl = await Fraunhofer.getFraunhoferDienstplan(newDate(monthStart), newDate(monthEnd), start, end);
-    if (!dpl) continue;
+    const dpl = await _fraunhofer.getFraunhoferDienstplan(
+      newDate(monthStart),
+      newDate(monthEnd),
+      start,
+      end,
+      dienstplanId
+    );
+    if (!dpl || dienstplaene.find((d) => (d.id = dpl.id))) continue;
     dienstplaene.push(dpl);
   }
 
@@ -329,7 +327,7 @@ function calculateBedarfArbeitszeit(
   wochenende = [0, 6].includes(bedarfseintragTag.getDay());
   const dienstId = bedarfsEintrag.po_dienst_id || 0;
   const bereichId = bedarfsEintrag.bereich_id || 0;
-  const tag = bedarfseintragTag.toISOString().split('T')[0];
+  const tag = getDateStr(bedarfseintragTag);
 
   const checkPreDienstgruppen = !bedarfsEintrag.is_block || bedarfsEintrag.id === bedarfsEintrag.first_entry;
   const arbeitszeitverteilung = bedarfsEintrag.dienstbedarves?.arbeitszeitverteilungs;
@@ -384,7 +382,7 @@ function calculateBedarfArbeitszeit(
       // Bereitschaftsdienst mitzählen und Rufdienst ignorieren.
       if (!azt.rufbereitschaft) acc += s.arbeitszeit;
       if (!wochenende && azt?.dienstzeit) {
-        const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getHours() < 5;
+        const beginsMondayBeforeFive = s.anfang.getDay() === 1 && s.anfang.getUTCHours() < 5;
         const endTime = s.ende.toTimeString().split(' ')[0];
         const endTimeAsNumber = parseInt(endTime.split(':').join(''), 10);
         const endsFridayAfterNine = s.ende.getDay() === 5 && endTimeAsNumber > 210000;
@@ -403,13 +401,15 @@ function calculateBedarfArbeitszeit(
 
 function createBedarf(
   bedarfsEintrag: MainBedarfsEintrag,
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ): FraunhoferTypes.Bedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
     bedarfsEintrag,
     uberschneidungSchichten
   );
+  const teamId = bedarfsEintrag.po_diensts?.team_id;
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -421,27 +421,35 @@ function createBedarf(
     IstBereitschaftsdienst: bereitschaft,
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
-    IstWochenendEinteilung: wochenende
+    IstWochenendEinteilung: wochenende,
+    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
   };
 }
 
 function checkBedarf(
   be: MainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, MainBedarfsEintrag>> = {},
-  uberschneidungSchichten: UeberschneidungSchichtenSammlung
+  uberschneidungSchichten: UeberschneidungSchichtenSammlung,
+  relevantTeamIds: number[]
 ) {
   if (!be.tag || !be.po_dienst_id) return;
-  const tagKey = be.tag.toISOString();
+  const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
 }
 
-function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date, nachtdienste: number[]) {
+function getBedarfeAndBloecke(
+  dienstplaene: DienstPlan[],
+  start: Date,
+  end: Date,
+  nachtdienste: number[],
+  relevantTeamIds: number[]
+) {
   const bedarfe: FraunhoferTypes.Bedarf[] = [];
   const bloecke: FraunhoferTypes.Bedarfsblock[] = [];
   const addedBloecke: Record<number, boolean> = {};
@@ -449,6 +457,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
   const bedarfeTageOutSideInterval: Record<string, number[]> = {};
   const uberschneidungSchichten: UeberschneidungSchichtenSammlung = {};
   const ausgleichsdienstgruppen: Record<number, FraunhoferTypes.Ausgleichsdienstgruppe> = {};
+  // Falls Bedarfe aus vorhergehenden Monaten existieren, müssen die Blöcke richtig gruppiert werden.
 
   const addToAusgleichsDienstgruppe = (be: MainBedarfsEintrag, isLastInBlock: boolean) => {
     if (!be.po_dienst_id || !be.tag || !be.bereich_id) return;
@@ -458,35 +467,34 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
 
     if (!isK3) {
       const isDonnerstagNachtDienst = be.tag.getDay() === 4 && nachtdienste.includes(dienstId);
-      if (isLastInBlock && isDonnerstagNachtDienst) {
-        const l = be.schichts.length - 1;
-        const nextDayLimit = newDate(be.tag);
-        nextDayLimit.setDate(nextDayLimit.getDate() + 1);
-        nextDayLimit.setHours(12, 0, 0, 0);
-        const dateZahl = Number(be.tag.toISOString().split('T')[0].split('-').join(''));
-        let hasFreiNextDays = false;
-        const ausgleichsTage = be.ausgleich_tage || 0;
-        for (let i = l; i >= 0; i--) {
-          const schicht = be.schichts[i];
-          const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
-          const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
-          if (!schicht.anfang || !schicht.ende) continue;
-          const endeDateZahl = Number(schicht.ende.toISOString().split('T')[0].split('-').join(''));
-          // Es sind nur Schichten bis zum Tag des Bedarfs relevant
-          if (endeDateZahl <= dateZahl) break;
-          // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
-          if (isArbeitszeit && schicht.ende > nextDayLimit) {
-            return;
-          }
-          // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
-          if (isFrei) {
-            const freiAbSamstag = endeDateZahl > dateZahl + 1;
-            const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
-            hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
-          }
+      if (!(isLastInBlock && isDonnerstagNachtDienst)) return;
+      const l = be.schichts.length - 1;
+      const nextDayLimit = newDate(be.tag);
+      nextDayLimit.setDate(nextDayLimit.getDate() + 1);
+      nextDayLimit.setHours(12, 0, 0, 0);
+      const dateZahl = getDateNr(be.tag);
+      let hasFreiNextDays = false;
+      const ausgleichsTage = be.ausgleich_tage || 0;
+      for (let i = l; i >= 0; i--) {
+        const schicht = be.schichts[i];
+        const isArbeitszeit = schicht.arbeitszeittyps?.arbeitszeit;
+        const isFrei = !isArbeitszeit && !schicht.arbeitszeittyps?.dienstzeit;
+        if (!schicht.anfang || !schicht.ende) continue;
+        const endeDateZahl = getDateNr(schicht.ende);
+        // Es sind nur Schichten bis zum Tag des Bedarfs relevant
+        if (endeDateZahl <= dateZahl) break;
+        // Falls es an einem Folgetag eine Arbeitszeit gibt, dann ist es keine Ausgleichsdienstgruppe
+        if (isArbeitszeit && schicht.ende > nextDayLimit) {
+          return;
         }
-        if (!hasFreiNextDays) return;
-      } else return;
+        // Falls an dem Folgetag ein Frei existiert, dann ist es eine Ausgleichsdienstgruppe
+        if (isFrei) {
+          const freiAbSamstag = endeDateZahl > dateZahl + 1;
+          const freiAbFreitagAndAusgleich = endeDateZahl > dateZahl && ausgleichsTage > 0;
+          hasFreiNextDays = freiAbSamstag || freiAbFreitagAndAusgleich;
+        }
+      }
+      if (!hasFreiNextDays) return;
     }
 
     ausgleichsdienstgruppen[dienstId] ||= {
@@ -507,7 +515,7 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -520,12 +528,12 @@ function getBedarfeAndBloecke(dienstplaene: DienstPlan[], start: Date, end: Date
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.BedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
             if (bb.tag < start || bb.tag > end) {
-              const tagKey = bb.tag.toISOString();
+              const tagKey = getDateStr(bb.tag);
               bedarfeTageOutSideInterval[tagKey] ||= [];
               bedarfeTageOutSideInterval[tagKey].push(bb.po_dienst_id);
             }
@@ -600,11 +608,12 @@ export async function getFraunhoferPlanData(
   start: Date,
   end: Date,
   client_id: string,
-  client_secret: string
+  client_secret: string,
+  dienstplanId?: number
 ): Promise<FraunhoferTypes.PlanData> {
   const result: FraunhoferTypes.PlanData = { ...defaultPlanData };
 
-  const isValid = await Fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
   if (!isValid) {
     result.msg = 'Nicht authorisiert!';
     return result;
@@ -616,24 +625,32 @@ export async function getFraunhoferPlanData(
   }
 
   try {
-    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end);
+    const { dienstplaene, tage } = await getDienstplanPerMonth(start, end, dienstplanId);
     if (!dienstplaene.length) {
       result.msg = 'Dienstpläne existieren noch nicht!';
       return result;
     }
 
     const { mitarbeiter, dienste, kontingente, dienstkategorien, themen, relevantTeamIds } =
-      await Fraunhofer.getFraunhoferData(start, end);
+      await _fraunhofer.getFraunhoferData(start, end);
 
-    const { diensteArr, freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } =
-      createDiensteAndMapInfos(dienste, mapThemenToDienstTypen(themen), dienstkategorien, themen, relevantTeamIds);
+    const { freigabetypenDienste, dienstkategorieDienste, nachtdienste, dienstHash } = createDiensteAndMapInfos(
+      dienste,
+      mapThemenToDienstTypen(themen),
+      dienstkategorien
+    );
 
-    result.Dienste = diensteArr;
+    result.Dienste = Object.values(dienstHash);
 
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
-      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste);
+      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds);
 
-    const fixedEinteilungen = await Fraunhofer.getFixedEinteilungen(start, end, bedarfeTageOutSideInterval);
+    const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(
+      start,
+      end,
+      bedarfeTageOutSideInterval,
+      dienstplanId
+    );
 
     result.Bedarfe = bedarfe;
     result.Bedarfsblöcke = bloecke;
@@ -705,16 +722,18 @@ export async function getFraunhoferPlanData(
       });
     });
 
-    result.AuslgeichsfreiDienstID = await Fraunhofer.getAusgleichsDienstfreiId();
+    result.AuslgeichsfreiDienstID = await _fraunhofer.getAusgleichsDienstfreiId();
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.Einteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
+        // const dienst = dienstHash[e.po_dienst_id];
         acc.push({
           MitarbeiterID: e.mitarbeiter_id,
           DienstID: e.po_dienst_id,
           Tag: e.tag,
-          BereichID: e.bereich_id,
-          IstRelevantFürDoppelWhopper: !!dienstHash[e.po_dienst_id]?.IstRelevantFürDoppelWhopper
+          BereichID: e.bereich_id
+          // IstRelevantFürDoppelWhopper: dienst.IstRelevantFürDoppelWhopper,
+          // Typ: dienst.Typ
         });
       }
       return acc;
@@ -763,7 +782,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
     updated: false
   };
 
-  const isValid = await Fraunhofer.isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(body?.client_id || '', body?.client_secret || '');
   if (!isValid) {
     result.msg = 'Nicht authorisiert!\n';
     return result;
@@ -782,34 +801,34 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
     const parameter = typeof body.Parameter === 'string' ? body.Parameter.trim() : '';
     const einteilungen = Array.isArray(body.Einteilungen) ? body.Einteilungen : [];
 
-    const dienstplanStatusVorschlagId = await Fraunhofer.getDienstplanstatusVorschlagId();
+    const dienstplanStatusVorschlagId = await _fraunhofer.getDienstplanstatusVorschlagId();
 
     if (!dienstplanStatusVorschlagId) {
       result.msg = 'Dienstplanstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungsstatusVorschlagId = await Fraunhofer.getEinteilungsstatusVorschlagId();
+    const einteilungsstatusVorschlagId = await _fraunhofer.getEinteilungsstatusVorschlagId();
     if (!einteilungsstatusVorschlagId) {
       result.msg = 'Einteilungsstatus Vorschlag nicht gefunden!\n';
       return result;
     }
 
-    const einteilungskontextAutoId = await Fraunhofer.getEinteilungskontextAutoId();
+    const einteilungskontextAutoId = await _fraunhofer.getEinteilungskontextAutoId();
     if (!einteilungskontextAutoId) {
       result.msg = 'Einteilungskontext Auto nicht gefunden!\n';
       return result;
     }
 
-    const parametersetId = await Fraunhofer.getParametersetId();
+    const parametersetId = await _fraunhofer.getParametersetId();
     if (!parametersetId) {
       result.msg = 'Parameterset nicht gefunden!\n';
       return result;
     }
 
-    const mitarbeiterHash = await Fraunhofer.getMitarbeiterHash();
-    const diensteHash = await Fraunhofer.getDiensteHash();
-    const bereicheHash = await Fraunhofer.getBereicheHash();
+    const mitarbeiterHash = await _fraunhofer.getMitarbeiterHash();
+    const diensteHash = await _fraunhofer.getDiensteHash();
+    const bereicheHash = await _fraunhofer.getBereicheHash();
 
     const dates: Record<
       string,
@@ -842,7 +861,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
       e.Tag = tag;
 
       const [year, month] = [tag.getFullYear(), tag.getMonth()];
-      const monthYear = tag.toISOString().split('T')[0];
+      const monthYear = getDateStr(tag);
       if (dates[monthYear]) {
         dates[monthYear].einteilungen.push(e);
         return true;
@@ -866,14 +885,14 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
 
     for (const monthYear in dates) {
       const { start, end, einteilungen } = dates[monthYear];
-      const dienstplanBedarfId = await Fraunhofer.getDienstplanbedarfId(start, end);
+      const dienstplanBedarfId = await _fraunhofer.getDienstplanbedarfId(start, end);
       if (!dienstplanBedarfId) {
         result.msg += `Keine Bedarf für ${start.toLocaleDateString('de-De')} - ${end.toLocaleDateString(
           'de-De'
         )} gefunden!\n`;
         continue;
       }
-      const dienstplan = await Fraunhofer.createDienstplan({
+      const dienstplan = await _fraunhofer.createDienstplan({
         data: {
           name,
           beschreibung,
@@ -891,7 +910,7 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
         continue;
       }
 
-      await Fraunhofer.createManyDiensteinteilungs({
+      await _fraunhofer.createManyDiensteinteilungs({
         skipDuplicates: true,
         data: einteilungen.map((e) => ({
           tag: e.Tag,
@@ -918,4 +937,27 @@ export async function createFraunhoferPlan(body: FraunhoferTypes.FraunhoferNewPl
   }
 
   return result;
+}
+
+export async function getDienstplaene(client_id: string, client_secret: string): Promise<FraunhoferTypes.Dienstplan[]> {
+  const isValid = await _fraunhofer.isValidFraunhoferRequest(client_id, client_secret);
+  if (!isValid) {
+    return [
+      {
+        ID: -1,
+        Name: 'Nicht authorisiert!',
+        Beschreibung: 'Nicht authorisiert!',
+        Anfang: null,
+        Ende: null
+      }
+    ];
+  }
+
+  return (await _fraunhofer.getDienstplaene()).map((d) => ({
+    ID: d.id,
+    Name: d.name || 'No Name',
+    Beschreibung: d.beschreibung || '',
+    Anfang: d.anfang,
+    Ende: d.ende
+  }));
 }

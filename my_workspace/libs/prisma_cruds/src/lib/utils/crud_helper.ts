@@ -34,43 +34,6 @@ export const getZeitraumkategorienInterval = (anfang: Date, ende: Date) => ({
   ]
 });
 
-export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
-  aktiv: true,
-  platzhalter: false,
-  account_info: {
-    isNot: null
-  },
-  vertrags: {
-    some: {
-      OR: [
-        { anfang: { lte: start }, ende: { gte: start } },
-        { anfang: { lte: end }, ende: { gte: end } },
-        { anfang: { gte: start }, ende: { lte: end } }
-      ],
-      vertrags_phases: {
-        some: {
-          OR: [
-            { von: { lte: start }, bis: { gte: start } },
-            { von: { lte: end }, bis: { gte: end } },
-            { von: { gte: start }, bis: { lte: end } }
-          ]
-        }
-      },
-      vertrags_arbeitszeits: {
-        some: {
-          OR: [
-            { von: { lte: start }, bis: { gte: start } },
-            { von: { lte: end }, bis: { gte: end } },
-            { von: { gte: start }, bis: { lte: end } }
-          ],
-          vk: { gt: 0, lte: 1 },
-          tage_woche: { gt: 0, lte: 7 }
-        }
-      }
-    }
-  }
-});
-
 export const whereRotationIn = (start: Date, end: Date) => ({
   OR: [
     { von: { lte: start }, bis: { gte: start } },
@@ -79,12 +42,71 @@ export const whereRotationIn = (start: Date, end: Date) => ({
   ]
 });
 
-export const wherePlanBedarfIn = (start: Date, end: Date) => ({
+export const whereDienstplanIn = (start: Date, end: Date) => ({
   OR: [
     { anfang: { lte: start }, ende: { gte: start } },
     { anfang: { lte: end }, ende: { gte: end } },
     { anfang: { gte: start }, ende: { lte: end } }
   ]
+});
+
+export const whereVertragsphaseIn = (start: Date, end: Date) => ({
+  OR: [
+    { von: { lte: start }, bis: { gte: start } },
+    { von: { lte: end }, bis: { gte: end } },
+    { von: { gte: start }, bis: { lte: end } }
+  ]
+});
+
+export const whereVertragIn = (start: Date, end: Date) => ({
+  OR: [
+    { anfang: { lte: start }, ende: { gte: start } },
+    { anfang: { lte: end }, ende: { gte: end } },
+    { anfang: { gte: start }, ende: { lte: end } }
+  ]
+});
+
+export const getTeamSollInclude = (start?: Date, ende?: Date) => {
+  if (start && ende) {
+    return {
+      where: {
+        ...whereVertragsphaseIn(start, ende)
+      }
+    };
+  } else if (start) {
+    return {
+      where: {
+        von: { lte: start },
+        bis: { gte: start }
+      }
+    };
+  }
+  return {};
+};
+
+export const whereMitarbeiterAktivNoPlatzhalter = (start: Date, end: Date) => ({
+  aktiv: true,
+  platzhalter: false,
+  account_info: {
+    isNot: null
+  },
+  vertrags: {
+    some: {
+      ...whereVertragIn(start, end),
+      vertrags_phases: {
+        some: {
+          ...whereVertragsphaseIn(start, end)
+        }
+      },
+      vertrags_arbeitszeits: {
+        some: {
+          ...whereVertragsphaseIn(start, end),
+          vk: { gt: 0, lte: 1 },
+          tage_woche: { gt: 0, lte: 7 }
+        }
+      }
+    }
+  }
 });
 
 export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number[]) => ({
@@ -105,7 +127,7 @@ export const getFraunhoferMitarbeiter = (start: Date, end: Date, teamIds: number
         einteilung_rotations: {
           none: { ...whereRotationIn(start, end) }
         },
-        funktions: {
+        funktion: {
           is: {
             team_id: { in: teamIds }
           }
