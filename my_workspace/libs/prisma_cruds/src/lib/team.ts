@@ -286,7 +286,7 @@ export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
   if (msg) return msg;
 
   const record =
-    args.id <= 1
+    args.id < 1
       ? await prismaDb.teams.create({
           data: {
             ...input,
