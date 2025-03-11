@@ -260,7 +260,6 @@ export async function uncheckOldDefaultTeams(id: number) {
 }
 
 export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
-  console.log(args);
   const input = {
     name: args.name.trim(),
     default: args.default,
