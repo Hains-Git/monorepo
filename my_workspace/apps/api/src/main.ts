@@ -13,6 +13,7 @@ import { AppModule } from './app/app.module';
 declare const module: any;
 
 async function bootstrap() {
+  console.log("Starting bootstrap2:...");
   const app = await NestFactory.create(AppModule, { bodyParser: true });
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
@@ -35,6 +36,7 @@ async function bootstrap() {
   );
 
   console.log('process.env.NODE_ENV:', process.env.NODE_ENV, isProd);
+  console.log('Workspace folder from launch.json vscode:', process.env.WORKSPACE_FOLDER);
 
   app.use(compression());
 

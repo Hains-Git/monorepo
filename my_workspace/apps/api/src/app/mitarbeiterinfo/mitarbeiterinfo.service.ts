@@ -36,6 +36,7 @@ import {
   Dienstkategorie,
   Dienstwunsch
 } from '@my-workspace/models';
+import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 
 @Injectable()
 export class MitarbeiterInfoService {
@@ -139,6 +140,12 @@ export class MitarbeiterInfoService {
       einteilungenInKontingenten
     );
 
+    const currentDate = newDate();
+    const anfang = startOfMonth(currentDate);
+    const ende = endOfMonth(addMonths(currentDate, 8));
+    const diesntwunschVerteilung = await Dienstwunsch.verteilung(anfang, ende);
+    result['dienstwunsch_verteilung'] = diesntwunschVerteilung;
+
     result['urlaubssaldo_absprachen'] = urlaubssaldoAbsprachen;
     result['mitarbeiter_merkmale'] = mitarbeiterMerkmale;
     result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
@@ -182,9 +189,6 @@ export class MitarbeiterInfoService {
       NichtEinteilenAbsprache.transformNichtEinteilenAbsprache(nichtEinteilenAbsprachen);
 
     result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
-    const anfang = newDate();
-    const ende = newDate();
-    Dienstwunsch.verteilung(anfang, ende);
 
     return result;
   }

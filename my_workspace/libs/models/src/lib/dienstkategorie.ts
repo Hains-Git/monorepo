@@ -8,7 +8,6 @@ async function findThemDetailsByIds(themaIds: number[]) {
       }
     }
   });
-  console.log(themaIds, themas);
   return themas;
 }
 
