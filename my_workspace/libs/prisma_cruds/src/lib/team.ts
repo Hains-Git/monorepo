@@ -260,6 +260,7 @@ export async function uncheckOldDefaultTeams(id: number) {
 }
 
 export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
+  console.log(args);
   const input = {
     name: args.name.trim(),
     default: args.default,
@@ -286,7 +287,7 @@ export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
   if (msg) return msg;
 
   const record =
-    args.id <= 1
+    args.id < 1
       ? await prismaDb.teams.create({
           data: {
             ...input,
