@@ -127,7 +127,7 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export async function mitarbeiterAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
+export function mitarbeiterAktivAm(mitarbeiter: MitarbeiterUrlaubssaldo, date = newDate()) {
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
@@ -157,7 +157,7 @@ export async function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: MitarbeiterUrl
     return false;
   });
   if (!aktiv) return aktiv;
-  return await mitarbeiterAktivAm(mitarbeiter, date);
+  return mitarbeiterAktivAm(mitarbeiter, date);
 }
 
 export async function getVKOverview(von: Date, bis: Date) {
