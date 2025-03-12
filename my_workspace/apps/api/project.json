@@ -15,9 +15,7 @@
         "outputPath": "dist/apps/api",
         "main": "apps/api/src/main.ts",
         "tsConfig": "apps/api/tsconfig.app.json",
-        "assets": [
-          "apps/api/src/assets"
-        ]
+        "assets": ["apps/api/src/assets"]
       },
       "configurations": {
         "development": {
@@ -36,12 +34,17 @@
       "options": {
         "buildTarget": "api:build",
         "runBuildTargetDependencies": false,
-        "port": 3005
+        "watch": true,
+        "port": 9229,
+        "inspect": "inspect",
+        "host": "0.0.0.0"
       },
       "configurations": {
         "development": {
           "buildTarget": "api:build:development",
-          "watch": true
+          "watch": true,
+          "inspect": "inspect",
+          "host": "0.0.0.0"
         },
         "production": {
           "buildTarget": "api:build:production"

@@ -9,9 +9,9 @@ const options: Prisma.Subset<Prisma.PrismaClientOptions, Prisma.PrismaClientOpti
 
 export const prismaDb: PrismaClient<Prisma.PrismaClientOptions, 'query'> = new PrismaClient(options);
 
-type PrismaModels = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
+type TPrismaModels = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
 
-type PrismaModelsVersions =
+type TPrismaModelsVersions =
   | 'diensteinteilungs_versions'
   | 'dienstfreigabe_versions'
   | 'team_kw_krankpuffer_versions'
@@ -19,11 +19,11 @@ type PrismaModelsVersions =
   | 'einteilung_versions'
   | 'vertrag_versions';
 
-type VersionsCreateManyArgsTypes = {
-  [K in PrismaModelsVersions]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['createMany']>[0] : never;
+type TVersionsCreateManyArgsTypes = {
+  [K in TPrismaModelsVersions]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['createMany']>[0] : never;
 };
 
-const versionsMap: Partial<Record<PrismaModels, { table: PrismaModelsVersions; type: string }>> = {
+const versionsMap: Partial<Record<TPrismaModels, { table: TPrismaModelsVersions; type: string }>> = {
   diensteinteilungs: { table: 'diensteinteilungs_versions', type: 'Diensteinteilung' },
   dienstfreigabes: { table: 'dienstfreigabe_versions', type: 'Dienstfreigabe' },
   team_kw_krankpuffers: { table: 'team_kw_krankpuffer_versions', type: 'TeamKwKrankpuffer' },
@@ -39,12 +39,15 @@ const versionsMap: Partial<Record<PrismaModels, { table: PrismaModelsVersions; t
   vertragsgruppes: { table: 'vertrag_versions', type: 'VertragGruppe' }
 };
 
-async function createVersionsByModelKey<K extends PrismaModelsVersions>(key: K, args: VersionsCreateManyArgsTypes[K]) {
+async function createVersionsByModelKey<K extends TPrismaModelsVersions>(
+  key: K,
+  args: TVersionsCreateManyArgsTypes[K]
+) {
   const data = await (prismaDb[key] as any).createMany(args);
   return data;
 }
 
-async function createVersions<K extends PrismaModelsVersions>(
+async function createVersions<K extends TPrismaModelsVersions>(
   key: K,
   items: { id: number; object: string }[],
   event: string,
@@ -105,7 +108,7 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
             });
             console.log('Create Versions for', model, operation, args, ids);
             await createVersions(
-              model as PrismaModelsVersions,
+              model as TPrismaModelsVersions,
               ids.map((obj: any) => ({ id: Number(obj.id) || 0, object: JSON.stringify(obj) })),
               operation,
               0
@@ -125,7 +128,7 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
             });
             console.log('Create Versions for', model, operation, args, values);
             await createVersions(
-              model as PrismaModelsVersions,
+              model as TPrismaModelsVersions,
               values.map((obj: any) => ({ id: Number(obj.id) || 0, object: JSON.stringify(obj) })),
               operation,
               0
@@ -146,7 +149,7 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
             );
             console.log('Create Versions for', model, operation, args, values);
             await createVersions(
-              model as PrismaModelsVersions,
+              model as TPrismaModelsVersions,
               values.map((obj: any) => ({ id: Number(obj.id) || 0, object: JSON.stringify(obj) })),
               operation,
               0

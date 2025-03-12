@@ -1,6 +1,6 @@
 import { abwesentheitenueberblick_counters, diensteinteilungs } from '@prisma/client';
 
-import { getEinteilungenOhneBedarf } from '@my-workspace/prisma_cruds';
+import { _diensteinteilung } from '@my-workspace/prisma_cruds';
 import { PlanerDate } from '@my-workspace/models';
 import { formatDate, getISOWeek, isMonday } from 'date-fns';
 
@@ -11,7 +11,13 @@ type TParams = {
 };
 
 async function getEinteilungenOhneBedarfByPoDienst({ von, bis, poDienstIds }: TParams) {
-  return await getEinteilungenOhneBedarf({ von, bis, poDienstIds, counts: true, isPublic: true });
+  return await _diensteinteilung.getEinteilungenOhneBedarf({
+    von,
+    bis,
+    poDienstIds,
+    counts: true,
+    isPublic: true
+  });
 }
 
 function createCounterByMitarbeiter(poDienstId: number, einteilungen: diensteinteilungs[]) {

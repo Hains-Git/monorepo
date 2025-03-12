@@ -133,6 +133,40 @@ export async function getDiensteinteilungInRange(
   });
 }
 
+export async function countPublicUrlaube(start: Date, ende: Date) {
+  const result = await prismaDb.diensteinteilungs.groupBy({
+    by: ['tag'],
+    where: {
+      tag: {
+        gte: start,
+        lte: ende
+      },
+      einteilungsstatuses: {
+        counts: true,
+        public: true
+      },
+      po_diensts: {
+        stundennachweis_urlaub: true
+      }
+    },
+    _count: {
+      _all: true
+    },
+    orderBy: {
+      tag: 'asc'
+    }
+  });
+
+  return result.reduce(
+    (acc, item) => {
+      if (item.tag) {
+        acc[item.tag.toISOString().split('T')[0]] = item._count._all;
+      }
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+}
 export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Date) {
   const einteilungen = await prismaDb.$queryRaw<
     {
@@ -185,7 +219,7 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
   }, {});
 }
 
-export type Dienstfrei = diensteinteilungs & {
+export type TDienstfrei = diensteinteilungs & {
   einteilungskontext: einteilungskontexts | null;
   einteilungsstatuses: einteilungsstatuses | null;
   dienstplans:
@@ -216,12 +250,12 @@ export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const query = Prisma.sql([
-    `SELECT DISTINCT 
+    `SELECT DISTINCT
       de.id, de.tag
       FROM diensteinteilungs AS de
       JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
       JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id
-      JOIN bedarfs_eintrags AS be ON be.po_dienst_id = de.po_dienst_id 
+      JOIN bedarfs_eintrags AS be ON be.po_dienst_id = de.po_dienst_id
       AND de.bereich_id IS NULL OR de.bereich_id = be.bereich_id
       LEFT OUTER JOIN dienstplans AS dpl ON (
         dpl.dienstplanbedarf_id = be.dienstplanbedarf_id OR dpl.dienstplanbedarf_id IS NULL
@@ -234,7 +268,7 @@ export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number
       ${mitarbeiterIds.length ? `AND de.mitarbeiter_id IN (${mitarbeiterIds.join(',')})` : ''}
       AND de.tag >= '${getDateStr(lastMonth)}'
       AND be.tag = de.tag
-      AND be.po_dienst_id = de.po_dienst_id 
+      AND be.po_dienst_id = de.po_dienst_id
       AND (${tage
         .map((tag) => {
           const dateStr = getDateStr(tag);
@@ -248,11 +282,11 @@ export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number
               s1.ende::DATE > '${dateStr}'
               AND a1.dienstzeit = FALSE
               AND a1.arbeitszeit = FALSE
-            ) 
+            )
           )
         )`;
         })
-        .join(' OR ')}) 
+        .join(' OR ')})
       ORDER BY de.tag ASC`
   ]);
   const einteilungenTagIds = (
@@ -269,11 +303,11 @@ export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number
     return acc;
   }, {});
 
-  const results: Dienstfrei[] = [];
+  const results: TDienstfrei[] = [];
   for (const tag in einteilungenTagIds) {
     const ids = einteilungenTagIds[tag];
     const date = newDate(tag);
-    const einteilungen: Dienstfrei[] = await prismaDb.diensteinteilungs.findMany({
+    const einteilungen: TDienstfrei[] = await prismaDb.diensteinteilungs.findMany({
       where: {
         id: {
           in: ids

@@ -44,7 +44,7 @@ export class FraunhoferController {
   }
 
   @Post('new_plan')
-  createPlan(@Body() body: FraunhoferTypes.FraunhoferNewPlan) {
+  createPlan(@Body() body: FraunhoferTypes.TFraunhoferNewPlan) {
     return this.fraunhoferService.createPlan(body);
   }
 }

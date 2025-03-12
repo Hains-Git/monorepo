@@ -6,7 +6,7 @@ export function newDate(tag: string | Date | number = ''): Date {
   let date = new Date(tag);
   // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
   if (typeof tag === 'string' && dateRegEx.test(tag)) {
-    tag = new Date(`${tag}T12:00:00.000Z`);
+    date = new Date(`${tag}T12:00:00.000Z`);
   }
   return date;
 }
@@ -40,12 +40,12 @@ export function getKW(dirtyDate: Date | string) {
 }
 
 export function _subWeeks(date: Date | string, weeks: number) {
-  let parseDate = newDate(date);
+  const parseDate = newDate(date);
   return subWeeks(parseDate, weeks);
 }
 
 export function _addWeeks(date: Date | string, weeks: number) {
-  let parseDate = newDate(date);
+  const parseDate = newDate(date);
   return addWeeks(parseDate, weeks);
 }
 

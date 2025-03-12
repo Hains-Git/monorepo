@@ -1,8 +1,7 @@
 import { zeitraumkategories, zeitraumregels } from '@prisma/client';
 import { PlanerDate } from './planerdate';
-import { addDays, getWeek, isEqual, addMonths, subDays, subWeeks, isSameDay } from 'date-fns';
 import { getDateNr, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
-import { _zeitraumregel, getAllZeitraumKategories, getZeitraumKategoriesInRange } from '@my-workspace/prisma_cruds';
+import { _zeitraumregel, _zeitraum_kategorie } from '@my-workspace/prisma_cruds';
 
 interface RegelcodeHash {
   isBedarf: boolean;
@@ -134,7 +133,10 @@ function checkKalenderwochen(regeln: string[], date: PlanerDate): boolean {
   return result;
 }
 
-async function checkDate(date: Date | PlanerDate, zeitraumkategorie: zeitraumkategories): Promise<boolean> {
+async function checkDate(
+  date: Date | PlanerDate,
+  zeitraumkategorie: zeitraumkategories
+): Promise<boolean> {
   let isBedarf = false;
 
   if (!(date instanceof PlanerDate)) {
@@ -224,7 +226,9 @@ function checkTagRhythmus(regeln: string, date: PlanerDate, monate: string[], st
     const endDatum = checkValidDate(currentYear, endMonth, endTag);
 
     // Determine the initial check date
-    let checkDatum = jedenMonatAbStart ? checkValidDate(currentYear, currentMonth, startTag) : startDatum;
+    let checkDatum = jedenMonatAbStart
+      ? checkValidDate(currentYear, currentMonth, startTag)
+      : startDatum;
 
     // Check if it matches the rhythm initially
     isRhythmus = wiederholung === 0 && currentDateStr === getDateStr(checkDatum);
@@ -300,7 +304,7 @@ async function previewZeitraumkategorien(year: number | string) {
   }
   const anfang = newDateYearMonthDay(year, 0, 1);
   const ende = newDateYearMonthDay(year + 1, 0, 1);
-  const zeitraumkategorien = await getZeitraumKategoriesInRange(anfang, ende);
+  const zeitraumkategorien = await _zeitraum_kategorie.getZeitraumKategoriesInRange(anfang, ende);
   while (anfang < ende) {
     const planerDate = new PlanerDate(anfang, weekCounter);
     await planerDate.initializeFeiertage(anfang, zeitraumkategorien);
@@ -311,10 +315,13 @@ async function previewZeitraumkategorien(year: number | string) {
     anfang.setDate(anfang.getDate() + 1);
   }
   const result = {
-    zeitraumkategorien: (await getAllZeitraumKategories()).reduce((acc: Record<number, zeitraumkategories>, curr) => {
-      acc[curr.id] = curr;
-      return acc;
-    }, {}),
+    zeitraumkategorien: (await _zeitraum_kategorie.getAllZeitraumKategories()).reduce(
+      (acc: Record<number, zeitraumkategories>, curr) => {
+        acc[curr.id] = curr;
+        return acc;
+      },
+      {}
+    ),
     zeitraumregeln: (await _zeitraumregel.getAllZeitraumregeln()).reduce(
       (acc: Record<number, zeitraumregels>, curr) => {
         acc[curr.id] = curr;

@@ -1,4 +1,4 @@
-import { createOrUpdatePlanungsinfo, getAllPlanungsinfo } from '@my-workspace/prisma_cruds';
+import { _planungsinfo } from '@my-workspace/prisma_cruds';
 
 type TMutation = {
   tag: Date;
@@ -8,9 +8,9 @@ type TMutation = {
 };
 
 export async function planungsInfoCreateOrupdate(params: TMutation) {
-  return await createOrUpdatePlanungsinfo(params);
+  return await _planungsinfo.createOrUpdatePlanungsinfo(params);
 }
 
 export async function planungsInfoGetAll(anfang: string | Date, ende: string | Date) {
-  return await getAllPlanungsinfo(anfang, ende);
+  return await _planungsinfo.getAllPlanungsinfo(anfang, ende);
 }

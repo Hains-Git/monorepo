@@ -4,12 +4,12 @@
   "arrowParens": "always",
   "arrowFunctionParentheses": "always",
   "trailingComma": "none",
-  "printWidth": 120,
+  "printWidth": 105,
   "overrides": [
     {
       "files": "**/*.css",
       "options": {
-        "printWidth": 120
+        "printWidth": 105
       }
     }
   ]

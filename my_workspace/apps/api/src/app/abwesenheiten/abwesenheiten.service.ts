@@ -1,14 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils';
-import {
-  getAbwesenheitenSettings,
-  getAbwesenheitenByYear,
-  getAbwesenheitenCounters,
-  getAllAbwesenheitenSpalten,
-  getEinteilungenOhneBedarf,
-  getKalenderMarkierungByDateRange
-} from '@my-workspace/prisma_cruds';
+import { _abwesenheiten, _diensteinteilung, _kalender_markierung } from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
 import { Urlaubssaldi } from '@my-workspace/models';
@@ -29,10 +22,10 @@ export class AbwesenheitenService {
     let dateEnd = _addWeeks(dateView, 10);
 
     if (init) {
-      const userSettingsAbwesenheiten = await getAbwesenheitenSettings(userId);
-      const counters = await getAbwesenheitenCounters(userId);
-      const awColumnNames = await getAllAbwesenheitenSpalten();
-      const abwesentheiten = await getAbwesenheitenByYear(year);
+      const userSettingsAbwesenheiten = await _abwesenheiten.getAbwesenheitenSettings(userId);
+      const counters = await _abwesenheiten.getAbwesenheitenCounters(userId);
+      const awColumnNames = await _abwesenheiten.getAllAbwesenheitenSpalten();
+      const abwesentheiten = await _abwesenheiten.getAbwesenheitenByYear(year);
       const awHash = processData('mitarbeiter_id', abwesentheiten);
       const awCounterPoDienst = await addCountsValue(counters);
 
@@ -51,7 +44,10 @@ export class AbwesenheitenService {
       }
     }
 
-    const einteilungen = await getEinteilungenOhneBedarf({ von: dateStart, bis: dateEnd });
+    const einteilungen = await _diensteinteilung.getEinteilungenOhneBedarf({
+      von: dateStart,
+      bis: dateEnd
+    });
     const dateRange: Date[] = [];
     const dateRangeDate = newDate(dateStart);
     const dates = {};
@@ -62,7 +58,10 @@ export class AbwesenheitenService {
       dateRangeDate.setDate(currentDate.getDate() + 1);
     }
 
-    const kalendermarkierungen = await getKalenderMarkierungByDateRange(dateStart, dateEnd);
+    const kalendermarkierungen = await _kalender_markierung.getKalenderMarkierungByDateRange(
+      dateStart,
+      dateEnd
+    );
 
     result['einteilungen'] = einteilungen;
     result['dates'] = dates;

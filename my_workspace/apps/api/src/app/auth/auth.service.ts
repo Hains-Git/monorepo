@@ -4,11 +4,10 @@ import { addMinutes, isAfter } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 
 import {
-  checkUserCredentials,
   createRefreshToken,
   createAccessToken,
   isAccessTokenInDb,
-  getUserById
+  _user
 } from '@my-workspace/prisma_cruds';
 import { users } from '@prisma/client';
 import { newDate } from '@my-workspace/utils';
@@ -48,7 +47,9 @@ export class AuthService {
     });
   }
 
-  async exchangeAuthorizationCode(code: string): Promise<{ accessToken: string; refreshToken: string; user: users }> {
+  async exchangeAuthorizationCode(
+    code: string
+  ): Promise<{ accessToken: string; refreshToken: string; user: users }> {
     const authCode = await this.prisma.oauth_authorization_codes.findFirst({
       where: {
         code
@@ -61,7 +62,7 @@ export class AuthService {
 
     const userId = authCode.user_id;
     const clientId = authCode.client_id;
-    const user = await getUserById(userId, { account_info: true });
+    const user = await _user.getUserById(userId, { account_info: true });
 
     const accessToken = await this.generateAccessToken(userId, clientId);
     const refreshToken = await this.generateRefreshToken(userId, clientId);
@@ -155,6 +156,6 @@ export class AuthService {
   }
 
   async checkCredentials(username: string, password: string) {
-    return await checkUserCredentials(username, password);
+    return await _user.checkUserCredentials(username, password);
   }
 }

@@ -1,2 +1,4 @@
 /implement.norg
 *.norg
+.nvim-dap.json
+/.nvim-dap.json
