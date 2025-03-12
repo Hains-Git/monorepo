@@ -1,8 +1,8 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { FindManyArgsTypes } from './utils/types';
+import { TFindManyArgsTypes } from './utils/types';
 import { getZeitraumkategorienInterval } from './utils/crud_helper';
 
-export async function getDienstbedarfCustomQuery(condition: FindManyArgsTypes['dienstbedarves']) {
+export async function getDienstbedarfCustomQuery(condition: TFindManyArgsTypes['dienstbedarves']) {
   return await prismaDb.dienstbedarves.findMany(condition);
 }
 

@@ -17,7 +17,7 @@ function Button({ clientId, clientSecret }: { clientId: string; clientSecret: st
       .then((response) => {
         return response.json();
       })
-      .then((data: FraunhoferTypes.PlanData) => {
+      .then((data: FraunhoferTypes.TPlanData) => {
         Object.entries(data).forEach(([key, value]) => {
           if (Array.isArray(value)) {
             console.log(key, value);
