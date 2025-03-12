@@ -626,7 +626,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
 
   const dienstkategoreieDienste = getDienstkategorieDienste(dienstkategorien, dienste);
 
-  console.time('computeDates');
+  // console.time('computeDates');
   await computeDates({
     dates,
     bedarfs_eintraege,
@@ -639,9 +639,9 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: Dienst
     dienstkategoreieDienste,
     dienst_bedarfeintrag
   });
-  console.timeEnd('computeDates');
+  // console.timeEnd('computeDates');
 
-  console.log(anfangFrame, endeFrame);
+  // console.log(anfangFrame, endeFrame);
 
   return {
     bedarf,
