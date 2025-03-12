@@ -3,10 +3,10 @@ import { format, addWeeks, subWeeks, isValid, parseISO, startOfToday } from 'dat
 export function newDate(tag: string | Date | number = ''): Date {
   if (!tag) return new Date();
   const dateRegEx = /^\d{4}-(0[1-9]|1[0-2])-\d{2}$/;
-  const date = new Date(tag);
+  let date = new Date(tag);
   // 12 Uhr, damit keine Probleme mit der Zeitzone entstehen
   if (typeof tag === 'string' && dateRegEx.test(tag)) {
-    tag = new Date(`${tag}T12:00:00.000Z`);
+    date = new Date(`${tag}T12:00:00.000Z`);
   }
   return date;
 }
@@ -36,9 +36,7 @@ export function getKW(dirtyDate: Date | string) {
   // January 4 is always in week 1.
   const week1 = newDateYearMonthDay(date.getFullYear(), 0, 4);
   // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-  return (
-    1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
-  );
+  return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
 }
 
 export function _subWeeks(date: Date | string, weeks: number) {
