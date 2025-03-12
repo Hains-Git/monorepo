@@ -1,4 +1,4 @@
-import { mitarbeiters, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { FindManyArgsTypes } from './utils/types';
 import {
