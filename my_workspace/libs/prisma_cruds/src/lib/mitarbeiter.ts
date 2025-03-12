@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { FindManyArgsTypes } from './utils/types';
+import { TFindManyArgsTypes } from './utils/types';
 import {
   whereMitarbeiterAktivNoPlatzhalter,
   whereRotationIn,
@@ -66,7 +66,7 @@ export async function getMitarbeitersWithoutAccountInfo() {
   });
 }
 
-export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes['mitarbeiters']) {
+export async function getMitarbeitersByCustomQuery(condition: TFindManyArgsTypes['mitarbeiters']) {
   const result = await prismaDb.mitarbeiters.findMany(condition);
   return result;
 }
@@ -149,7 +149,7 @@ export async function getMitarbeiterForUrlaubssaldis(
   });
 }
 
-export type MitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
+export type TMitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
 
 export async function mitarbeiterUrlaubssaldoAktivAm(date: Date, id: number) {
   return await prismaDb.mitarbeiters.findFirst({

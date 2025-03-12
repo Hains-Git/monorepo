@@ -2,12 +2,12 @@ import { arbeitszeittyps, arbeitszeitverteilungs, dienstbedarves, zeitraumkatego
 import { PlanerDate } from './planerdate/planerdate';
 import { checkDate } from './planerdate/zeitraumkategorie';
 import {
-  ArbeitszeitverteilungSchichtDays,
+  TArbeitszeitverteilungSchichtDays,
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
 import { getDateNr, getDateStr, newDate } from '@my-workspace/utils';
 
-type SchichtObjType = {
+type TSchichtObjType = {
   anfang: Date;
   ende: Date;
   is_frei: boolean;
@@ -31,12 +31,12 @@ export async function checkDateOnDienstbedarf(
 export function calculateDienstfreiFromDienstbedarf(
   date: Date,
   arbeitszeittypen: Record<number, arbeitszeittyps>,
-  tageInfo: ArbeitszeitverteilungSchichtDays,
+  tageInfo: TArbeitszeitverteilungSchichtDays,
   dienstbedarf: dienstbedarves & { arbeitszeitverteilungs: arbeitszeitverteilungs | null },
-  block: (date: Date, dateStr: string, schicht: SchichtObjType) => void
+  block: (date: Date, dateStr: string, schicht: TSchichtObjType) => void
 ) {
   const azv = dienstbedarf.arbeitszeitverteilungs;
-  const dienstfreis: Record<string, { typ: SchichtObjType; dienstbedarf_id: number }[]> = {};
+  const dienstfreis: Record<string, { typ: TSchichtObjType; dienstbedarf_id: number }[]> = {};
   if (!azv) return;
 
   tageInfo ||= createSchichtenDaysFromArbeitszeitverteilung(azv, arbeitszeittypen);
@@ -57,7 +57,7 @@ export function calculateDienstfreiFromDienstbedarf(
       const ende = newDate(date);
       ende.setDate(ende.getDate() + schicht.tagEnde);
       ende.setHours(parseInt(schicht.endeSplit[0], 10), parseInt(schicht.endeSplit[1], 10));
-      const schichtObj: SchichtObjType = {
+      const schichtObj: TSchichtObjType = {
         anfang,
         ende,
         is_frei: !schicht.dienstzeit && !schicht.arbeitszeit

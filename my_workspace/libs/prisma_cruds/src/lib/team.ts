@@ -122,7 +122,7 @@ export async function destroyOneTeam(id: number) {
   return '';
 }
 
-export type TeamInputType = {
+export type TTeamInputType = {
   name: string;
   default: boolean;
   verteiler_default: boolean;
@@ -130,20 +130,20 @@ export type TeamInputType = {
   color: string;
 };
 
-export type TeamKWKrankPufferInput = { kw: number; puffer: number };
-export type TeamVKSollInput = { soll: number; von: Date; bis: Date };
-export type TeamKopfSollInput = { soll: number; von: Date; bis: Date };
+export type TTeamKWKrankPufferInput = { kw: number; puffer: number };
+export type TTeamVKSollInput = { soll: number; von: Date; bis: Date };
+export type TTeamKopfSollInput = { soll: number; von: Date; bis: Date };
 
-export type TeamCreateOrUpdate = TeamInputType & {
+export type TTeamCreateOrUpdate = TTeamInputType & {
   id: number;
   kostenstelle_id: number;
-  team_kw_krankpuffers: TeamKWKrankPufferInput[];
-  team_vk_soll: TeamVKSollInput[];
-  team_kopf_soll: TeamKopfSollInput[];
+  team_kw_krankpuffers: TTeamKWKrankPufferInput[];
+  team_vk_soll: TTeamVKSollInput[];
+  team_kopf_soll: TTeamKopfSollInput[];
   funktionen_ids: number[];
 };
 
-export async function checkTeamInput(input: TeamCreateOrUpdate) {
+export async function checkTeamInput(input: TTeamCreateOrUpdate) {
   const msg = [];
   const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [input.id] } } });
   const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: input.kostenstelle_id } });
@@ -185,7 +185,7 @@ export async function checkTeamInput(input: TeamCreateOrUpdate) {
   return msg.join('\n');
 }
 
-export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id: number) {
+export async function addTeamKrankpuffer(kwpuffer: TTeamKWKrankPufferInput[], id: number) {
   await prismaDb.team_kw_krankpuffers.deleteMany({
     where: {
       team_id: id
@@ -227,7 +227,7 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
   });
 }
 
-export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
+export async function addTeamVKSoll(vkSoll: TTeamVKSollInput[], id: number) {
   await prismaDb.team_vk_soll.deleteMany({
     where: {
       team_id: id
@@ -248,7 +248,7 @@ export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
   });
 }
 
-export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number) {
+export async function addTeamKopfSoll(kopfSoll: TTeamKopfSollInput[], id: number) {
   await prismaDb.team_kopf_soll.deleteMany({
     where: {
       team_id: id
@@ -282,7 +282,7 @@ export async function uncheckOldDefaultTeams(id: number) {
   });
 }
 
-export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
+export async function createOrUpdateTeam(args: TTeamCreateOrUpdate) {
   const input = {
     name: args.name.trim(),
     default: args.default,

@@ -49,11 +49,7 @@ export async function getEinteilungenOhneBedarf({
     JOIN public.po_diensts AS po ON de.po_dienst_id = po.id
     JOIN public.einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
     JOIN public.mitarbeiters AS m ON m.id = de.mitarbeiter_id
-    WHERE ${
-      !mitarbeiterIds
-        ? `m.aktiv = true AND m.platzhalter != true`
-        : `m.id IN (${mitarbeiterIds.join(',')})`
-    }
+    WHERE ${!mitarbeiterIds ? `m.aktiv = true AND m.platzhalter != true` : `m.id IN (${mitarbeiterIds.join(',')})`}
     ${!poDienstIds ? `` : `AND de.po_dienst_id IN (${poDienstIds.join(',')})`}
     AND de.tag >= $1 AND de.tag <= $2
     AND de.dienstplan_id IN (
@@ -86,9 +82,12 @@ export async function getEinteilungenOhneBedarf({
   return result;
 }
 
-export async function getPublicRangeEinteilungenForMitarbeiter<
-  TInclude extends Prisma.diensteinteilungsInclude
->(id: number, start: Date, end: Date, include?: TInclude) {
+export async function getPublicRangeEinteilungenForMitarbeiter<TInclude extends Prisma.diensteinteilungsInclude>(
+  id: number,
+  start: Date,
+  end: Date,
+  include?: TInclude
+) {
   const startDate = formatDateForDB(start);
   const endDate = formatDateForDB(end);
 
@@ -220,7 +219,7 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
   }, {});
 }
 
-export type Dienstfrei = diensteinteilungs & {
+export type TDienstfrei = diensteinteilungs & {
   einteilungskontext: einteilungskontexts | null;
   einteilungsstatuses: einteilungsstatuses | null;
   dienstplans:
@@ -246,11 +245,7 @@ export type Dienstfrei = diensteinteilungs & {
     | null;
 };
 
-export async function getPossibleDienstfrei(
-  tage: Date[],
-  mitarbeiterIds: number[] = [],
-  onlyCounts = false
-) {
+export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number[] = [], onlyCounts = false) {
   const firstDate = tage[0];
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -308,11 +303,11 @@ export async function getPossibleDienstfrei(
     return acc;
   }, {});
 
-  const results: Dienstfrei[] = [];
+  const results: TDienstfrei[] = [];
   for (const tag in einteilungenTagIds) {
     const ids = einteilungenTagIds[tag];
     const date = newDate(tag);
-    const einteilungen: Dienstfrei[] = await prismaDb.diensteinteilungs.findMany({
+    const einteilungen: TDienstfrei[] = await prismaDb.diensteinteilungs.findMany({
       where: {
         id: {
           in: ids

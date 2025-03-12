@@ -1,6 +1,6 @@
 import { arbeitszeittyps, arbeitszeitverteilungs } from '@prisma/client';
 
-type ArbeitszeitverteilungSchicht = {
+type TArbeitszeitverteilungSchicht = {
   anfang: string;
   anfangZahl: number;
   anfangSplit: string[];
@@ -15,10 +15,10 @@ type ArbeitszeitverteilungSchicht = {
   tagEnde: number;
 };
 
-export type ArbeitszeitverteilungSchichtDays = {
+export type TArbeitszeitverteilungSchichtDays = {
   dienstTage: number;
   ausgleichstage: number;
-  schichtTage: Record<number, { containsDienstzeit: boolean; schichten: ArbeitszeitverteilungSchicht[] }>;
+  schichtTage: Record<number, { containsDienstzeit: boolean; schichten: TArbeitszeitverteilungSchicht[] }>;
 };
 
 function formatZeiten(arbeitszeitverteilung: arbeitszeitverteilungs) {
@@ -39,14 +39,14 @@ function createSchichtenFromArbeitszeitverteilung(
   arbeitszeitverteilung: arbeitszeitverteilungs,
   arbeitszeittypen: Record<number, arbeitszeittyps>
 ) {
-  const schichten: ArbeitszeitverteilungSchicht[] = [];
+  const schichten: TArbeitszeitverteilungSchicht[] = [];
   const zeiten = formatZeiten(arbeitszeitverteilung);
   const zeittypen = arbeitszeitverteilung.zeittypen;
   zeiten.forEach((zeit, i) => {
     if (i < 1) return;
     const prevZeit = zeiten[i - 1];
     const zeittyp = arbeitszeittypen[zeittypen[i - 1]];
-    const schicht: ArbeitszeitverteilungSchicht = {
+    const schicht: TArbeitszeitverteilungSchicht = {
       anfang: prevZeit.zeit,
       anfangZahl: prevZeit.zeitZahl,
       anfangSplit: prevZeit.zeit.split(':'),
@@ -75,9 +75,9 @@ function createSchichtenFromArbeitszeitverteilung(
 
 function createSchichtDaysFromArbeitszeitverteilungSchichten(
   arbeitszeitverteilung: arbeitszeitverteilungs,
-  schichten: ArbeitszeitverteilungSchicht[]
+  schichten: TArbeitszeitverteilungSchicht[]
 ) {
-  const schichtDays: ArbeitszeitverteilungSchichtDays = { dienstTage: 0, schichtTage: {}, ausgleichstage: 0 };
+  const schichtDays: TArbeitszeitverteilungSchichtDays = { dienstTage: 0, schichtTage: {}, ausgleichstage: 0 };
   let day = 0;
   let blockStartDay = 0;
   schichten.forEach((schicht) => {

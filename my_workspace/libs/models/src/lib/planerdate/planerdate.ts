@@ -4,7 +4,7 @@ import { _planerdate } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
 import { getDateNr, getDateStr, getKW, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
-type Feiertag = {
+type TFeiertag = {
   name: string;
   day: number;
   month: number;
@@ -13,22 +13,9 @@ type Feiertag = {
 
 export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-  private static MONTHS = [
-    'Jan',
-    'Feb',
-    'Mär',
-    'Apr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Okt',
-    'Nov',
-    'Dez'
-  ];
+  private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
-  private static feiertage: Record<string, Record<string, Feiertag[]>> = {};
+  private static feiertage: Record<string, Record<string, TFeiertag[]>> = {};
   private static last_week: Record<string, number> = {};
 
   week_counter: number;
@@ -43,7 +30,7 @@ export class PlanerDate {
   week_day_nr: number;
   week: number;
   day_of_year: number;
-  feiertag: '' | Feiertag;
+  feiertag: '' | TFeiertag;
   label: string;
   day: number;
   year: number;
@@ -292,10 +279,7 @@ export class PlanerDate {
   private getDayOfYear(date: Date): number {
     const start = newDateYearMonthDay(date.getFullYear(), 0, 0);
     start.setHours(0, 0, 0, 0);
-    const diff =
-      date.getTime() -
-      start.getTime() +
-      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+    const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
   }

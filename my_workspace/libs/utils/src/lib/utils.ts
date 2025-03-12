@@ -1,4 +1,4 @@
-type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
+type THashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
 export const colorRegEx = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
 /**
@@ -59,8 +59,8 @@ export function processData<T, IsArray extends boolean = false>(
   dataArr: T[],
   cbs?: ((data: T) => T)[],
   isInArray: IsArray = false as IsArray
-): HashObjType<T, IsArray> {
-  return dataArr.reduce((hashObj: HashObjType<T, IsArray>, dataItem: T) => {
+): THashObjType<T, IsArray> {
+  return dataArr.reduce((hashObj: THashObjType<T, IsArray>, dataItem: T) => {
     let processedItem = dataItem;
 
     if (Array.isArray(cbs)) {
@@ -115,7 +115,7 @@ export async function processAsyncData<T>(
  *
  * @template T - The type of the input object.
  * @param {T} result - The original object to be transformed.
- * @param {Array<{key: string, method: TransformMethod<any>, path?: string}>} transforms - An array of transformation specifications.
+ * @param {Array<{key: string, method: TTransformMethod<any>, path?: string}>} transforms - An array of transformation specifications.
  *   Each specification includes:
  *   - key: The name of the property to be added or modified.
  *   - method: A function that generates the value for the property.
@@ -141,13 +141,13 @@ export async function processAsyncData<T>(
  *   }
  * ]);
  */
-type TransformMethod<T, K extends keyof T = keyof T> = (data: T[K]) => T[K];
+type TTransformMethod<T, K extends keyof T = keyof T> = (data: T[K]) => T[K];
 
 export function transformObject<T extends Record<string, any>, K extends string>(
   result: T,
   transforms: Array<{
     key: keyof T | K;
-    method: TransformMethod<T, any>;
+    method: TTransformMethod<T, any>;
     path?: string;
   }>
 ): T & Record<K, any> {

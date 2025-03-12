@@ -158,7 +158,7 @@ export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
   return arbeitszeitAbsprachen;
 }
 
-type HashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
+type THashObjType<T, IsArray extends boolean> = Record<string | number, IsArray extends true ? T[] : T>;
 
 type TResult = {
   rotationen: {
@@ -195,7 +195,7 @@ type TResult = {
       };
     };
   };
-  defaults: HashObjType<
+  defaults: THashObjType<
     {
       id: number;
       mitarbeiter_id: number;
@@ -435,7 +435,7 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export async function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.MitarbeiterUrlaubssaldo, date = newDate()) {
+export async function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo, date = newDate()) {
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
@@ -456,7 +456,7 @@ export async function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.MitarbeiterUr
 }
 
 export async function mitarbeiterUrlaubssaldoAktivAm(
-  mitarbeiter: _mitarbeiter.MitarbeiterUrlaubssaldo,
+  mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo,
   date = newDate()
 ) {
   const tag = newDate(date);
@@ -514,7 +514,7 @@ export async function getVKOverview(von: Date, bis: Date) {
   return result;
 }
 
-type TeamVKOverview = Record<
+type TTeamVKOverview = Record<
   string,
   Record<
     number,
@@ -534,10 +534,10 @@ type TeamVKOverview = Record<
 >;
 
 function addToVKKontingentResult(
-  result: TeamVKOverview,
+  result: TTeamVKOverview,
   team: teams | null,
   kontingent: kontingents | null,
-  mit: _mitarbeiter.MitarbeiterUrlaubssaldo,
+  mit: _mitarbeiter.TMitarbeiterUrlaubssaldo,
   date: Date,
   vk: ReturnType<typeof Vertrag.vkAndVgruppeInMonth>
 ) {
@@ -566,7 +566,7 @@ function addToVKKontingentResult(
 export async function getTeamVkOverview(von: Date, bis: Date) {
   const start = newDateYearMonthDay(von.getFullYear(), von.getMonth() + 1, 0);
   const ende = newDateYearMonthDay(bis.getFullYear(), bis.getMonth() + 1, 0);
-  const result: TeamVKOverview = {};
+  const result: TTeamVKOverview = {};
   if (start > ende) return result;
   const mitarbeiter = await _mitarbeiter.getMitarbeiterForUrlaubssaldis([], start, ende, true);
 

@@ -37,7 +37,7 @@ import {
   _schicht
 } from '@my-workspace/prisma_cruds';
 
-type Dienstplan = {
+type TDienstplan = {
   parametersets:
     | ({
         planparameters: planparameters[];
@@ -56,7 +56,7 @@ function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
   return firstArr.filter((id: any) => secondArr.includes(id));
 }
 
-function check_anfang_ende(dienstplan: Dienstplan) {
+function check_anfang_ende(dienstplan: TDienstplan) {
   let anfang = dienstplan?.anfang ? dienstplan.anfang : newDate();
   let ende = dienstplan.ende;
   const startOfNextMonth = newDateYearMonthDay(anfang.getFullYear(), anfang.getMonth() + 1, 1);
@@ -67,10 +67,9 @@ function check_anfang_ende(dienstplan: Dienstplan) {
   return { anfang, ende };
 }
 
-function get_dpl_anfang_ende(dienstplan: Dienstplan) {
+function get_dpl_anfang_ende(dienstplan: TDienstplan) {
   const { anfang, ende } = check_anfang_ende(dienstplan);
-  const relevant_timeframe_size =
-    dienstplan?.parametersets?.planparameters?.[0]?.relevant_timeframe_size;
+  const relevant_timeframe_size = dienstplan?.parametersets?.planparameters?.[0]?.relevant_timeframe_size;
   const anfang_frame = subDays(anfang, relevant_timeframe_size || 0);
   const ende_frame = addDays(ende, relevant_timeframe_size || 0);
   return {
@@ -237,8 +236,7 @@ async function getAllRotationenByKontingentFlag() {
 }
 
 async function getBedarfe(dienstplanbedarf_id: number) {
-  const bedarfsEintraege =
-    await _bedarfs_eintrag.getBedarfseintragByDienstplanBedarfId(dienstplanbedarf_id);
+  const bedarfsEintraege = await _bedarfs_eintrag.getBedarfseintragByDienstplanBedarfId(dienstplanbedarf_id);
   return getDataByHash(bedarfsEintraege);
 }
 
@@ -258,11 +256,7 @@ async function getDienstbedarfe(anfang: Date, ende: Date) {
       OR: [{ end_date: { gt: anfang } }, { end_date: null }],
       zeitraumkategories: getZeitraumkategorienInterval(anfang, ende)
     },
-    orderBy: [
-      { po_diensts: { order: 'asc' } },
-      { bereich_id: 'asc' },
-      { zeitraumkategories: { prio: 'asc' } }
-    ]
+    orderBy: [{ po_diensts: { order: 'asc' } }, { bereich_id: 'asc' }, { zeitraumkategories: { prio: 'asc' } }]
   });
   return getDataByHash(dienstbedarfe);
 }
@@ -430,12 +424,7 @@ function createDateEinteilungMap(data: any[]) {
   }, {});
 }
 
-function setBereicheIdsObject(
-  planerDate: any,
-  po_dienst_id: number,
-  bereichId: number,
-  bedarfEintragId: number
-) {
+function setBereicheIdsObject(planerDate: any, po_dienst_id: number, bereichId: number, bedarfEintragId: number) {
   if (!planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId]) {
     planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId] = {
       id: bereichId,
@@ -445,12 +434,7 @@ function setBereicheIdsObject(
   }
 }
 
-function computeEinteilung(
-  einteilungen: any,
-  dates: any,
-  bedarfs_eintraege: any,
-  dienst_bedarfeintrag: any
-) {
+function computeEinteilung(einteilungen: any, dates: any, bedarfs_eintraege: any, dienst_bedarfeintrag: any) {
   einteilungen.forEach((einteilung: any) => {
     let bereichId = 0;
 
@@ -573,10 +557,7 @@ async function computeDates(props: any) {
     dienstkategoreieDienste
   } = props;
 
-  const bedarfsEintraegeMap = createDateIdMap(Object.values(bedarfs_eintraege), [
-    'id',
-    'dienstbedarf_id'
-  ]);
+  const bedarfsEintraegeMap = createDateIdMap(Object.values(bedarfs_eintraege), ['id', 'dienstbedarf_id']);
   const wuenschArr = Object.values(wuensche);
   const einteilungenMap = createDateEinteilungMap(Object.values(einteilungen));
   const wuenscheMap = createDateIdMap(wuenschArr, ['id']);
@@ -601,8 +582,7 @@ async function computeDates(props: any) {
         rotation_ids: [],
         wunsch_ids: []
       };
-      dates[dateStr].by_dienst[dienst.id].rotation_ids =
-        rotationenHash?.[dateStr].by_dienst[dienst.id] || [];
+      dates[dateStr].by_dienst[dienst.id].rotation_ids = rotationenHash?.[dateStr].by_dienst[dienst.id] || [];
     });
 
     mitarbeiterArr.forEach((mId: any) => {
@@ -612,8 +592,7 @@ async function computeDates(props: any) {
         rotation_ids: [],
         wunsch_id: 0
       };
-      dates[dateStr].by_mitarbeiter[mId].rotation_ids =
-        rotationenHash?.[dateStr].by_mitarbeiter[mId] || [];
+      dates[dateStr].by_mitarbeiter[mId].rotation_ids = rotationenHash?.[dateStr].by_mitarbeiter[mId] || [];
     });
   });
   computeEinteilung(Object.values(einteilungen), dates, bedarfs_eintraege, dienst_bedarfeintrag);
@@ -621,23 +600,14 @@ async function computeDates(props: any) {
   computeWuensche(wuenschArr, dates, dienstkategoreieDienste);
 }
 
-async function loadBasics(
-  anfangFrame: Date,
-  endeFrame: Date,
-  dienstplan: Dienstplan,
-  loadVorschlaege: boolean
-) {
+async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: TDienstplan, loadVorschlaege: boolean) {
   const dplBedarfId = dienstplan?.dienstplanbedarf_id || 0;
   const bedarfs_eintraege = await getBedarfe(dplBedarfId);
   if (Object.keys(bedarfs_eintraege).length === 0) {
     return false;
   }
   const dates = await createDateGridReact(anfangFrame, endeFrame);
-  const einteilungen = await getEinteilungen(
-    loadVorschlaege ? dienstplan.id : 0,
-    anfangFrame,
-    endeFrame
-  );
+  const einteilungen = await getEinteilungen(loadVorschlaege ? dienstplan.id : 0, anfangFrame, endeFrame);
   const dienste = await getPoDienste();
   const mitarbeiter = await getMitarbeiters(true, true);
   const dienstkategorien = await getDienstkategories();

@@ -9,7 +9,7 @@ export class FraunhoferService {
     return Fraunhofer.getFraunhoferPlanData(newDate(start), newDate(end), clientId, clientSecret, dienstplanId);
   }
 
-  async createPlan(plan: FraunhoferTypes.FraunhoferNewPlan) {
+  async createPlan(plan: FraunhoferTypes.TFraunhoferNewPlan) {
     return Fraunhofer.createFraunhoferPlan(plan);
   }
 
