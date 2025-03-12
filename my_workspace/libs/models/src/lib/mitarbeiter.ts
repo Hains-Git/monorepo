@@ -435,10 +435,11 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export async function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo, date = newDate()) {
+export function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo, date = newDate()) {
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
+  console.log(mitarbeiter.planname, tag, aktiv);
   if (aktiv && mitarbeiter.aktiv_bis) {
     mitarbeiter.aktiv_bis.setHours(12, 0, 0, 0);
     aktiv = mitarbeiter.aktiv_bis >= tag;
