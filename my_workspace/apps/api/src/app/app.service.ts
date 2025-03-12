@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { getDienstplanung, PlanerDate, Urlaubssaldi } from '@my-workspace/models';
 import { getAllApiData } from '@my-workspace/models';
-import { planungsInfoCreateOrupdate } from '@my-workspace/models';
+import { PlanungsInfo } from '@my-workspace/models';
 import { newDate } from '@my-workspace/utils';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class AppService {
       bereich_id: body.bereich_id,
       kommentar: body.kommentar
     };
-    const planungsinfo = await planungsInfoCreateOrupdate(params);
+    const planungsinfo = await PlanungsInfo.planungsInfoCreateOrupdate(params);
     return planungsinfo;
   }
 

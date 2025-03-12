@@ -2,8 +2,8 @@ import { newDate, processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
 import { mitarbeiters } from '@prisma/client';
 
-import { getMitarbeitersWithoutAccountInfo, getAccountInfoForMitarbeiterInfo } from '@my-workspace/prisma_cruds';
-import { vkAndVgruppeAm } from '@my-workspace/models';
+import { _account_info, _mitarbeiter } from '@my-workspace/prisma_cruds';
+import { Vertrag } from '@my-workspace/models';
 
 function createFakeAccountInfos(mitarbeiters: mitarbeiters[]) {
   const fakeAccountInfos: any[] = [];
@@ -65,7 +65,7 @@ function addVk(accountInfo) {
   const vertrags = accountInfo.mitarbeiter.vertrags;
   // if (accountInfo.id == 4) {
   // console.log(JSON.stringify(vertrags, null, 2));
-  const vkAndVgruppe = vkAndVgruppeAm(startOfToday(), vertrags);
+  const vkAndVgruppe = Vertrag.vkAndVgruppeAm(startOfToday(), vertrags);
   // }
   accountInfo.mitarbeiter.vk_and_vgruppe_am = vkAndVgruppe;
   return accountInfo;
@@ -86,9 +86,9 @@ function vertragsVarianteVonBis(vertragsStuve) {
 }
 
 export async function getMitarbeiterInfos() {
-  const mitarbeitersWithoutAccountInfo = await getMitarbeitersWithoutAccountInfo();
+  const mitarbeitersWithoutAccountInfo = await _mitarbeiter.getMitarbeitersWithoutAccountInfo();
   const fakeAccountInfos = createFakeAccountInfos(mitarbeitersWithoutAccountInfo);
-  const accountInfos = await getAccountInfoForMitarbeiterInfo();
+  const accountInfos = await _account_info.getAccountInfoForMitarbeiterInfo();
   const allAccountInfos = [...accountInfos, ...fakeAccountInfos];
   const mitarbeiterInfos = processData('id', allAccountInfos, [addWeiterbildungsjahr, addVk]);
   return mitarbeiterInfos;

@@ -2,11 +2,17 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
+    "sourceMap": true,
     "module": "commonjs",
     "types": ["node"],
     "emitDecoratorMetadata": true,
     "target": "es2021"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+  "paths": {
+    "@my-workspace/models/*": ["libs/models/src/lib/*"]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts", "**/*.spec.ts", "**/*.test.ts"]
 }

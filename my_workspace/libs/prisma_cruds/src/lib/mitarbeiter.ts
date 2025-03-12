@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { mitarbeiters, Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { FindManyArgsTypes } from './utils/types';
 import {
@@ -7,6 +7,28 @@ import {
   whereVertragIn,
   whereVertragsphaseIn
 } from './utils/crud_helper';
+
+export async function findOne<TInclude extends Prisma.mitarbeitersInclude | undefined>(
+  condition: Omit<Prisma.mitarbeitersFindUniqueArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.mitarbeiters.findUnique({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.mitarbeitersGetPayload<{ include: TInclude }> | null;
+}
+
+export async function findMany<TInclude extends Prisma.mitarbeitersInclude | undefined>(
+  condition?: Omit<Prisma.mitarbeitersFindManyArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.mitarbeiters.findMany({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.mitarbeitersGetPayload<{ include: TInclude }>[];
+}
 
 export async function getMitarbeiterById<TInclude extends Prisma.mitarbeitersInclude>(
   id: number | string,
@@ -45,7 +67,8 @@ export async function getMitarbeitersWithoutAccountInfo() {
 }
 
 export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes['mitarbeiters']) {
-  return await prismaDb.mitarbeiters.findMany(condition);
+  const result = await prismaDb.mitarbeiters.findMany(condition);
+  return result;
 }
 
 export async function getMitarbeiterForUrlaubssaldis(
