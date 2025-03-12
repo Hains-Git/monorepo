@@ -1,8 +1,13 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { findManyByModelKey, getUserById } from '@my-workspace/prisma_cruds';
+import { _user, findManyByModelKey } from '@my-workspace/prisma_cruds';
 import { format } from 'date-fns';
 
-import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
+import {
+  processData,
+  processAsyncData,
+  convertBereichPlanname,
+  convertDienstPlanname
+} from '@my-workspace/utils';
 import { newDate } from '@my-workspace/utils';
 
 const MONATSPLAN_ANSICHTEN = ['Datum-Dienste', 'Mitarbeiter-Datum', 'Mitarbeiter-Dienste'];
@@ -30,7 +35,9 @@ async function transformMitarbeiter(mitarbeiter: any) {
     }
   });
   mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe: any) => freigabe.freigabetyp_id);
-  mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map((dienstfreigabe: any) => dienstfreigabe.id);
+  mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map(
+    (dienstfreigabe: any) => dienstfreigabe.id
+  );
   mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map((dienstrating: any) => dienstrating.id);
   mitarbeiter['vertragphasen_ids'] = [];
   mitarbeiter['vertrags_arbeitszeits_ids'] = [];
@@ -133,7 +140,9 @@ async function getMonatsplanungSettings(user: any, isAdmin: boolean, canAcces: b
     res['vorlagen'] = await getUserVorlagen(mitarbeiterId);
   }
   const vorlagenIds =
-    !isAdmin && canAcces ? await getPublicVorlagesIdsByTeams(teamIds) : res.vorlagen.map((v) => v.id || 0) || [];
+    !isAdmin && canAcces
+      ? await getPublicVorlagesIdsByTeams(teamIds)
+      : res.vorlagen.map((v) => v.id || 0) || [];
 
   const dienstplanCustomFelder = await prismaDb.dienstplan_custom_felds.findMany({
     where: {
@@ -154,7 +163,9 @@ async function getMonatsplanungSettings(user: any, isAdmin: boolean, canAcces: b
   res.vorlagen = res.vorlagen.map((v) => {
     const filepattern = v?.allgemeine_vorlages?.[0]?.filepattern;
     if (v.allgemeine_vorlages.length !== 0) {
-      v.allgemeine_vorlages[0].publish = filepattern ? filepattern.split('_')[2].replace(/[()]/g, '').split('|') : '';
+      v.allgemeine_vorlages[0].publish = filepattern
+        ? filepattern.split('_')[2].replace(/[()]/g, '').split('|')
+        : '';
     }
     return v;
   });
@@ -247,7 +258,7 @@ function transformArbeitszeitAbsprachen(absprache: any) {
 async function getAllApiData(userId: number) {
   const res: any = {};
 
-  const user = await getUserById(userId, {
+  const user = await _user.getUserById(userId, {
     account_info: true,
     dienstplaners_teams: true,
     dienstplaner_user_settings: true,
@@ -265,7 +276,8 @@ async function getAllApiData(userId: number) {
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
   const isAdmin = userGroupsNames.includes('HAINS Admins');
   const canAcces =
-    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
+    userGroupsNames.includes('Dienstplaner Anästhesie HD') ||
+    userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
 
   const bereicheArr = await findManyByModelKey('bereiches', {});
   const poDiensteArr = await findManyByModelKey('po_diensts', {

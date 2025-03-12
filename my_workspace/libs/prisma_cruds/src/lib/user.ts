@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 export async function getUserById<TInclude extends Prisma.usersInclude>(id: number, include?: TInclude) {
   const result = await prismaDb.users.findUnique({
     where: {
-      id: id
+      id: Number(id)
     },
     include
   });

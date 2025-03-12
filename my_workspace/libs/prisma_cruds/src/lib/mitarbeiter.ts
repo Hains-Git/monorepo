@@ -1,12 +1,34 @@
 import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { FindManyArgsTypes } from './utils/types';
+import { TFindManyArgsTypes } from './utils/types';
 import {
   whereMitarbeiterAktivNoPlatzhalter,
   whereRotationIn,
   whereVertragIn,
   whereVertragsphaseIn
 } from './utils/crud_helper';
+
+export async function findOne<TInclude extends Prisma.mitarbeitersInclude | undefined>(
+  condition: Omit<Prisma.mitarbeitersFindUniqueArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.mitarbeiters.findUnique({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.mitarbeitersGetPayload<{ include: TInclude }> | null;
+}
+
+export async function findMany<TInclude extends Prisma.mitarbeitersInclude | undefined>(
+  condition?: Omit<Prisma.mitarbeitersFindManyArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.mitarbeiters.findMany({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.mitarbeitersGetPayload<{ include: TInclude }>[];
+}
 
 export async function getMitarbeiterById<TInclude extends Prisma.mitarbeitersInclude>(
   id: number | string,
@@ -44,25 +66,35 @@ export async function getMitarbeitersWithoutAccountInfo() {
   });
 }
 
-export async function getMitarbeitersByCustomQuery(condition: FindManyArgsTypes['mitarbeiters']) {
-  return await prismaDb.mitarbeiters.findMany(condition);
+export async function getMitarbeitersByCustomQuery(condition: TFindManyArgsTypes['mitarbeiters']) {
+  const result = await prismaDb.mitarbeiters.findMany(condition);
+  return result;
 }
 
-export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], start: Date, ende: Date) {
+export async function getMitarbeiterForUrlaubssaldis(
+  mitarbeiterIds: number[],
+  start: Date,
+  ende: Date,
+  allNotPlatzhalter = false
+) {
   return await prismaDb.mitarbeiters.findMany({
-    where: {
-      platzhalter: false,
-      OR: [
-        {
-          aktiv: true
-        },
-        {
-          id: {
-            in: mitarbeiterIds
-          }
+    where: allNotPlatzhalter
+      ? {
+          platzhalter: false
         }
-      ]
-    },
+      : {
+          platzhalter: false,
+          OR: [
+            {
+              aktiv: true
+            },
+            {
+              id: {
+                in: mitarbeiterIds
+              }
+            }
+          ]
+        },
     include: {
       urlaubssaldo_abspraches: true,
       funktion: {
@@ -89,6 +121,13 @@ export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], s
             where: {
               ...whereVertragsphaseIn(start, ende)
             },
+            include: {
+              vertragsstuves: {
+                include: {
+                  vertragsgruppes: true
+                }
+              }
+            },
             orderBy: [{ von: 'asc' }, { bis: 'asc' }]
           }
         }
@@ -110,7 +149,7 @@ export async function getMitarbeiterForUrlaubssaldis(mitarbeiterIds: number[], s
   });
 }
 
-export type mitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
+export type TMitarbeiterUrlaubssaldo = Awaited<ReturnType<typeof getMitarbeiterForUrlaubssaldis>>[number];
 
 export async function mitarbeiterUrlaubssaldoAktivAm(date: Date, id: number) {
   return await prismaDb.mitarbeiters.findFirst({

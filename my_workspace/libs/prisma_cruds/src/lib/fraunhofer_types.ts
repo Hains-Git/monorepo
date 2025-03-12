@@ -1,4 +1,4 @@
-export type DienstTyp =
+export type TDienstTyp =
   | 'Frühdienst'
   | 'Rufdienst'
   | 'Nachtdienst'
@@ -7,70 +7,70 @@ export type DienstTyp =
   | 'OnTopFD'
   | 'Frei';
 
-export type Einteilung = {
+export type TEinteilung = {
   MitarbeiterID: number;
   DienstID: number;
   BereichID: number | null;
   Tag: Date;
   IstRelevantFürDoppelWhopper?: boolean;
-  Typ?: DienstTyp;
+  Typ?: TDienstTyp;
 };
 
-export type FreigabeTyp = 'qualifiziert' | 'überqualifiziert' | 'nicht qualifiziert';
+export type TFreigabeTyp = 'qualifiziert' | 'überqualifiziert' | 'nicht qualifiziert';
 
-export type Freigabe = {
+export type TFreigabe = {
   Dienst: number;
   Tag: Date;
-  Freigabetyp: FreigabeTyp;
+  Freigabetyp: TFreigabeTyp;
 };
 
-export type Rotationszuweisung = {
+export type TRotationszuweisung = {
   Tag: Date;
   RotationsID: number;
 };
 
-export type MitarbeiterArbeitszeit = {
+export type TMitarbeiterArbeitszeit = {
   Tag: Date;
   ArbeitszeitInMinuten: number;
 };
 
-export type Wunsch = {
+export type TWunsch = {
   Tag: Date;
   Dienste: number[];
 };
 
-export type Präferenz = {
+export type TPräferenz = {
   Dienst: number;
   Bewertung: number;
 };
 
-export type Dienst = {
+export type TDienst = {
   ID: number;
   Name: string;
-  Typ: DienstTyp;
+  Typ: TDienstTyp;
   IstRelevantFürDoppelWhopper: boolean;
 };
 
-export type Kombibedarf = {
+export type TKombibedarf = {
   ID: number;
   Name: string;
-  Bedarfe: BedarfsID[];
+  Bedarfe: TBedarfsID[];
 };
 
-export type Rotation = {
+export type TRotation = {
   ID: number;
   Name: string;
   Dienste: number[];
 };
 
-export type BedarfsID = {
+export type TBedarfsID = {
   Tag: Date;
   Dienst: number;
   Bereich: number;
 };
 
-export type Bedarf = {
-  ID: BedarfsID;
+export type TBedarf = {
+  ID: TBedarfsID;
   Minimum: number;
   OptionalerZusätzlicherBedarf: number;
   IstBereitschaftsdienst: boolean;
@@ -80,60 +80,60 @@ export type Bedarf = {
   SollAutomatischGeplantWerden: boolean;
 };
 
-export type Bedarfsblock = {
-  Einträge: BedarfsID[];
+export type TBedarfsblock = {
+  Einträge: TBedarfsID[];
   AnzahlAusgleichstage: number;
 };
 
-export type Ausgleichsdienstgruppe = {
+export type TAusgleichsdienstgruppe = {
   Name: string;
-  Einträge: BedarfsID[];
+  Einträge: TBedarfsID[];
 };
 
-export type Mitarbeiter = {
+export type TMitarbeiter = {
   ID: number;
   Name: string;
-  Freigaben: Freigabe[];
+  Freigaben: TFreigabe[];
   KombibedarfAusschlüsse: number[];
-  Rotationen: Rotationszuweisung[];
-  Arbeitszeit: MitarbeiterArbeitszeit[];
-  Wünsche: Wunsch[];
+  Rotationen: TRotationszuweisung[];
+  Arbeitszeit: TMitarbeiterArbeitszeit[];
+  Wünsche: TWunsch[];
   'K-Wünsche': Date[];
-  Präferenzen: Präferenz[];
+  Präferenzen: TPräferenz[];
   MaximaleAnzahlBereitschaftsdienste: number;
 };
 
-export type PlanData = {
-  Mitarbeiter: Mitarbeiter[];
-  Dienste: Dienst[];
-  Kombibedarfe: Kombibedarf[];
-  Rotationen: Rotation[];
-  Bedarfe: Bedarf[];
-  Bedarfsblöcke: Bedarfsblock[];
-  Ausgleichsdienste: Ausgleichsdienstgruppe[];
-  FixierteEinteilungen: Einteilung[];
+export type TPlanData = {
+  Mitarbeiter: TMitarbeiter[];
+  Dienste: TDienst[];
+  Kombibedarfe: TKombibedarf[];
+  Rotationen: TRotation[];
+  Bedarfe: TBedarf[];
+  Bedarfsblöcke: TBedarfsblock[];
+  Ausgleichsdienste: TAusgleichsdienstgruppe[];
+  FixierteEinteilungen: TEinteilung[];
   AuslgeichsfreiDienstID: number;
   MinPräferenz: number;
   MaxPräferenz: number;
   msg: string;
 };
 
-export type FraunhoferNewPlan = {
+export type TFraunhoferNewPlan = {
   Name: string;
   Beschreibung: string;
-  Einteilungen: Einteilung[];
+  Einteilungen: TEinteilung[];
   Parameter: string;
   client_id: string;
   client_secret: string;
 };
 
-export type DienstTypenThemen = Record<DienstTyp, number[]>;
+export type TDienstTypenThemen = Record<TDienstTyp, number[]>;
 
-export type DienstkategorieDienste = Record<number, number[]>;
+export type TDienstkategorieDienste = Record<number, number[]>;
 
-export type FreigabetypenDienste = Record<number, Record<number, number>>;
+export type TFreigabetypenDienste = Record<number, Record<number, number>>;
 
-export type Dienstplan = {
+export type TDienstplan = {
   ID: number;
   Name: string;
   Beschreibung: string;

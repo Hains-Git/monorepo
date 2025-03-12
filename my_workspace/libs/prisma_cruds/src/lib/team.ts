@@ -1,6 +1,29 @@
+import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { colorRegEx, newDate } from '@my-workspace/utils';
 import { getTeamSollInclude } from './utils/crud_helper';
+
+export async function findOne<TInclude extends Prisma.teamsInclude | undefined>(
+  condition: Omit<Prisma.teamsFindUniqueArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.teams.findUnique({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.teamsGetPayload<{ include: TInclude }> | null;
+}
+
+export async function findMany<TInclude extends Prisma.teamsInclude | undefined>(
+  condition?: Omit<Prisma.teamsFindManyArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.teams.findMany({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.teamsGetPayload<{ include: TInclude }>[];
+}
 
 export async function getAllTeams() {
   return await prismaDb.teams.findMany();
@@ -99,7 +122,7 @@ export async function destroyOneTeam(id: number) {
   return '';
 }
 
-export type TeamInputType = {
+export type TTeamInputType = {
   name: string;
   default: boolean;
   verteiler_default: boolean;
@@ -107,20 +130,20 @@ export type TeamInputType = {
   color: string;
 };
 
-export type TeamKWKrankPufferInput = { kw: number; puffer: number };
-export type TeamVKSollInput = { soll: number; von: Date; bis: Date };
-export type TeamKopfSollInput = { soll: number; von: Date; bis: Date };
+export type TTeamKWKrankPufferInput = { kw: number; puffer: number };
+export type TTeamVKSollInput = { soll: number; von: Date; bis: Date };
+export type TTeamKopfSollInput = { soll: number; von: Date; bis: Date };
 
-export type TeamCreateOrUpdate = TeamInputType & {
+export type TTeamCreateOrUpdate = TTeamInputType & {
   id: number;
   kostenstelle_id: number;
-  team_kw_krankpuffers: TeamKWKrankPufferInput[];
-  team_vk_soll: TeamVKSollInput[];
-  team_kopf_soll: TeamKopfSollInput[];
+  team_kw_krankpuffers: TTeamKWKrankPufferInput[];
+  team_vk_soll: TTeamVKSollInput[];
+  team_kopf_soll: TTeamKopfSollInput[];
   funktionen_ids: number[];
 };
 
-export async function checkTeamInput(input: TeamCreateOrUpdate) {
+export async function checkTeamInput(input: TTeamCreateOrUpdate) {
   const msg = [];
   const nameVergeben = await prismaDb.teams.findFirst({ where: { name: input.name, id: { notIn: [input.id] } } });
   const kostenStelle = await prismaDb.kostenstelles.findFirst({ where: { id: input.kostenstelle_id } });
@@ -162,7 +185,7 @@ export async function checkTeamInput(input: TeamCreateOrUpdate) {
   return msg.join('\n');
 }
 
-export async function addTeamKrankpuffer(kwpuffer: TeamKWKrankPufferInput[], id: number) {
+export async function addTeamKrankpuffer(kwpuffer: TTeamKWKrankPufferInput[], id: number) {
   await prismaDb.team_kw_krankpuffers.deleteMany({
     where: {
       team_id: id
@@ -204,7 +227,7 @@ export async function addTeamFunktionen(funktionenIds: number[], id: number) {
   });
 }
 
-export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
+export async function addTeamVKSoll(vkSoll: TTeamVKSollInput[], id: number) {
   await prismaDb.team_vk_soll.deleteMany({
     where: {
       team_id: id
@@ -225,7 +248,7 @@ export async function addTeamVKSoll(vkSoll: TeamVKSollInput[], id: number) {
   });
 }
 
-export async function addTeamKopfSoll(kopfSoll: TeamKopfSollInput[], id: number) {
+export async function addTeamKopfSoll(kopfSoll: TTeamKopfSollInput[], id: number) {
   await prismaDb.team_kopf_soll.deleteMany({
     where: {
       team_id: id
@@ -259,7 +282,7 @@ export async function uncheckOldDefaultTeams(id: number) {
   });
 }
 
-export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
+export async function createOrUpdateTeam(args: TTeamCreateOrUpdate) {
   const input = {
     name: args.name.trim(),
     default: args.default,
@@ -286,7 +309,7 @@ export async function createOrUpdateTeam(args: TeamCreateOrUpdate) {
   if (msg) return msg;
 
   const record =
-    args.id <= 1
+    args.id < 1
       ? await prismaDb.teams.create({
           data: {
             ...input,

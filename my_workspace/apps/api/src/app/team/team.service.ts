@@ -3,7 +3,7 @@ import { newDate } from '@my-workspace/utils';
 import { Injectable } from '@nestjs/common';
 
 const createArgs = (body: any, id: any) => {
-  const args: _team.TeamCreateOrUpdate = {
+  const args: _team.TTeamCreateOrUpdate = {
     id: Number(id) || 0,
     name: String(body.name).trim(),
     default: body.default === 'true' || body.default === true,

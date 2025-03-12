@@ -6,7 +6,8 @@
     "migration:create": "npx prisma migrate dev --create-only",
     "migrate": "npx prisma migrate dev",
     "migrate:prod": "npx prisma migrate deploy",
-    "prisma:check": "npx prisma format && npx prisma validate && npx prisma generate"
+    "prisma:check": "npx prisma format && npx prisma validate && npx prisma generate",
+    "start:debug": "npx nest start --debug --watch"
   },
   "private": true,
   "dependencies": {

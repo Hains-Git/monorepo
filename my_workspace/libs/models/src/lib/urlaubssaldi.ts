@@ -2,13 +2,10 @@ import {
   _team,
   _arbeitszeittyp,
   _dienstbedarf,
-  getAllPoDiensts,
-  getDefaultKontingents,
-  getMitarbeiterEinteilungenNachTagen,
-  getMitarbeiterForUrlaubssaldis,
-  getPossibleDienstfrei,
-  Dienstfrei,
-  getEinteilungBlockTage
+  _po_dienst,
+  _kontingent,
+  _diensteinteilung,
+  _mitarbeiter
 } from '@my-workspace/prisma_cruds';
 import { getDateNr, getDateStr, getKW, newDate } from '@my-workspace/utils';
 import {
@@ -26,14 +23,14 @@ import {
   teams
 } from '@prisma/client';
 import {
-  ArbeitszeitverteilungSchichtDays,
+  TArbeitszeitverteilungSchichtDays,
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
 import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
 import { PlanerDate } from './planerdate/planerdate';
 
-type SaldiValues = {
+type TSaldiValues = {
   verfuegbar: number;
   einteilungen: number;
   urlaub: number;
@@ -48,7 +45,7 @@ type SaldiValues = {
   saldo: number;
 };
 
-const saldiDefaultValues: SaldiValues = {
+const saldiDefaultValues: TSaldiValues = {
   verfuegbar: 0,
   einteilungen: 0,
   urlaub: 0,
@@ -63,7 +60,7 @@ const saldiDefaultValues: SaldiValues = {
   saldo: 0
 };
 
-type RotationenHash = Record<
+type TRotationenHash = Record<
   number,
   (einteilung_rotations & {
     kontingents:
@@ -74,7 +71,7 @@ type RotationenHash = Record<
   })[]
 >;
 
-type DFInfo = {
+type TDFInfo = {
   id: number;
   tag: Date;
   dienst: string;
@@ -83,7 +80,7 @@ type DFInfo = {
   teamId: number;
 };
 
-type SaldiTeamDateFunctions = Record<
+type TSaldiTeamDateFunctions = Record<
   number,
   {
     count: number;
@@ -93,21 +90,21 @@ type SaldiTeamDateFunctions = Record<
   }
 >;
 
-type SaldiTeamDate = typeof saldiDefaultValues & {
+type TSaldiTeamDate = typeof saldiDefaultValues & {
   ID: number;
-  funktionen: SaldiTeamDateFunctions;
+  funktionen: TSaldiTeamDateFunctions;
   mitarbeiter: string[];
   einteilungen_info: {
     bedarf: (string | number)[][];
     ohne_bedarf: (string | number)[][];
-    dienstfrei: DFInfo[];
+    dienstfrei: TDFInfo[];
     optional: (string | number | boolean)[][];
   };
   bedarfe_dienstfrei: {
     count: number;
     eingeteilt: number;
     total: number;
-    einteilungen: DFInfo[];
+    einteilungen: TDFInfo[];
     [x: number]: {
       dienst: string;
       team: string;
@@ -118,36 +115,36 @@ type SaldiTeamDate = typeof saldiDefaultValues & {
   inTeam: string[];
 };
 
-type SaldiTeamBase = teams & {
+type TSaldiTeamBase = teams & {
   funktionen_ids: number[];
   team_kw_krankpuffers: team_kw_krankpuffers[];
   team_kopf_soll: team_kopf_soll[];
   team_vk_soll: team_vk_soll[];
 };
 
-type SaldiRecordElement = {
-  team: SaldiTeamBase;
-  dates: Record<string, SaldiTeamDate>;
+type TSaldiRecordElement = {
+  team: TSaldiTeamBase;
+  dates: Record<string, TSaldiTeamDate>;
   remove?: boolean;
 };
 
-type Saldi = Record<number, SaldiRecordElement>;
+type TSaldi = Record<number, TSaldiRecordElement>;
 
-type MitarbeiterInfos = {
+type TMitarbeiterInfos = {
   team_ids: Record<number, Record<string, number[]>>;
-  rotationen: RotationenHash;
+  rotationen: TRotationenHash;
 };
 
-type TeamIDs = MitarbeiterInfos['team_ids'][number];
+type TTeamIDs = TMitarbeiterInfos['team_ids'][number];
 
-type SaldiBase = {
+type TSaldiBase = {
   dates: Date[];
-  saldi: Saldi;
-  mitarbeiter_infos: MitarbeiterInfos;
-  default_team: SaldiTeamBase | null;
+  saldi: TSaldi;
+  mitarbeiter_infos: TMitarbeiterInfos;
+  default_team: TSaldiTeamBase | null;
 };
 
-type BedarfeProDienstTagBereich = Record<
+type TBedarfeProDienstTagBereich = Record<
   number,
   Record<
     string,
@@ -163,7 +160,7 @@ type BedarfeProDienstTagBereich = Record<
   >
 >;
 
-const noTeam: SaldiTeamBase = {
+const noTeam: TSaldiTeamBase = {
   id: 0,
   name: 'Ohne Team',
   default: false,
@@ -184,7 +181,7 @@ async function getSaldiBase(start: Date, ende: Date) {
   for (const d = newDate(start); d <= newDate(ende); d.setDate(d.getDate() + 1)) {
     dates.push(newDate(d));
   }
-  const result: SaldiBase = {
+  const result: TSaldiBase = {
     dates,
     saldi: {
       [noTeam.id]: {
@@ -220,7 +217,7 @@ async function getSaldiBase(start: Date, ende: Date) {
   return result;
 }
 
-function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: Saldi) {
+function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: TSaldi) {
   saldi[teamId].dates[date] ||= {
     ...saldiDefaultValues,
     ID: teamId,
@@ -243,8 +240,8 @@ function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: Saldi) 
   return saldi[teamId].dates[date];
 }
 
-async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
-  const bedarfeProDienstTagBereich: BedarfeProDienstTagBereich = {};
+async function checkTeamBedarfe(dates: Date[], saldi: TSaldi) {
+  const bedarfeProDienstTagBereich: TBedarfeProDienstTagBereich = {};
   const days: Date[] = [];
   const daysHash: Record<string, Date> = {};
   const d = newDate(dates[0]);
@@ -269,7 +266,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   );
   const dienstbedarfe = await _dienstbedarf.getDienstbedarfForSaldi(days[0], days[days.length - 1]);
   const dienstfreis: Record<number, Record<string, boolean>> = {};
-  const computedSchichten: Record<number, ArbeitszeitverteilungSchichtDays> = {};
+  const computedSchichten: Record<number, TArbeitszeitverteilungSchichtDays> = {};
   const bedarfeLength = dienstbedarfe.length;
   const daysLength = days.length;
   const planerDates: PlanerDate[] = [];
@@ -352,7 +349,7 @@ async function checkTeamBedarfe(dates: Date[], saldi: Saldi) {
   return bedarfeProDienstTagBereich;
 }
 
-function checkBedarf(df: Dienstfrei, bedarf: bedarfs_eintrags) {
+function checkBedarf(df: _diensteinteilung.TDienstfrei, bedarf: bedarfs_eintrags) {
   if (!df.tag || !bedarf.tag) return false;
   return (
     (df.dienstplans?.dienstplanbedarf_id === null ||
@@ -382,13 +379,13 @@ function checkSchichten(
 }
 
 async function shouldAddDienstfrei(
-  df: Dienstfrei,
+  df: _diensteinteilung.TDienstfrei,
   date: Date,
   eingeteiltId = '',
   eingeteilt: Record<
     string,
     {
-      einteilungen: Record<number, Record<string, Dienstfrei>>;
+      einteilungen: Record<number, Record<string, _diensteinteilung.TDienstfrei>>;
       bloecke: Record<number, Record<number, number>>;
     }
   > = {},
@@ -428,8 +425,9 @@ async function shouldAddDienstfrei(
     const be = block[block.length - 1];
     if (!be?.tag) return shouldAdd;
     const dates = block.map((b) => b.tag || newDate());
-    const einteilungenBlockSize = (await getEinteilungBlockTage(mitarbeiterId, dates, currFirstBedarf.id, onlyCounts))
-      .length;
+    const einteilungenBlockSize = (
+      await _diensteinteilung.getEinteilungBlockTage(mitarbeiterId, dates, currFirstBedarf.id, onlyCounts)
+    ).length;
     const isFullBlock = einteilungenBlockSize === block.length;
     const isBeforeDate = getDateNr(be.tag) < dateNr;
     if (!(isFullBlock && isBeforeDate)) return shouldAdd;
@@ -451,8 +449,8 @@ async function shouldAddDienstfrei(
 }
 
 async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[]) {
-  const dienstfreiEingeteilt: Record<string, Record<number, Record<number, DFInfo>>> = {};
-  const dienstfrei = await getPossibleDienstfrei(dates, mitarbeiterIds, true);
+  const dienstfreiEingeteilt: Record<string, Record<number, Record<number, TDFInfo>>> = {};
+  const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds, true);
   const dienstfreiLength = dienstfrei.length;
   const datesLength = dates.length;
   for (let i = 0; i < dienstfreiLength; i++) {
@@ -480,7 +478,7 @@ async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[]) {
   return dienstfreiEingeteilt;
 }
 
-const addTeamId = (team: { id: number } | null, teamIds: TeamIDs, date: string) => {
+const addTeamId = (team: { id: number } | null, teamIds: TTeamIDs, date: string) => {
   let teamId = noTeam.id;
   if (team) {
     teamId = team.id || noTeam.id;
@@ -496,10 +494,10 @@ async function mitarbeiterEinteilen(
   team: teams | null,
   dateKey: string,
   mitarbeiterName: string,
-  saldi: Saldi,
+  saldi: TSaldi,
   dienstName: string,
-  bedarfe: BedarfeProDienstTagBereich[number][string],
-  teamIds: TeamIDs
+  bedarfe: TBedarfeProDienstTagBereich[number][string],
+  teamIds: TTeamIDs
 ) {
   let notVerfuegbar = false;
   // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
@@ -561,25 +559,28 @@ async function mitarbeiterEinteilen(
 }
 
 async function checkMitarbeiterVerfuegbarkeit(
-  bedarfeProDienstTagBereich: BedarfeProDienstTagBereich,
-  result: SaldiBase
+  bedarfeProDienstTagBereich: TBedarfeProDienstTagBereich,
+  result: TSaldiBase
 ) {
   const dates = result.dates;
   const saldi = result.saldi;
   const defaultTeam = result.default_team;
-  const infos: MitarbeiterInfos = {
+  const infos: TMitarbeiterInfos = {
     team_ids: {},
     rotationen: {}
   };
-  const diensteHash = (await getAllPoDiensts()).reduce((acc: Record<number, po_diensts>, d) => {
+  const diensteHash = (await _po_dienst.getAllPoDiensts()).reduce((acc: Record<number, po_diensts>, d) => {
     acc[d.id] = d;
     return acc;
   }, {});
-  const defaultKontingent = await getDefaultKontingents();
-  const mitarbeiterEinteilungen = await getMitarbeiterEinteilungenNachTagen(dates[0], dates[dates.length - 1]);
+  const defaultKontingent = await _kontingent.getDefaults();
+  const mitarbeiterEinteilungen = await _diensteinteilung.getMitarbeiterEinteilungenNachTagen(
+    dates[0],
+    dates[dates.length - 1]
+  );
   const mitarbeiterIds = Object.keys(mitarbeiterEinteilungen);
 
-  const mitarbeiter = await getMitarbeiterForUrlaubssaldis(
+  const mitarbeiter = await _mitarbeiter.getMitarbeiterForUrlaubssaldis(
     mitarbeiterIds.map((m) => Number(m)),
     dates[0],
     dates[dates.length - 1]
@@ -669,7 +670,7 @@ async function checkMitarbeiterVerfuegbarkeit(
   return infos;
 }
 
-function getUrlaubssaldo(teamSaldo: SaldiRecordElement, date: string) {
+function getUrlaubssaldo(teamSaldo: TSaldiRecordElement, date: string) {
   const kw = getKW(date);
   const teamDateSaldo = teamSaldo.dates[date];
   if (!teamDateSaldo) return 0;
@@ -682,10 +683,10 @@ function getUrlaubssaldo(teamSaldo: SaldiRecordElement, date: string) {
 
 function moveFreeMitarbeiterToOtherTeam(
   diff: number,
-  saldiFunktion: SaldiTeamDateFunctions[number],
+  saldiFunktion: TSaldiTeamDateFunctions[number],
   dateStr: string,
-  from: SaldiRecordElement,
-  to: SaldiRecordElement
+  from: TSaldiRecordElement,
+  to: TSaldiRecordElement
 ) {
   const fromTeamDateSaldo = from.dates?.[dateStr];
   const toTeamDateSaldo = to.dates?.[dateStr];
@@ -717,7 +718,7 @@ function moveFreeMitarbeiterToOtherTeam(
   to.dates[dateStr].saldo = getUrlaubssaldo(to, dateStr);
 }
 
-function moveNoTeamToOtherTeams(saldiBase: SaldiBase, dateStr: string) {
+function moveNoTeamToOtherTeams(saldiBase: TSaldiBase, dateStr: string) {
   const { saldi, default_team } = saldiBase;
   const noTeamSaldo = saldi[noTeam.id];
   const noTeamDateSaldo = noTeamSaldo.dates[dateStr];
@@ -770,7 +771,7 @@ function moveNoTeamToOtherTeams(saldiBase: SaldiBase, dateStr: string) {
     noTeamDateSaldo.verfuegbar > 0 || noTeamDateSaldo.bedarfe_min > 0 || noTeamDateSaldo.bedarfe_opt > 0;
 }
 
-async function fillSolls(saldiBase: SaldiBase) {
+async function fillSolls(saldiBase: TSaldiBase) {
   const { default_team, dates, saldi } = saldiBase;
   const noTeamSaldo = saldi[noTeam.id];
   const defaultTeamSaldo = saldi[default_team?.id || noTeam.id];
@@ -800,8 +801,6 @@ async function fillSolls(saldiBase: SaldiBase) {
         if (!teamDateSaldo) continue;
 
         teamDateSaldo.saldo = getUrlaubssaldo(teamSaldo, dateStr);
-        if (teamDateSaldo.saldo >= 0) continue;
-
         const countInTeam =
           teamDateSaldo.inTeam.length +
           Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {

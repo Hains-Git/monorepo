@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
 import { checkDate } from './zeitraumkategorie';
-import { createPlanerDate, existFeiertagEntryByYear, getPlanerDateFeiertage } from '@my-workspace/prisma_cruds';
+import { _planerdate } from '@my-workspace/prisma_cruds';
 import { zeitraumkategories } from '@prisma/client';
 import { getDateNr, getDateStr, getKW, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
-type Feiertag = {
+type TFeiertag = {
   name: string;
   day: number;
   month: number;
@@ -15,7 +15,7 @@ export class PlanerDate {
   private static WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   private static MONTHS = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 
-  private static feiertage: Record<string, Record<string, Feiertag[]>> = {};
+  private static feiertage: Record<string, Record<string, TFeiertag[]>> = {};
   private static last_week: Record<string, number> = {};
 
   week_counter: number;
@@ -30,7 +30,7 @@ export class PlanerDate {
   week_day_nr: number;
   week: number;
   day_of_year: number;
-  feiertag: '' | Feiertag;
+  feiertag: '' | TFeiertag;
   label: string;
   day: number;
   year: number;
@@ -223,7 +223,7 @@ export class PlanerDate {
         jahr: osterDatum.getFullYear()
       };
 
-      await createPlanerDate(data);
+      await _planerdate.createPlanerDate(data);
     }
   }
 
@@ -241,13 +241,13 @@ export class PlanerDate {
 
   static async getFeiertag(date: Date) {
     const yearStr = date.getFullYear();
-    const exist = await existFeiertagEntryByYear(yearStr);
+    const exist = await _planerdate.existFeiertagEntryByYear(yearStr);
 
     if (!exist) {
       await PlanerDate.calcFeiertage(yearStr);
     }
 
-    const feiertag = await getPlanerDateFeiertage(date);
+    const feiertag = await _planerdate.getPlanerDateFeiertage(date);
 
     return feiertag || '';
   }
