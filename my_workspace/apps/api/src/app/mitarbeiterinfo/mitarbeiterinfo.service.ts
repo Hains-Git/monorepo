@@ -35,7 +35,8 @@ import {
   AccountInfo,
   Dienstkategorie,
   Dienstwunsch,
-  Vertrag
+  Vertrag,
+  Dienstfrei
 } from '@my-workspace/models';
 import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 
@@ -157,6 +158,7 @@ export class MitarbeiterInfoService {
     result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
     result['automatische_einteilungen'] = automatischeEinteilungen;
     result['dienste'] = dienste.map((dienst) => ({ id: dienst.id, name: dienst.name }));
+    // result['dienstfrei'] = await Dienstfrei.getDienstfreis([mitarbeiterId]);
     result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
     result['dienstwunsch_verteilung'] = diesntwunschVerteilung;
     result['dienstwunsche'] = dienstwunsche;
