@@ -145,10 +145,10 @@ export async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[
 export async function getDienstfreis(mitarbeiterIds: number[] = []) {
   const eingeteilt: TDFEingeteilt = {};
   const today = newDate();
-  const monthStart = newDateYearMonthDay(today.getFullYear(), today.getMonth(), 1);
-  const monthEnd = newDateYearMonthDay(today.getFullYear(), today.getMonth() + 1, 0);
+  const previousMonthStart = newDateYearMonthDay(today.getFullYear(), today.getMonth() - 1, 1);
+  const nextMonthend = newDateYearMonthDay(today.getFullYear(), today.getMonth() + 2, 0);
   const dates: Date[] = [];
-  for (let i = monthStart; i <= monthEnd; i.setDate(i.getDate() + 1)) {
+  for (let i = previousMonthStart; i <= nextMonthend; i.setDate(i.getDate() + 1)) {
     dates.push(newDate(i));
   }
   const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds);
