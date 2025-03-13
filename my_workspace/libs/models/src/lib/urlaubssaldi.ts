@@ -27,8 +27,8 @@ import {
   createSchichtenDaysFromArbeitszeitverteilung
 } from './arbeitszeitverteilung';
 import { calculateDienstfreiFromDienstbedarf, checkDateOnDienstbedarf } from './dienstbedarf';
-import { mitarbeiterTeamAmByMitarbeiter, mitarbeiterUrlaubssaldoAktivAm } from './mitarbeiter';
 import { PlanerDate } from './planerdate/planerdate';
+import { Mitarbeiter } from '..';
 
 type TSaldiValues = {
   verfuegbar: number;
@@ -610,18 +610,18 @@ async function checkMitarbeiterVerfuegbarkeit(
       teamIds[dateKey] ||= [];
       mitarbeiterTeamAm[mId] ||= {};
       mitarbeiterTeamAm[mId][dateKey] ||=
-        (await mitarbeiterTeamAmByMitarbeiter(m, date, defaultTeam, defaultKontingent)) || noTeam;
+        (await Mitarbeiter.mitarbeiterTeamAmByMitarbeiter(m, date, defaultTeam, defaultKontingent)) || noTeam;
       const team = mitarbeiterTeamAm[mId][dateKey];
       einteilungen[dateKey] ||= [];
       let notVerfuegbar = false;
-      const aktiv = !!(accountInfo && (await mitarbeiterUrlaubssaldoAktivAm(m, date)));
+      const aktiv = !!(accountInfo && Mitarbeiter.mitarbeiterUrlaubssaldoAktivAm(m, date));
       const einteilungenLength = einteilungen[dateKey].length;
 
       for (let j = 0; j < einteilungenLength; j++) {
         // Einteilung: [t.id, p.id, p.stundennachweis_krank, p.stundennachweis_urlaub, p.stundennachweis_sonstig, ignore_in_urlaubssaldo, bereich_id, is_optional, as_abwesenheit]
         const e = einteilungen[dateKey][j];
         const dienstId = parseInt(e[1], 10);
-        notVerfuegbar ||= await mitarbeiterEinteilen(
+        const eingeteilt = await mitarbeiterEinteilen(
           e,
           team,
           dateKey,
@@ -631,6 +631,7 @@ async function checkMitarbeiterVerfuegbarkeit(
           bedarfeProDienstTagBereich?.[dienstId]?.[dateKey],
           teamIds
         );
+        notVerfuegbar ||= eingeteilt;
       }
 
       const teamId = addTeamId(team, teamIds, dateKey);
@@ -654,7 +655,9 @@ async function checkMitarbeiterVerfuegbarkeit(
             currDfSaldi.bedarfe_dienstfrei.total = 0;
           }
         }
-      } else if (aktiv && !notVerfuegbar) {
+      }
+
+      if (aktiv && !notVerfuegbar) {
         currSaldi.verfuegbar += 1;
         currSaldi.funktionen[funktionId] ||= {
           count: 0,
