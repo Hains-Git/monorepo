@@ -460,7 +460,7 @@ function computeEinteilung(einteilungen: any, dates: any, bedarfs_eintraege: any
         };
       }
       if (!planerDate.by_mitarbeiter[mitarbeiter_id]) {
-        console.log(mitarbeiter_id);
+        // console.log(mitarbeiter_id);
         planerDate.by_mitarbeiter[mitarbeiter_id] = {
           einteilung_ids: {},
           rotation_ids: [],
