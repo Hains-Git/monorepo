@@ -57,32 +57,32 @@ async function shouldAddDienstfrei(
 ) {
   let shouldAdd = false;
   const mitarbeiterId = df.mitarbeiter_id || 0;
-  eingeteiltId ||= `${df.mitarbeiters?.planname}_${df.po_diensts?.planname}_${df.tag}`;
   const dateStr = getDateStr(date);
-  const tagKey = df.tag ? getDateStr(df.tag) : '';
+  const dfTagStr = df.tag ? getDateStr(df.tag) : '';
+  eingeteiltId ||= `${df.mitarbeiters?.planname}_${df.po_diensts?.planname}_${dfTagStr}`;
   const dateNr = getDateNr(dateStr);
   const bedarfsEintraege = df.po_diensts?.bedarfs_eintrags;
   if (!df.po_dienst_id || !bedarfsEintraege) return shouldAdd;
-  if (!tagKey || getDateNr(tagKey) >= dateNr) return shouldAdd;
-  eingeteilt[tagKey] ||= {
+  if (!dfTagStr || getDateNr(dfTagStr) >= dateNr) return shouldAdd;
+  eingeteilt[dateStr] ||= {
     einteilungen: {},
     bloecke: {}
   };
-  eingeteilt[tagKey].einteilungen[df.po_dienst_id] ||= {};
-  if (eingeteilt[tagKey].einteilungen[df.po_dienst_id][eingeteiltId]) return shouldAdd;
-  eingeteilt[tagKey].einteilungen[df.po_dienst_id][eingeteiltId] = df;
+  eingeteilt[dateStr].einteilungen[df.po_dienst_id] ||= {};
+  if (eingeteilt[dateStr].einteilungen[df.po_dienst_id][eingeteiltId]) return shouldAdd;
+  eingeteilt[dateStr].einteilungen[df.po_dienst_id][eingeteiltId] = df;
   const currBedarf = bedarfsEintraege.find((be) => checkBedarf(df, be));
   if (!currBedarf?.tag) return shouldAdd;
   const bedarfTagStr = getDateStr(currBedarf.tag);
   if (getDateNr(bedarfTagStr) >= dateNr) {
-    console.log(`Not add Dienstfrei, kein Bedarf: ${currBedarf} - ${tagKey}`);
+    console.log(`Not add Dienstfrei, kein Bedarf: ${currBedarf} - ${dfTagStr}, id: ${df.id}`);
     return shouldAdd;
   }
   if (currBedarf.is_block) {
     const firstEntry = currBedarf.first_entry || 0;
-    eingeteilt[tagKey].bloecke[firstEntry] ||= {};
-    if (eingeteilt[tagKey].bloecke[firstEntry]?.[mitarbeiterId]) return shouldAdd;
-    eingeteilt[tagKey].bloecke[firstEntry][mitarbeiterId] ||= 1;
+    eingeteilt[dateStr].bloecke[firstEntry] ||= {};
+    if (eingeteilt[dateStr].bloecke[firstEntry]?.[mitarbeiterId]) return shouldAdd;
+    eingeteilt[dateStr].bloecke[firstEntry][mitarbeiterId] ||= 1;
     const currFirstBedarf = currBedarf.first_bedarf;
     const block = currFirstBedarf?.block_bedarfe;
     if (!currFirstBedarf || !block) return shouldAdd;
