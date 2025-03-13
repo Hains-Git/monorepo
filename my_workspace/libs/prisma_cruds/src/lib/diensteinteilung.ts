@@ -168,10 +168,6 @@ export async function countPublicUrlaube(start: Date, ende: Date) {
   );
 }
 export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Date) {
-  const startZero = newDate(start);
-  startZero.setHours(0, 0, 0, 0);
-  const endZero = newDateYearMonthDay(ende.getFullYear(), ende.getMonth(), ende.getDate() + 1);
-  endZero.setHours(0, 0, 0, 0);
   const einteilungen = await prismaDb.$queryRaw<
     {
       mitarbeiter_id: number;
@@ -212,7 +208,7 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
           JOIN po_diensts AS p ON p.id = de.po_dienst_id
           JOIN teams AS t ON p.team_id = t.id
           GROUP BY m.id, de.tag
-          HAVING de.tag >= ${startZero} AND de.tag <= ${endZero}
+          HAVING de.tag >= ${start}::Date AND de.tag <= ${ende}::Date
           ORDER BY m.id, de.tag
     `;
   return einteilungen.reduce((acc: Record<number, Record<string, string[][]>>, e) => {

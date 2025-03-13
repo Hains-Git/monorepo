@@ -5,6 +5,7 @@ export * as AccountInfo from './lib/accountinfo';
 export * as Mitarbeiter from './lib/mitarbeiter';
 export * as Vertrag from './lib/vertrag';
 export * as PlanungsInfo from './lib/planungsinfo';
+export * as Dienstfrei from './lib/dienstfrei';
 export * from './lib/planerdate/planerdate';
 export * as Zeitraumkategorie from './lib/planerdate/zeitraumkategorie';
 export * as ArbeitszeitVerteilung from './lib/arbeitszeitverteilung';
