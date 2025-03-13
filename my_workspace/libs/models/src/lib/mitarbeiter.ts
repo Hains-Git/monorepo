@@ -439,7 +439,6 @@ export function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubs
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
-  console.log(mitarbeiter.planname, tag, aktiv);
   if (aktiv && mitarbeiter.aktiv_bis) {
     mitarbeiter.aktiv_bis.setHours(12, 0, 0, 0);
     aktiv = mitarbeiter.aktiv_bis >= tag;
@@ -456,10 +455,7 @@ export function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubs
   return aktiv;
 }
 
-export async function mitarbeiterUrlaubssaldoAktivAm(
-  mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo,
-  date = newDate()
-) {
+export function mitarbeiterUrlaubssaldoAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo, date = newDate()) {
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
   const aktiv = !mitarbeiter.urlaubssaldo_abspraches.find((a) => {

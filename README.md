@@ -123,3 +123,11 @@ Für die erste Initialisierung wird wie folgt vorgegangen:
   - docker restart hains_monorepo
 - ansonsten:
   - `npm run migrate:prod`
+
+### Wichtige Hinweise zu Dates:
+
+- Bei Raw-Queries ist es wichtig zu beachten, dass Dates auf den Datentyp Date gecastet werden.
+
+```SQL
+WHERE de.tag >= ${start}::Date AND de.tag <= ${ende}::Date
+```

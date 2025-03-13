@@ -15,7 +15,7 @@ import {
 } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { startOfMonth, endOfMonth, parseISO, formatDate } from 'date-fns';
-import { formatDateForDB, getDateStr, newDate } from '@my-workspace/utils';
+import { formatDateForDB, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 type TParamsOhneBedarf = {
   von: Date;
@@ -187,12 +187,14 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
             || ',' || p.stundennachweis_sonstig
             || ',' || CASE WHEN (
                         SELECT COUNT(*) FROM dienstbedarves AS db
-                          WHERE db.po_dienst_id = p.id
+                          WHERE db.po_dienst_id = p.id 
+                          AND db.end_date >= de.tag
                         ) > 0
                       THEN CAST((
                           SELECT COUNT(*)  FROM dienstbedarves AS db
                           WHERE db.po_dienst_id = p.id
                           AND db.ignore_in_urlaubssaldo
+                          AND db.end_date >= de.tag
                         ) AS varchar)
                       ELSE 'false'
                       END
@@ -202,20 +204,20 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
             , ';'
           ) as einteilungen
           FROM diensteinteilungs AS de
-          JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id AND counts
-          JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id AND platzhalter = FALSE
+          JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id AND es.counts
+          JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id AND m.platzhalter = FALSE
           JOIN po_diensts AS p ON p.id = de.po_dienst_id
           JOIN teams AS t ON p.team_id = t.id
           GROUP BY m.id, de.tag
-          HAVING de.tag >= ${start} AND de.tag <= ${ende}
+          HAVING de.tag >= ${start}::Date AND de.tag <= ${ende}::Date
           ORDER BY m.id, de.tag
     `;
   return einteilungen.reduce((acc: Record<number, Record<string, string[][]>>, e) => {
     const dateStr = getDateStr(e.tag);
     const mId = e.mitarbeiter_id;
-    const einteilungen = e.einteilungen.split(';').map((e) => e.split(','));
+    const einteilungenArr = e.einteilungen.split(';').map((e) => e.split(','));
     acc[mId] ||= {};
-    acc[mId][dateStr] = einteilungen;
+    acc[mId][dateStr] = einteilungenArr;
     return acc;
   }, {});
 }
