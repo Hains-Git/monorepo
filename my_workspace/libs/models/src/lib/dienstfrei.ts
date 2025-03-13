@@ -180,4 +180,5 @@ export async function getDienstfreis(mitarbeiterIds: number[] = []) {
       });
     }
   }
+  return result;
 }

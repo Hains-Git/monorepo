@@ -50,8 +50,8 @@ export class AppService {
   async getDienstfrei(body: any) {
     let mitarbeiterIds: number[] = [];
     if (Array.isArray(body?.mitarbeiter_ids)) {
-      mitarbeiterIds = body.mitarbeiter_ids.map(Number).filter(!isNaN);
+      mitarbeiterIds = body.mitarbeiter_ids.map(Number).filter((id) => !isNaN(id));
     }
-    return Dienstfrei.getDienstfreis(mitarbeiterIds);
+    return await Dienstfrei.getDienstfreis(mitarbeiterIds);
   }
 }
