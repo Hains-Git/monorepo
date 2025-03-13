@@ -112,9 +112,9 @@ async function shouldAddDienstfrei(
   return shouldAdd;
 }
 
-export async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[]) {
+export async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[], onlyCounts = false) {
   const dienstfreiEingeteilt: Record<string, Record<number, Record<number, TDFInfo>>> = {};
-  const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds, true);
+  const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds, onlyCounts);
   const dienstfreiLength = dienstfrei.length;
   const datesLength = dates.length;
   for (let i = 0; i < dienstfreiLength; i++) {
@@ -125,7 +125,7 @@ export async function calculateDienstfrei(dates: Date[], mitarbeiterIds: number[
     for (let j = 0; j < datesLength; j++) {
       const date = dates[j];
       const dateKey = getDateStr(date);
-      const check = await shouldAddDienstfrei(df, date);
+      const check = await shouldAddDienstfrei(df, date, '', {}, onlyCounts);
       if (!check) continue;
       dienstfreiEingeteilt[dateKey] ||= {};
       dienstfreiEingeteilt[dateKey][mitarbeiterId] ||= {};
@@ -151,7 +151,7 @@ export async function getDienstfreis(mitarbeiterIds: number[] = []) {
   for (let i = previousMonthStart; i <= nextMonthend; i.setDate(i.getDate() + 1)) {
     dates.push(newDate(i));
   }
-  const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds);
+  const dienstfrei = await _diensteinteilung.getPossibleDienstfrei(dates, mitarbeiterIds, true);
   const result: {
     tag: string;
     description: string;

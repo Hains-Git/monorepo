@@ -447,7 +447,8 @@ async function checkMitarbeiterVerfuegbarkeit(
   );
   const dienstfreiEingeteilt = await Dienstfrei.calculateDienstfrei(
     dates,
-    mitarbeiter.map((m) => m.id)
+    mitarbeiter.map((m) => m.id),
+    true
   );
   const datesLength = dates.length;
   const mitarbeiterLength = mitarbeiter.length;
