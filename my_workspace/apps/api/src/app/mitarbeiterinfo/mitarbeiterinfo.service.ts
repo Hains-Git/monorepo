@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import {
+  _user,
   _merkmal,
   _mitarbeiter_merkmal,
   _freigabe,
@@ -63,10 +64,15 @@ export class MitarbeiterInfoService {
 
   async getEinteilungenInTime(body) {
     const { start, end, id: mitarbeiter_id } = body;
-    const einteilungen = await _diensteinteilung.getPublicRangeEinteilungenForMitarbeiter(mitarbeiter_id, start, end, {
-      po_diensts: true,
-      einteilungsstatuses: true
-    });
+    const einteilungen = await _diensteinteilung.getPublicRangeEinteilungenForMitarbeiter(
+      mitarbeiter_id,
+      start,
+      end,
+      {
+        po_diensts: true,
+        einteilungsstatuses: true
+      }
+    );
     return einteilungen;
   }
 
@@ -77,6 +83,7 @@ export class MitarbeiterInfoService {
       account_info: {
         include: {
           user: {
+            omit: _user.omitUserFields,
             include: {
               user_gruppes: {
                 include: {
@@ -130,57 +137,55 @@ export class MitarbeiterInfoService {
       isRotationsPlaner
     );
 
-    const statistic = await Mitarbeiter.getKontingentEingeteiltBasis(mitarbeiterId, einteilungenInKontingenten);
+    const statistic = await Mitarbeiter.getKontingentEingeteiltBasis(
+      mitarbeiterId,
+      einteilungenInKontingenten
+    );
 
     const currentDate = newDate();
     const anfang = startOfMonth(currentDate);
     const ende = endOfMonth(addMonths(currentDate, 8));
     const diesntwunschVerteilung = await Dienstwunsch.verteilung(anfang, ende);
-    result['dienstwunsch_verteilung'] = diesntwunschVerteilung;
 
-    result['urlaubssaldo_absprachen'] = urlaubssaldoAbsprachen;
-    result['mitarbeiter_merkmale'] = mitarbeiterMerkmale;
-    result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
-    result['teams'] = processData('id', teams);
-    result['mitarbeiter'] = transformObject(mitarbeiter, [
-      {
-        key: 'weiterbildungsjahr',
-        method: Mitarbeiter.addWeiterbildungsjahr
-      }
-    ]);
     result['accountInfo'] = transformObject(accountInfo, [
       {
         key: 'renten_eintritt',
         method: AccountInfo.rentenEintritt
       }
     ]);
-    result['team_am'] = teamAm;
-    result['freigaben'] = freigaben;
-    result['statuse'] = processData('id', freigabestatuses);
-    result['dienste'] = dienste.map((dienst) => ({ id: dienst.id, name: dienst.name }));
-    result['ratings'] = processData('po_dienst_id', ratings);
-    result['dienstwunsche'] = dienstwunsche;
-    result['vertragsphase'] = vertragsphasen.map((vp) => {
-      // vp.von = formatDate(vp.von, 'yyyy-MM-dd') as unknown as Date;
-      // vp.bis = formatDate(vp.bis, 'yyyy-MM-dd') as unknown as Date;
-      return vp;
-    });
-    result['automatische_einteilungen'] = automatischeEinteilungen;
-    result['merkmale'] = merkmale;
-    result['kontingente'] = statistic.kontingente;
-    result['rotationen'] = statistic.rotationen;
     result['alle_rotationen'] = alleRotationen;
-
+    result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
+    result['automatische_einteilungen'] = automatischeEinteilungen;
+    result['dienste'] = dienste.map((dienst) => ({ id: dienst.id, name: dienst.name }));
+    result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
+    result['dienstwunsch_verteilung'] = diesntwunschVerteilung;
+    result['dienstwunsche'] = dienstwunsche;
+    result['freigaben'] = freigaben;
+    result['geraetepaesse'] = overview.geraete;
+    result['kontingente'] = statistic.kontingente;
+    result['merkmale'] = merkmale;
+    result['mitarbeiter'] = transformObject(mitarbeiter, [
+      {
+        key: 'weiterbildungsjahr',
+        method: Mitarbeiter.addWeiterbildungsjahr
+      }
+    ]);
+    result['mitarbeiter_merkmale'] = mitarbeiterMerkmale;
+    result['nicht_einteilen_absprachen'] =
+      NichtEinteilenAbsprache.transformNichtEinteilenAbsprache(nichtEinteilenAbsprachen);
+    result['ratings'] = processData('po_dienst_id', ratings);
+    result['rollen'] = accountInfo.user.user_gruppes.map((ug) => ug.gruppes) || [];
+    result['rotationen'] = statistic.rotationen;
     alleRotationen.forEach((rotation) => {
       result['rotationen'][rotation.kontingent_id].push(rotation);
     });
-
-    result['geraetepaesse'] = overview.geraete;
-    result['rollen'] = accountInfo.user.user_gruppes.map((ug) => ug.gruppes) || [];
-    result['nicht_einteilen_absprachen'] =
-      NichtEinteilenAbsprache.transformNichtEinteilenAbsprache(nichtEinteilenAbsprachen);
-
-    result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
+    result['statuse'] = processData('id', freigabestatuses);
+    result['teams'] = processData('id', teams);
+    result['team_am'] = teamAm;
+    result['urlaubssaldo_absprachen'] = urlaubssaldoAbsprachen;
+    result['vertragsphase'] = vertragsphasen.map((vp) => {
+      return vp;
+    });
 
     return result;
   }

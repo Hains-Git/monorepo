@@ -1,6 +1,6 @@
 import { newDate, processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
-import { mitarbeiters } from '@prisma/client';
+import { diensteinteilungs, mitarbeiters } from '@prisma/client';
 
 import { _account_info, _mitarbeiter } from '@my-workspace/prisma_cruds';
 import { Vertrag } from '@my-workspace/models';
