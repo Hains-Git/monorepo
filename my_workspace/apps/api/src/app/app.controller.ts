@@ -31,4 +31,9 @@ export class AppController {
   async getFeiertage(@Param('start') start: string, @Param('ende') ende: string) {
     return this.appService.getFeiertage(newDate(start), newDate(ende));
   }
+
+  @Post('dienstfrei')
+  async getDienstfrei(@Body() body: any) {
+    return this.appService.getDienstfrei(body);
+  }
 }
