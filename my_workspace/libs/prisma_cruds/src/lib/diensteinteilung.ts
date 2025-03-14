@@ -187,13 +187,13 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
             || ',' || CASE WHEN (
                         SELECT COUNT(*) FROM dienstbedarves AS db
                           WHERE db.po_dienst_id = p.id 
-                          AND db.end_date >= de.tag
+                          AND (db.end_date >= de.tag OR db.end_date IS NULL)
                         ) > 0
                       THEN CAST((
                           SELECT COUNT(*)  FROM dienstbedarves AS db
                           WHERE db.po_dienst_id = p.id
                           AND db.ignore_in_urlaubssaldo
-                          AND db.end_date >= de.tag
+                          AND (db.end_date >= de.tag OR db.end_date IS NULL)
                         ) AS varchar)
                       ELSE 'false'
                       END
