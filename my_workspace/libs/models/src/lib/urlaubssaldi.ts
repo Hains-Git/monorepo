@@ -394,6 +394,7 @@ async function mitarbeiterEinteilen(
   if (!notVerfuegbar) {
     notVerfuegbar = asAbwesenheit;
   }
+  console.log(isBedarfEinteilung, bedarf?.id, bedarfeBlock, bedarf?.ignore_in_urlaubssaldo, e);
   if (isBedarfEinteilung && !bedarf?.ignore_in_urlaubssaldo && bedarf && bedarfeBlock) {
     currSaldi.einteilungen_info.bedarf.push([mitarbeiterName, dienstName, bereichId]);
     const min = bedarf.min || 0;
