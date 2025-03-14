@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { GlobalAuthGuard } from './guards/auth.guard';
-import { APP_GUARD } from '@nestjs/core';
+// import { AuthModule } from './_modules//auth/auth.module';
+import { FileUploadModule } from './_modules/file-upload/file-upload.module';
+import { PrismaModule } from './_modules/prisma/prisma.module';
+// import { GlobalAuthGuard } from './guards/auth.guard';
+// import { APP_GUARD } from '@nestjs/core';
 
 import { AbwesenheitenController } from './abwesenheiten/abwesenheiten.controller';
 import { AbwesenheitenService } from './abwesenheiten/abwesenheiten.service';
@@ -22,7 +23,7 @@ import { MetricsController } from './metrics/metrics.controller';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
-  imports: [PrismaModule],
+  imports: [PrismaModule, FileUploadModule],
   controllers: [
     AppController,
     MetricsController,

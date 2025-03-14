@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../_modules/auth/auth.service';
 import { Request, Response } from 'express';
 
 @Injectable()
