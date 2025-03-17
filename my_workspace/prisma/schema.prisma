@@ -201,19 +201,21 @@ model antraege_histories {
 
 model antraeges {
   id                 Int                  @id @default(autoincrement())
-  mitarbeiter_id     Int?
-  antragstyp_id      Int?
-  antragsstatus_id   Int?
+  mitarbeiter_id     Int
+  antragstyp_id      Int
+  antragsstatus_id   Int
   start              DateTime?            @db.Date
   ende               DateTime?            @db.Date
   abgesprochen       String?              @db.VarChar
   kommentar          String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
+  datei_id           Int?                 @unique
   antraege_histories antraege_histories[]
   antragsstatuses    antragsstatuses?     @relation(fields: [antragsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0101e13655")
   mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a5f48af37e")
   antragstyps        antragstyps?         @relation(fields: [antragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f887e40996")
+  datei              dateis?              @relation(fields: [datei_id], references: [id])
 
   @@index([antragsstatus_id], map: "index_antraeges_on_antragsstatus_id")
   @@index([antragstyp_id], map: "index_antraeges_on_antragstyp_id")
@@ -327,14 +329,14 @@ model arbeitszeitverteilungs {
 
 model automatische_einteilungens {
   id                   Int                 @id @default(autoincrement())
-  mitarbeiter_id       Int?
-  po_dienst_id         Int?
+  mitarbeiter_id       Int
+  po_dienst_id         Int
   von                  DateTime?           @db.Date
   bis                  DateTime?           @db.Date
   zeitraumkategorie_id Int?
   days                 Int?                @default(0)
-  po_diensts           po_diensts?         @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
-  mitarbeiters         mitarbeiters?       @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
+  po_diensts           po_diensts          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
+  mitarbeiters         mitarbeiters        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
   zeitraumkategories   zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3651daf545")
 
   @@index([mitarbeiter_id], map: "index_automatische_einteilungens_on_mitarbeiter_id")
@@ -495,25 +497,31 @@ model channel_rooms {
 }
 
 model datei_typs {
-  id         Int      @id @default(autoincrement())
-  name       String?  @db.VarChar
-  created_at DateTime @db.Timestamp(6)
-  updated_at DateTime @db.Timestamp(6)
-  dateis     dateis[]
+  id            Int             @id @default(autoincrement())
+  name          String?         @default("") @db.VarChar
+  created_at    DateTime        @db.Timestamp(6)
+  updated_at    DateTime        @db.Timestamp(6)
+  owner         String          @default("") @db.VarChar
+  category      String          @default("") @db.VarChar
+  dateis        dateis[]
+  geraet_dateis geraet_dateis[]
 }
 
 model dateis {
-  id           Int           @id @default(autoincrement())
-  name         String?       @db.VarChar
-  beschreibung String?       @db.VarChar
-  ersteller_id Int?
-  besitzer_id  Int?
-  created_at   DateTime      @db.Timestamp(6)
-  updated_at   DateTime      @db.Timestamp(6)
-  datei_typ_id Int?
-  mitarbeiters mitarbeiters? @relation(fields: [besitzer_id], references: [id])
-  user         users?        @relation(fields: [ersteller_id], references: [id])
-  datei_typ    datei_typs?   @relation(fields: [datei_typ_id], references: [id])
+  id           Int          @id @default(autoincrement())
+  name         String?      @db.VarChar
+  beschreibung String?      @db.VarChar
+  ersteller_id Int
+  besitzer_id  Int
+  created_at   DateTime     @db.Timestamp(6)
+  updated_at   DateTime     @db.Timestamp(6)
+  datei_typ_id Int
+  file_id      Int?         @unique
+  mitarbeiters mitarbeiters @relation(fields: [besitzer_id], references: [id])
+  user         users        @relation(fields: [ersteller_id], references: [id])
+  datei_typ    datei_typs   @relation(fields: [datei_typ_id], references: [id])
+  file         files?       @relation(fields: [file_id], references: [id])
+  antrag       antraeges?
 
   @@index([besitzer_id], map: "index_dateis_on_besitzer_id")
   @@index([datei_typ_id], map: "index_dateis_on_datei_typ_id")
@@ -1014,6 +1022,14 @@ model feiertages {
   tag               Int?
 }
 
+model files {
+  id           Int            @id @default(autoincrement())
+  url          String         @default("") @db.VarChar
+  md5hash      String         @default("") @db.VarChar
+  geraet_datei geraet_dateis?
+  datei        dateis?
+}
+
 model freigabestatuses {
   id              Int               @id @default(autoincrement())
   name            String?           @db.VarChar
@@ -1103,18 +1119,29 @@ model geraetepasses {
   @@index([mitarbeiter_id], map: "index_geraetepasses_on_mitarbeiter_id")
 }
 
+model geraet_dateis {
+  id           Int        @id @default(autoincrement())
+  geraet_id    Int
+  file_id      Int        @unique
+  datei_typ_id Int
+  datei_typ    datei_typs @relation(fields: [datei_typ_id], references: [id])
+  file         files      @relation(fields: [file_id], references: [id])
+  geraet       geraets    @relation(fields: [geraet_id], references: [id])
+}
+
 model geraets {
   id                 Int             @id @default(autoincrement())
-  name               String?         @db.VarChar
-  hersteller         String?         @db.VarChar
-  typ                String?         @db.VarChar
-  geraeteklasse_id   Int?
+  name               String?         @default("") @db.VarChar
+  hersteller         String?         @default("") @db.VarChar
+  typ                String?         @default("") @db.VarChar
+  geraeteklasse_id   Int
   created_at         DateTime        @db.Timestamp(6)
   updated_at         DateTime        @db.Timestamp(6)
   in_use             Boolean?        @default(true)
   geraetebereich_ids Int[]
   geraetepasses      geraetepasses[]
-  geraeteklasses     geraeteklasses? @relation(fields: [geraeteklasse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_87c8fbadfa")
+  geraeteklasses     geraeteklasses  @relation(fields: [geraeteklasse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_87c8fbadfa")
+  dateien            geraet_dateis[]
 
   @@index([geraeteklasse_id], map: "index_geraets_on_geraeteklasse_id")
 }
