@@ -522,7 +522,7 @@ model dateis {
   name              String?             @default("") @db.VarChar
   beschreibung      String?             @default("") @db.VarChar
   url               String?             @default("") @db.VarChar
-  hash              String?             @default("") @db.VarChar
+  file_hash         String?             @default("") @db.VarChar
   path              String?             @default("") @db.VarChar
   ersteller_id      Int?
   besitzer_id       Int?
