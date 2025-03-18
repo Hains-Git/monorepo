@@ -504,24 +504,26 @@ model datei_typs {
   owner         String          @default("") @db.VarChar
   category      String          @default("") @db.VarChar
   dateis        dateis[]
-  geraet_dateis geraet_dateis[]
 }
 
 model dateis {
   id           Int          @id @default(autoincrement())
-  name         String?      @db.VarChar
-  beschreibung String?      @db.VarChar
-  ersteller_id Int
-  besitzer_id  Int
+  name         String?      @db.VarChar @default("")
+  beschreibung String?      @db.VarChar @default("")
+  url String?      @db.VarChar @default("")
+  hash String?      @db.VarChar @default("")
+  path String?      @db.VarChar @default("")
+  ersteller_id Int?
+  besitzer_id  Int?
   created_at   DateTime     @db.Timestamp(6)
   updated_at   DateTime     @db.Timestamp(6)
   datei_typ_id Int
-  file_id      Int?         @unique
-  mitarbeiters mitarbeiters @relation(fields: [besitzer_id], references: [id])
-  user         users        @relation(fields: [ersteller_id], references: [id])
+  mitarbeiters mitarbeiters? @relation(fields: [besitzer_id], references: [id])
+  user         users?        @relation(fields: [ersteller_id], references: [id])
   datei_typ    datei_typs   @relation(fields: [datei_typ_id], references: [id])
-  file         files?       @relation(fields: [file_id], references: [id])
   antrag       antraeges?
+  geraet_datei geraet_dateis?
+  mitarbeiter_datei mitarbeiter_dateis?
 
   @@index([besitzer_id], map: "index_dateis_on_besitzer_id")
   @@index([datei_typ_id], map: "index_dateis_on_datei_typ_id")
@@ -1022,14 +1024,6 @@ model feiertages {
   tag               Int?
 }
 
-model files {
-  id           Int            @id @default(autoincrement())
-  url          String         @default("") @db.VarChar
-  md5hash      String         @default("") @db.VarChar
-  geraet_datei geraet_dateis?
-  datei        dateis?
-}
-
 model freigabestatuses {
   id              Int               @id @default(autoincrement())
   name            String?           @db.VarChar
@@ -1121,12 +1115,10 @@ model geraetepasses {
 
 model geraet_dateis {
   id           Int        @id @default(autoincrement())
-  geraet_id    Int
-  file_id      Int        @unique
-  datei_typ_id Int
-  datei_typ    datei_typs @relation(fields: [datei_typ_id], references: [id])
-  file         files      @relation(fields: [file_id], references: [id])
-  geraet       geraets    @relation(fields: [geraet_id], references: [id])
+  besitzer_id    Int
+  datei_id Int       @unique
+  datei        dateis     @relation(fields: [datei_id], references: [id])
+  geraet       geraets    @relation(fields: [besitzer_id], references: [id])
 }
 
 model geraets {
@@ -1141,7 +1133,7 @@ model geraets {
   geraetebereich_ids Int[]
   geraetepasses      geraetepasses[]
   geraeteklasses     geraeteklasses  @relation(fields: [geraeteklasse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_87c8fbadfa")
-  dateien            geraet_dateis[]
+  geraet_dateis            geraet_dateis[]
 
   @@index([geraeteklasse_id], map: "index_geraets_on_geraeteklasse_id")
 }
@@ -1444,8 +1436,21 @@ model mitarbeiters {
   vorlages                                                     vorlages[]
   wochenbilanzs                                                wochenbilanzs[]
   dateis                                                       dateis[]
+  mitarbeiter_dateis            mitarbeiter_dateis[]
 
   @@index([funktion_id], map: "index_mitarbeiters_on_funktion_id")
+}
+
+model mitarbeiter_dateis {
+  id           Int        @id @default(autoincrement())
+  name         String?      @db.VarChar @default("")
+  beschreibung String?      @db.VarChar @default("")
+  ersteller_id Int
+  besitzer_id  Int
+  datei_id Int            @unique
+  datei        dateis     @relation(fields: [datei_id], references: [id])
+  mitarbeiter mitarbeiters @relation(fields: [besitzer_id], references: [id])
+  user         users        @relation(fields: [ersteller_id], references: [id])
 }
 
 model nef_fahrts {
@@ -2086,6 +2091,7 @@ model users {
   user_gruppes                      users_gruppes[]
   account_info                      account_infos?                      @relation(fields: [account_info_id], references: [id])
   dateis                            dateis[]
+  mitarbeiter_dateis                mitarbeiter_dateis[]
 
   @@index([account_info_id], map: "index_users_on_account_info_id")
 }
