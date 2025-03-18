@@ -20,10 +20,11 @@ import { ZeitraumkategorienController } from './zeitraumkategorien/zeitraumkateg
 import { ZeitraumkategorienService } from './zeitraumkategorien/zeitraumkategorien.service';
 import { MetricsService } from './metrics/metrics.service';
 import { MetricsController } from './metrics/metrics.controller';
+import { FileStreamModule } from './_modules/file-stream/file-stream.module';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
-  imports: [PrismaModule, FileUploadModule],
+  imports: [PrismaModule, FileUploadModule, FileStreamModule],
   controllers: [
     AppController,
     MetricsController,

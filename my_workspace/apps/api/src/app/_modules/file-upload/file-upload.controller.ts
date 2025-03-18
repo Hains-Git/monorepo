@@ -1,19 +1,18 @@
-import { Controller, Post, UploadedFile, UploadedFiles, UseInterceptors, Body } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Controller, Post, Get, Res, UploadedFiles, UseInterceptors, Body } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
 
 @Controller('upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
-  @Post('single')
-  @UseInterceptors(FileInterceptor('file'))
+  @Post('general')
+  @UseInterceptors(FilesInterceptor('files', 10))
   async uploadSingleFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Body('userId') userId: string,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body('category') category: string
   ) {
-    return this.fileUploadService.processSingleFile(file, userId, category);
+    return this.fileUploadService.processGeneralFiles(files, category);
   }
 
   @Post('multiple')
@@ -22,10 +21,11 @@ export class FileUploadController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() body: { mitarbeiterId: string; category: string }
   ) {
-    console.log('Files:', files); // Array of uploaded files
+    console.log('Files:', files);
     console.log('Params:', body);
+
     const mitarbeiterId = body.mitarbeiterId;
     const category = body.category;
-    return this.fileUploadService.processMultipleFiles(files, mitarbeiterId, category);
+    return this.fileUploadService.processMultipleFilesByMitarbeiter(files, mitarbeiterId, category);
   }
 }

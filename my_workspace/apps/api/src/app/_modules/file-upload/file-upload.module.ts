@@ -3,13 +3,14 @@ import { FileUploadController } from './file-upload.controller';
 import { FileUploadService } from './file-upload.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 
 @Module({
   imports: [
     MulterModule.register({
       storage: diskStorage({
-        destination: './uploads', // Base upload path
+        // destination: './uploads', // Base upload path
+        destination: join(process.cwd(), 'uploads'), // Absolute path
         filename: (req, file, cb) => {
           // const fileExt = extname(file.originalname);
           // cb(null, `${file.originalname}${fileExt}`);
