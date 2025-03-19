@@ -7,7 +7,7 @@ echo "Show open Ports"
 lsof -i -P -n -U
 # export NX_DAEMON=true
 
-rm /tmp/f53b52ad6d21cceb72df/fp452.sock
+rm /tmp/f53b52ad6d21cceb72df/fp453.sock
 
 npm install --force
 
