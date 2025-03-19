@@ -210,7 +210,7 @@ model antraeges {
   kommentar          String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
-  datei_id           Int?                 @unique
+  datei_id           Int?                 
   antraege_histories antraege_histories[]
   antragsstatuses    antragsstatuses?     @relation(fields: [antragsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0101e13655")
   mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a5f48af37e")
@@ -532,7 +532,7 @@ model dateis {
   mitarbeiters      mitarbeiters?       @relation(fields: [besitzer_id], references: [id])
   user              users?              @relation(fields: [ersteller_id], references: [id])
   datei_typ         datei_typs          @relation(fields: [datei_typ_id], references: [id])
-  antrag            antraeges?
+  antraege          antraeges[]
   geraet_datei      geraet_dateis?
   mitarbeiter_datei mitarbeiter_dateis?
 
