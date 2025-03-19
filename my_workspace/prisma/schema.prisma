@@ -210,7 +210,7 @@ model antraeges {
   kommentar          String?              @db.VarChar
   created_at         DateTime             @db.Timestamp(6)
   updated_at         DateTime             @db.Timestamp(6)
-  datei_id           Int?                 
+  datei_id           Int?
   antraege_histories antraege_histories[]
   antragsstatuses    antragsstatuses?     @relation(fields: [antragsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0101e13655")
   mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a5f48af37e")
