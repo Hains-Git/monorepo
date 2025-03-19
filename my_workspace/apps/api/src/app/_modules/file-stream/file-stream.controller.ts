@@ -10,7 +10,6 @@ export class FileStreamController {
   @Get(':id')
   @UseGuards(FileGuard)
   async getFile(@Param('id') id: number, @Res() res: Response) {
-    console.log('getFile() called with id: ', id);
     const { stream, contentType, fileName } = await this.fileService.getFileStream(id);
 
     res.set({

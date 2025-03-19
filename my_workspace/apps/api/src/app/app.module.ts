@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,6 +21,7 @@ import { ZeitraumkategorienService } from './zeitraumkategorien/zeitraumkategori
 import { MetricsService } from './metrics/metrics.service';
 import { MetricsController } from './metrics/metrics.controller';
 import { FileStreamModule } from './_modules/file-stream/file-stream.module';
+import { LoggerMiddleware } from './middlewares/logger-middleware';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
@@ -41,11 +42,18 @@ import { FileStreamModule } from './_modules/file-stream/file-stream.module';
     MitarbeiterInfoService,
     TeamService,
     FraunhoferService,
-    ZeitraumkategorienService
+    ZeitraumkategorienService,
+    Logger
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard
     // }
   ]
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // exclude can have a list as params like ('/metrics', '/health')
+    // Or the Controller it self
+    consumer.apply(LoggerMiddleware).exclude('/metrics', '/fraunhofer').forRoutes('*');
+  }
+}
