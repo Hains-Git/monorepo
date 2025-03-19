@@ -102,6 +102,7 @@ type TSaldiTeamDate = typeof saldiDefaultValues & {
     };
   };
   inTeam: string[];
+  kopfSoll: number;
 };
 
 type TSaldiTeamBase = teams & {
@@ -207,6 +208,7 @@ async function getSaldiBase(start: Date, ende: Date) {
 }
 
 function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: TSaldi) {
+  const dateNr = getDateNr(date);
   saldi[teamId].dates[date] ||= {
     ...saldiDefaultValues,
     ID: teamId,
@@ -224,7 +226,9 @@ function createDefaultsForTeamSaldo(date: string, teamId: number, saldi: TSaldi)
       total: 0,
       einteilungen: []
     },
-    inTeam: []
+    inTeam: [],
+    kopfSoll:
+      saldi[teamId].team.team_kopf_soll.find((s) => getDateNr(s.von) <= dateNr && getDateNr(s.bis) >= dateNr)?.soll || 0
   };
   return saldi[teamId].dates[date];
 }
@@ -657,7 +661,6 @@ async function fillSolls(saldiBase: TSaldiBase) {
     defaultTeamDateSaldi.saldo = getUrlaubssaldo(defaultTeamSaldo, dateStr);
     if (defaultTeamDateSaldi.verfuegbar <= 0 || !teamLengths) return;
 
-    const dateNr = getDateNr(dateStr);
     Object.values(defaultTeamDateSaldi.funktionen).forEach((defaultTeamF) => {
       for (let i = 0; i < teamLengths && defaultTeamF.count > 0 && defaultTeamDateSaldi.verfuegbar > 0; i++) {
         const teamSaldo = teamSaldis[i];
@@ -668,16 +671,27 @@ async function fillSolls(saldiBase: TSaldiBase) {
         const countInTeam =
           teamDateSaldo.inTeam.length +
           Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {
-            return acc + teamF.substitutionsFrom.length;
+            return acc + teamF.substitutionsFrom.reduce((acc, f) => acc + f.count, 0);
           }, 0);
-        const soll =
-          teamSaldo.team.team_kopf_soll.find((k) => getDateNr(k.von) <= dateNr && getDateNr(k.bis) >= dateNr)?.soll ||
-          0;
-        const sollValue = soll > teamDateSaldo.bedarfe_min ? soll : teamDateSaldo.bedarfe_min;
+        const sollValue =
+          teamDateSaldo.kopfSoll > teamDateSaldo.bedarfe_min ? teamDateSaldo.kopfSoll : teamDateSaldo.bedarfe_min;
         const missing = sollValue - countInTeam;
         if (missing <= 0) continue;
-
         const diff = missing > defaultTeamF.count ? defaultTeamF.count : missing;
+        console.log({
+          dateStr,
+          min: teamDateSaldo?.bedarfe_min,
+          soll: teamDateSaldo.kopfSoll,
+          missing,
+          diff,
+          countInTeam,
+          inTeam: teamDateSaldo.inTeam.length,
+          inTeamSubs: Object.values(teamDateSaldo.funktionen).reduce((acc, teamF) => {
+            return acc + teamF.substitutionsFrom.reduce((acc, f) => acc + f.count, 0);
+          }, 0),
+          from: defaultTeamSaldo.team?.name,
+          to: teamSaldo.team?.name
+        });
         moveFreeMitarbeiterToOtherTeam(diff, defaultTeamF, dateStr, defaultTeamSaldo, teamSaldo);
       }
     });
