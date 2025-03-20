@@ -3,3 +3,4 @@
 .nvim-dap.json
 /.nvim-dap.json
 /my_workspace/uploads/**/*
+/my_workspace/entry.log
