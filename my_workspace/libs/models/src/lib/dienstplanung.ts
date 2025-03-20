@@ -1,4 +1,17 @@
-import { dienstplans, parametersets, planparameters, schichts } from '@prisma/client';
+import {
+  bedarfs_eintrags,
+  dienstbedarves,
+  diensteinteilungs,
+  dienstkategories,
+  dienstkategoriethemas,
+  dienstplans,
+  dienstwunsches,
+  mitarbeiters,
+  parametersets,
+  planparameters,
+  po_diensts,
+  schichts
+} from '@prisma/client';
 
 import {
   format,
@@ -45,15 +58,32 @@ type TDienstplan = {
     | null;
 } & dienstplans;
 
-function getDataByHash(data: any, key = 'id') {
-  return data.reduce((hash: any, value: any) => {
-    hash[value[key]] = value;
+type TDataByHashData =
+  | mitarbeiters
+  | diensteinteilungs
+  | po_diensts
+  | (dienstkategories & { dienstkategoriethemas: dienstkategoriethemas[] })
+  | (dienstwunsches & {
+      mitarbeiters: mitarbeiters | null;
+    })
+  | bedarfs_eintrags
+  | dienstbedarves
+  | Awaited<ReturnType<typeof _wochenbilanz.getWochenbilanzByKalenderWocheForMitarbeiters>>[number];
+
+function getDataByHash<T extends TDataByHashData>(data: T[], key: keyof T = 'id') {
+  return data.reduce((hash: Record<string | number, T>, value) => {
+    const vk = value[key];
+    if (typeof vk !== 'number' && typeof vk !== 'string') {
+      console.error("Can't use this key for hash", key);
+      return hash;
+    }
+    hash[vk] = value;
     return hash;
   }, {});
 }
 
-function getInterSectionArrays(firstArr: any[], secondArr: any[]) {
-  return firstArr.filter((id: any) => secondArr.includes(id));
+function getInterSectionArrays(firstArr: number[], secondArr: number[]) {
+  return firstArr.filter((id) => secondArr.includes(id));
 }
 
 function check_anfang_ende(dienstplan: TDienstplan) {
@@ -143,6 +173,16 @@ async function getPoDienste(compute = true) {
   return getDataByHash(dienste);
 }
 
+async function getMitarbeitersHash(compute = true) {
+  const mitarbeiter = await getMitarbeiters(compute, false);
+  return getDataByHash(mitarbeiter);
+}
+
+async function getMitarbeiterIds(compute = true) {
+  const mitarbeiter = await getMitarbeiters(compute, true);
+  return mitarbeiter.map((m) => m.id);
+}
+
 async function getMitarbeiters(compute = true, as_ids = false) {
   const mitarbeiter = as_ids
     ? await _mitarbeiter.getMitarbeitersByCustomQuery({
@@ -185,7 +225,7 @@ async function getMitarbeiters(compute = true, as_ids = false) {
           planname: 'asc'
         }
       });
-  return as_ids ? mitarbeiter.map((item) => item.id) : getDataByHash(mitarbeiter);
+  return mitarbeiter;
 }
 
 async function getDienstkategories() {
@@ -263,7 +303,7 @@ async function getDienstbedarfe(anfang: Date, ende: Date) {
 
 async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   const zeitraumkategorie = await getZeitraumkategorien(anfang_dpl, ende_dpl);
-  const dates: { [key: string]: any } = {};
+  const dates: Record<string, PlanerDate> = {};
   const windowAnfang = anfang_dpl;
   const windowEnde = ende_dpl;
   let anfang = windowAnfang;
@@ -290,27 +330,24 @@ async function createDateGridReact(anfang_dpl: Date, ende_dpl: Date) {
   return dates;
 }
 
-async function getDienstbedarfEintrag(dienste: any, bedarfsEintraegeHash: any) {
-  const dienstBedarfEintrag: { [key: string]: any } = {};
-  const bedarfsEintraege = Object.values(bedarfsEintraegeHash);
-  bedarfsEintraege.forEach((be: any) => {
+async function getDienstbedarfEintrag(
+  dienste: Awaited<ReturnType<typeof getPoDienste>>,
+  bedarfsEintraegeHash: Awaited<ReturnType<typeof getBedarfe>>
+) {
+  const dienstBedarfEintrag: Record<number, Record<string, number[]>> = {};
+  Object.values(dienste).forEach((dienst) => {
+    dienstBedarfEintrag[dienst.id] ||= {};
+  });
+  Object.values(bedarfsEintraegeHash).forEach((be) => {
+    if (!be.tag || !be.po_dienst_id) return;
     const po_dienst_id = be.po_dienst_id;
     const tag = format(be.tag, 'yyyy-MM-dd');
     const id = be.id;
-    if (!dienstBedarfEintrag?.[po_dienst_id]) {
-      dienstBedarfEintrag[po_dienst_id] = {};
-    }
-    if (!dienstBedarfEintrag?.[po_dienst_id]?.[tag]) {
-      dienstBedarfEintrag[po_dienst_id][tag] = [];
-    }
+    dienstBedarfEintrag[po_dienst_id] ||= {};
+    dienstBedarfEintrag[po_dienst_id][tag] ||= [];
     dienstBedarfEintrag[po_dienst_id][tag].push(id);
   });
 
-  Object.keys(dienste).forEach((dienstId) => {
-    if (!dienstBedarfEintrag[dienstId]) {
-      dienstBedarfEintrag[dienstId] = {};
-    }
-  });
   return dienstBedarfEintrag;
 }
 
@@ -337,11 +374,17 @@ async function getKalenderWoche(date: Date) {
   });
 }
 
-async function getWochenbilanzen(dienstplan: any) {
+async function getWochenbilanzen(dienstplan: TDienstplan) {
   let { anfang: bilanzDate } = check_anfang_ende(dienstplan);
-  const kws: { [key: string]: any } = {};
-  const wochenbilanzen: { [key: string]: any } = {};
-  const mitarbeiterIds = await getMitarbeiters(false, true);
+  const kws: Record<number, Awaited<ReturnType<typeof getKalenderWoche>>> = {};
+  const wochenbilanzen: Record<
+    number,
+    Record<
+      string | number,
+      Awaited<ReturnType<typeof _wochenbilanz.getWochenbilanzByKalenderWocheForMitarbeiters>>[number]
+    >
+  > = {};
+  const mitarbeiterIds = await getMitarbeiterIds(false);
 
   for (let i = 0; i < 5; i++) {
     bilanzDate = subDays(bilanzDate, 7);
@@ -352,14 +395,19 @@ async function getWochenbilanzen(dienstplan: any) {
     );
     if (kw) {
       kws[kw.kw] = kw;
-      wochenbilanzen[kw.kw] = getDataByHash(wochenbilanzenMitarbeiters, 'mitarbeiter_id');
+      const wochenbilanzHash = getDataByHash(wochenbilanzenMitarbeiters, 'mitarbeiter_id');
+      wochenbilanzen[kw.kw] = wochenbilanzHash;
     }
   }
 
   return { kws, wochenbilanzen };
 }
 
-function getRotationenIdsInRangeDate(dateStr: string, data: any, kontingenteDienste: any) {
+function getRotationenIdsInRangeDate(
+  dateStr: string,
+  data: Awaited<ReturnType<typeof getRotationen>>,
+  kontingenteDienste: any
+) {
   const date = newDate(dateStr);
 
   return data.reduce((dateHash: any, rotation: any) => {
@@ -393,7 +441,11 @@ function getRotationenIdsInRangeDate(dateStr: string, data: any, kontingenteDien
   }, {});
 }
 
-function createDateIdMap(data: any[], keys: string[], tagKey = 'tag') {
+function createDateIdMap<T extends (dienstwunsches & { mitarbeiters: mitarbeiters | null }) | bedarfs_eintrags>(
+  data: T[],
+  keys: string[],
+  tagKey = 'tag'
+) {
   return data.reduce((map: { [key: string]: any }, value: any) => {
     const dateFormatted = format(value[tagKey], 'yyyy-MM-dd');
     if (!map[dateFormatted]) {
@@ -491,13 +543,13 @@ function computeBedarfsEintraege(bedarfsEintraege: any, dates: any) {
   });
 }
 
-async function getKontingenteDienste(diensteArr: any) {
+async function getKontingenteDienste(diensteArr: po_diensts[]) {
   const kontingenteWithPoDienst = await _kontingent.getAll({ kontingent_po_diensts: true });
   if (!kontingenteWithPoDienst) return [];
-  const kontingentDienste = kontingenteWithPoDienst.reduce((hashObj: any, value: any) => {
+  const kontingentDienste = kontingenteWithPoDienst.reduce((hashObj: Record<number, number[]>, value) => {
     const kontingentId = value.id;
     hashObj[kontingentId] = [];
-    diensteArr.forEach((dienst: any) => {
+    diensteArr.forEach((dienst) => {
       const dienstId = dienst.id;
       if (dienst.thema_ids && value.thema_ids) {
         const intersectionIds = getInterSectionArrays(dienst.thema_ids, value.thema_ids) || [];
@@ -512,14 +564,17 @@ async function getKontingenteDienste(diensteArr: any) {
   return kontingentDienste;
 }
 
-function getDienstkategorieDienste(dienstkategorien: any, dienste: any) {
+function getDienstkategorieDienste(
+  dienstkategorien: Awaited<ReturnType<typeof getDienstkategories>>,
+  dienste: Awaited<ReturnType<typeof getPoDienste>>
+) {
   const diensteArr = Object.values(dienste);
 
-  const dienstkategoreieDienste = Object.values(dienstkategorien).reduce((hashObj: any, dk: any) => {
+  const dienstkategoreieDienste = Object.values(dienstkategorien).reduce((hashObj: Record<number, number[]>, dk) => {
     const katId = dk.id;
     hashObj[katId] = [];
-    const themaIds = dk.dienstkategoriethemas.map((dkt: any) => dkt.thema_id);
-    diensteArr.forEach((dienst: any) => {
+    const themaIds = dk.dienstkategoriethemas.map((dkt) => dkt.thema_id).filter((id) => id !== null);
+    diensteArr.forEach((dienst) => {
       const dienstId = dienst.id;
       if (dienst?.thema_ids && themaIds?.length) {
         const intersectionIds = getInterSectionArrays(dienst.thema_ids, themaIds);
@@ -544,7 +599,18 @@ function computeWuensche(wuensche: any[], dates: any, dienstkategoreieDienste: a
   });
 }
 
-async function computeDates(props: any) {
+async function computeDates(props: {
+  dates: Record<string, PlanerDate>;
+  mitarbeiter: number[];
+  dienste: Awaited<ReturnType<typeof getPoDienste>>;
+  wuensche: Awaited<ReturnType<typeof getWuensche>>;
+  bedarfs_eintraege: Awaited<ReturnType<typeof getBedarfe>>;
+  einteilungen: Awaited<ReturnType<typeof getEinteilungen>>;
+  rotationenArr: Awaited<ReturnType<typeof getRotationen>>;
+  bedarf: Awaited<ReturnType<typeof getDienstbedarfe>>;
+  dienst_bedarfeintrag: Awaited<ReturnType<typeof getDienstbedarfEintrag>>;
+  dienstkategoreieDienste: Awaited<ReturnType<typeof getDienstkategorieDienste>>;
+}) {
   const {
     dates,
     bedarfs_eintraege,
@@ -562,7 +628,6 @@ async function computeDates(props: any) {
   const einteilungenMap = createDateEinteilungMap(Object.values(einteilungen));
   const wuenscheMap = createDateIdMap(wuenschArr, ['id']);
   const diensteArr = Object.values(dienste);
-  const mitarbeiterArr = Object.values(mitarbeiter);
   const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
@@ -573,7 +638,7 @@ async function computeDates(props: any) {
     const rotationenHash = getRotationenIdsInRangeDate(dateStr, rotationenArr, kontigentDienste);
     dates[dateStr].rotationen = rotationenHash?.[dateStr]?.ids || [];
 
-    diensteArr.forEach((dienst: any) => {
+    diensteArr.forEach((dienst) => {
       dates[dateStr].by_dienst[dienst.id] = {
         bedarf_id: 0,
         bereiche_ids: {},
@@ -585,7 +650,7 @@ async function computeDates(props: any) {
       dates[dateStr].by_dienst[dienst.id].rotation_ids = rotationenHash?.[dateStr].by_dienst[dienst.id] || [];
     });
 
-    mitarbeiterArr.forEach((mId: any) => {
+    mitarbeiter.forEach((mId) => {
       dates[dateStr].by_mitarbeiter[mId] = {
         einteilung_ids: {},
         id: mId,
@@ -609,7 +674,7 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: TDiens
   const dates = await createDateGridReact(anfangFrame, endeFrame);
   const einteilungen = await getEinteilungen(loadVorschlaege ? dienstplan.id : 0, anfangFrame, endeFrame);
   const dienste = await getPoDienste();
-  const mitarbeiter = await getMitarbeiters(true, true);
+  const mitarbeiter = await getMitarbeiterIds(true);
   const dienstkategorien = await getDienstkategories();
   const wuensche = await getWuensche(anfangFrame, endeFrame);
   const rotationenArr = await getRotationen(anfangFrame, endeFrame);
@@ -622,9 +687,12 @@ async function loadBasics(anfangFrame: Date, endeFrame: Date, dienstplan: TDiens
   const mitarbeiterRotsationenMap = mapIdToKeys(rotationenByKontingentFlag, 'mitarbeiter_id', ['obj']);
 
   const rotationen = processData('id', rotationenArr, [
-    (item: any) => {
-      item['all_rotations'] = mitarbeiterRotsationenMap?.[item.mitarbeiter_id]?.obj || [];
-      return item;
+    (item) => {
+      const mitarbeiterId = item.mitarbeiter_id || 0;
+      return {
+        ...item,
+        all_rotations: mitarbeiterRotsationenMap?.[mitarbeiterId]?.obj || []
+      };
     }
   ]);
 
