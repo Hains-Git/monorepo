@@ -1,5 +1,6 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
 import * as Types from './utils/types';
+import { Prisma } from '@prisma/client';
 
 export function prismaCruds(): string {
   return 'prisma_cruds';
@@ -15,7 +16,7 @@ export async function findManyByModelKey<K extends Types.TPrismaModels>(
 
 export async function findFirstByModelKey<K extends Types.TPrismaModels>(
   key: K,
-  args: Types.TFindFirstArgsTypes[K] = {}
+  args: Prisma.TypeMap['model'][K]['operations']['findFirst']['args'] = {}
 ) {
   const data = await (prismaDb[key] as any).findFirst(args);
   return data;

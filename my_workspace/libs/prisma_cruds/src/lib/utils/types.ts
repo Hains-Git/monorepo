@@ -1,13 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
-export type TPrismaModels = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
+export type TPrismaModels = Prisma.TypeMap['meta']['modelProps'];
 
 export type TFindFirstArgsTypes = {
-  [K in TPrismaModels]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['findFirst']>[0] : never;
+  [K in TPrismaModels]: Prisma.TypeMap['model'][K]['operations']['findFirst']['args'];
 };
 
 export type TFindManyArgsTypes = {
-  [K in TPrismaModels]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['findMany']>[0] : never;
+  [K in TPrismaModels]: Prisma.TypeMap['model'][K]['operations']['findMany']['args'];
 };
 
 export type TResultEinteilungenInKontingente = {
