@@ -176,9 +176,24 @@ type TResult = {
         while_in_rotation: {
           default_eingeteilt: number;
           eingeteilt_sum: number;
-          rotationen: {
-            [key: number]: any;
-          };
+          rotationen: Record<
+            number,
+            {
+              von: Date;
+              bis: Date;
+              eingeteilt: number;
+              eingeteilt_sum: number;
+              einteilungen: Record<
+                number,
+                {
+                  tage: string[];
+                  eingeteilt_count_factor: number;
+                  value: number;
+                  name: string;
+                }
+              >;
+            }
+          >;
         };
         all: {
           default_eingeteilt: number;
