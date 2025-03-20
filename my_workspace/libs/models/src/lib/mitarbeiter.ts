@@ -337,7 +337,7 @@ function countEinteilungInKontingent(
       };
     }
 
-    const isTagBiggerLastDefaultYear = new Date(einteilung.tag).getFullYear() > defaultLastYear;
+    const isTagBiggerLastDefaultYear = newDate(einteilung.tag).getFullYear() > defaultLastYear;
     if (countedInKontingent[konId][tag][dienstId].all.length === 0 && isTagBiggerLastDefaultYear) {
       einteilungenHash.all.eingeteilt_sum = addAndRound(einteilungenHash.all.eingeteilt_sum, factor, 2);
       allEinteilungenHash[dienstId].tage.push(tag);
