@@ -32,6 +32,7 @@ import { extname, join } from 'path';
     })
   ],
   controllers: [FileUploadController],
-  providers: [FileUploadService]
+  providers: [FileUploadService],
+  exports: [FileUploadService]
 })
 export class FileUploadModule {}

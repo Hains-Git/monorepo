@@ -22,6 +22,8 @@ import { MetricsService } from './metrics/metrics.service';
 import { MetricsController } from './metrics/metrics.controller';
 import { FileStreamModule } from './_modules/file-stream/file-stream.module';
 import { LoggerMiddleware } from './middlewares/logger-middleware';
+import { UserController } from './user/user.controller';
+import { UserService } from './user/user.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
@@ -33,9 +35,11 @@ import { LoggerMiddleware } from './middlewares/logger-middleware';
     MitarbeiterInfoController,
     TeamController,
     FraunhoferController,
-    ZeitraumkategorienController
+    ZeitraumkategorienController,
+    UserController
   ],
   providers: [
+    Logger,
     AppService,
     MetricsService,
     AbwesenheitenService,
@@ -43,7 +47,7 @@ import { LoggerMiddleware } from './middlewares/logger-middleware';
     TeamService,
     FraunhoferService,
     ZeitraumkategorienService,
-    Logger
+    UserService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard

@@ -12,7 +12,7 @@ export class FileUploadController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body('category') category: string
   ) {
-    return this.fileUploadService.processGeneralFiles(files, category);
+    // return this.fileUploadService.processGeneralFiles(files, category);
   }
 
   @Post('multiple')
@@ -23,9 +23,10 @@ export class FileUploadController {
   ) {
     console.log('Files:', files);
     console.log('Params:', body);
+    // Anstatt category datei_typ_id
 
     const mitarbeiterId = body.mitarbeiterId;
     const category = body.category;
-    return this.fileUploadService.processMultipleFilesByMitarbeiter(files, mitarbeiterId, category);
+    // return this.fileUploadService.processMultipleFilesByMitarbeiter(files, mitarbeiterId, category);
   }
 }
