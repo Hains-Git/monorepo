@@ -9,14 +9,14 @@ interface Feiertag {
   fullDate: Date;
 }
 
-export async function getFeiertag(date: Date): Promise<any[]> {
+export async function getFeiertag(date: Date) {
   await checkIfComputed(date.getFullYear());
   return prismaDb.feiertages.findMany({
     where: { datum: date }
   });
 }
 
-export async function isAt(date: Date): Promise<boolean> {
+export async function isAt(date: Date) {
   await checkIfComputed(date.getFullYear());
   const count = await prismaDb.feiertages.count({
     where: { datum: date }
@@ -24,7 +24,7 @@ export async function isAt(date: Date): Promise<boolean> {
   return count > 0;
 }
 
-async function checkIfComputed(year: number): Promise<void> {
+async function checkIfComputed(year: number) {
   const count = await prismaDb.feiertages.count({
     where: { jahr: year }
   });
@@ -33,7 +33,7 @@ async function checkIfComputed(year: number): Promise<void> {
   }
 }
 
-export async function getHolidaysByYear(year: number): Promise<any[]> {
+export async function getHolidaysByYear(year: number) {
   let feiertage = await prismaDb.feiertages.findMany({
     where: { jahr: year }
   });
@@ -46,7 +46,7 @@ export async function getHolidaysByYear(year: number): Promise<any[]> {
   return feiertage;
 }
 
-export async function checkWeek(monday: Date, sunday: Date): Promise<[number, number]> {
+export async function checkWeek(monday: Date, sunday: Date) {
   await checkIfComputed(monday.getFullYear());
   await checkIfComputed(sunday.getFullYear());
 
@@ -72,7 +72,7 @@ export async function checkWeek(monday: Date, sunday: Date): Promise<[number, nu
   return [nFeiertage, nArbeitstage];
 }
 
-async function createFeiertage(year: number): Promise<void> {
+async function createFeiertage(year: number) {
   const yearStr = year.toString();
   const feiertage: Feiertag[] = [
     {
