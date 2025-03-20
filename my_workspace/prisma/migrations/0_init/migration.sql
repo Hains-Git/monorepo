@@ -1,21 +1,22 @@
 -- CreateTable
 CREATE TABLE "abwesentheiten_spaltens" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
+    "db_key" VARCHAR,
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "po_dienst_id" BIGINT,
+    "po_dienst_id" INTEGER,
 
     CONSTRAINT "abwesentheiten_spaltens_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_counters" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "po_dienst_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "po_dienst_id" INTEGER,
     "planname" VARCHAR,
     "description" VARCHAR,
     "von" DATE,
@@ -28,8 +29,8 @@ CREATE TABLE "abwesentheitenueberblick_counters" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblick_settings" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "visible_columns" VARCHAR[] DEFAULT ARRAY[]::VARCHAR[],
     "visible_team_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -41,8 +42,8 @@ CREATE TABLE "abwesentheitenueberblick_settings" (
 
 -- CreateTable
 CREATE TABLE "abwesentheitenueberblicks" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "jahr" INTEGER,
     "ug" INTEGER DEFAULT 30,
     "u" INTEGER DEFAULT 30,
@@ -58,6 +59,7 @@ CREATE TABLE "abwesentheitenueberblicks" (
     "updated_at" TIMESTAMP(6) NOT NULL,
     "vu" INTEGER,
     "bu" INTEGER,
+    "pu" INTEGER,
     "soll_tzu" INTEGER DEFAULT 0,
 
     CONSTRAINT "abwesentheitenueberblicks_pkey" PRIMARY KEY ("id")
@@ -65,7 +67,7 @@ CREATE TABLE "abwesentheitenueberblicks" (
 
 -- CreateTable
 CREATE TABLE "account_infos" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "old_user_id" INTEGER,
     "comments" TEXT,
     "nameKurz" VARCHAR(255) DEFAULT '',
@@ -89,8 +91,8 @@ CREATE TABLE "account_infos" (
     "adresseLand" VARCHAR(30),
     "aktivAb" TIMESTAMP(6),
     "aktivBis" TIMESTAMP(6),
-    "mitarbeiter_id" BIGINT,
-    "user_id" BIGINT,
+    "mitarbeiter_id" INTEGER,
+    "user_id" INTEGER,
     "geburtsdatum" DATE,
     "teilzeit" VARCHAR,
     "funktion" VARCHAR,
@@ -104,7 +106,7 @@ CREATE TABLE "account_infos" (
 
 -- CreateTable
 CREATE TABLE "active_admin_comments" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "namespace" VARCHAR,
     "body" TEXT,
     "resource_type" VARCHAR,
@@ -119,7 +121,7 @@ CREATE TABLE "active_admin_comments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_attachments" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR NOT NULL,
     "record_type" VARCHAR NOT NULL,
     "record_id" INTEGER NOT NULL,
@@ -131,7 +133,7 @@ CREATE TABLE "active_storage_attachments" (
 
 -- CreateTable
 CREATE TABLE "active_storage_blobs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "key" VARCHAR NOT NULL,
     "filename" VARCHAR NOT NULL,
     "content_type" VARCHAR,
@@ -145,7 +147,7 @@ CREATE TABLE "active_storage_blobs" (
 
 -- CreateTable
 CREATE TABLE "admin_users" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "email" VARCHAR(50) NOT NULL DEFAULT '',
     "encrypted_password" VARCHAR NOT NULL DEFAULT '',
     "reset_password_token" VARCHAR(160),
@@ -159,15 +161,15 @@ CREATE TABLE "admin_users" (
 
 -- CreateTable
 CREATE TABLE "allgemeine_vorlages" (
-    "id" BIGSERIAL NOT NULL,
-    "vorlage_id" BIGINT,
-    "dienstplan_path_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "vorlage_id" INTEGER,
+    "dienstplan_path_id" INTEGER,
     "publishable" BOOLEAN DEFAULT false,
     "filepattern" VARCHAR DEFAULT '',
     "order" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "pdf_zusatz_dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "pdf_zusatz_dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "freitext" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "allgemeine_vorlages_pkey" PRIMARY KEY ("id")
@@ -175,10 +177,10 @@ CREATE TABLE "allgemeine_vorlages" (
 
 -- CreateTable
 CREATE TABLE "antraege_histories" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "antraege_id" BIGINT,
-    "antragsstatus_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "antraege_id" INTEGER,
+    "antragsstatus_id" INTEGER,
     "weiteres" VARCHAR,
     "kommentar" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -189,10 +191,10 @@ CREATE TABLE "antraege_histories" (
 
 -- CreateTable
 CREATE TABLE "antraeges" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "antragstyp_id" BIGINT,
-    "antragsstatus_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "antragstyp_id" INTEGER,
+    "antragsstatus_id" INTEGER,
     "start" DATE,
     "ende" DATE,
     "abgesprochen" VARCHAR,
@@ -205,9 +207,9 @@ CREATE TABLE "antraeges" (
 
 -- CreateTable
 CREATE TABLE "antragsstatuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -216,14 +218,14 @@ CREATE TABLE "antragsstatuses" (
 
 -- CreateTable
 CREATE TABLE "antragstyps" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "po_dienst_id" BIGINT,
-    "we_holiday_po_dienst_id" BIGINT,
-    "check_alternative_po_dienst_id" BIGINT,
-    "alternative_po_dienst_id" BIGINT,
+    "po_dienst_id" INTEGER,
+    "we_holiday_po_dienst_id" INTEGER,
+    "check_alternative_po_dienst_id" INTEGER,
+    "alternative_po_dienst_id" INTEGER,
 
     CONSTRAINT "antragstyps_pkey" PRIMARY KEY ("id")
 );
@@ -240,21 +242,21 @@ CREATE TABLE "ar_internal_metadata" (
 
 -- CreateTable
 CREATE TABLE "arbeitsplatzs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR DEFAULT '',
-    "bereich_id" BIGINT,
+    "bereich_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "standort_id" BIGINT,
+    "standort_id" INTEGER,
 
     CONSTRAINT "arbeitsplatzs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "arbeitszeit_absprachens" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "zeitraumkategorie_id" BIGINT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "zeitraumkategorie_id" INTEGER NOT NULL,
     "von" DATE,
     "bis" DATE,
     "arbeitszeit_von" TIME(6) NOT NULL,
@@ -267,7 +269,7 @@ CREATE TABLE "arbeitszeit_absprachens" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeittyps" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -284,7 +286,7 @@ CREATE TABLE "arbeitszeittyps" (
 
 -- CreateTable
 CREATE TABLE "arbeitszeitverteilungs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "dauer" INTEGER,
     "verteilung" TIME[],
@@ -292,9 +294,9 @@ CREATE TABLE "arbeitszeitverteilungs" (
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "std" DECIMAL(6,2) DEFAULT 0,
-    "dienstgruppe_id" BIGINT,
+    "dienstgruppe_id" INTEGER,
     "pre_std" DECIMAL(6,2) DEFAULT 0,
-    "pre_dienstgruppe_id" BIGINT,
+    "pre_dienstgruppe_id" INTEGER,
     "pre_ueberschneidung_minuten" INTEGER NOT NULL DEFAULT 30,
 
     CONSTRAINT "arbeitszeitverteilungs_pkey" PRIMARY KEY ("id")
@@ -302,12 +304,12 @@ CREATE TABLE "arbeitszeitverteilungs" (
 
 -- CreateTable
 CREATE TABLE "automatische_einteilungens" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "po_dienst_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "po_dienst_id" INTEGER,
     "von" DATE,
     "bis" DATE,
-    "zeitraumkategorie_id" BIGINT,
+    "zeitraumkategorie_id" INTEGER,
     "days" INTEGER DEFAULT 0,
 
     CONSTRAINT "automatische_einteilungens_pkey" PRIMARY KEY ("id")
@@ -315,45 +317,45 @@ CREATE TABLE "automatische_einteilungens" (
 
 -- CreateTable
 CREATE TABLE "bedarfs_eintrags" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "tag" DATE,
-    "dienstplanbedarf_id" BIGINT,
-    "po_dienst_id" BIGINT,
-    "dienstbedarf_id" BIGINT,
-    "dienstverteilungstyp_id" BIGINT,
-    "bereich_id" BIGINT,
+    "dienstplanbedarf_id" INTEGER,
+    "po_dienst_id" INTEGER,
+    "dienstbedarf_id" INTEGER,
+    "dienstverteilungstyp_id" INTEGER,
+    "bereich_id" INTEGER,
     "verteilungscode" VARCHAR,
     "is_block" BOOLEAN DEFAULT false,
-    "first_entry" BIGINT,
+    "first_entry" INTEGER,
     "min" INTEGER DEFAULT 1,
     "opt" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "ausgleich_tage" INTEGER DEFAULT 0,
-    "kostenstelle_id" BIGINT DEFAULT 2,
+    "kostenstelle_id" INTEGER DEFAULT 2,
 
     CONSTRAINT "bedarfs_eintrags_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "mitarbeiter_kommentar" VARCHAR,
     "hains_task_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "benachrichtigungs_status_id" BIGINT DEFAULT 1,
-    "mitarbeiter_rating" BIGINT,
+    "benachrichtigungs_status_id" INTEGER DEFAULT 1,
+    "mitarbeiter_rating" INTEGER,
 
     CONSTRAINT "benachrichtigungs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_statuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -362,7 +364,7 @@ CREATE TABLE "benachrichtigungs_statuses" (
 
 -- CreateTable
 CREATE TABLE "benachrichtigungs_typs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "respond" BOOLEAN DEFAULT false,
     "status_optionen" INTEGER[],
@@ -370,7 +372,7 @@ CREATE TABLE "benachrichtigungs_typs" (
     "rate" BOOLEAN DEFAULT false,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "stars" BOOLEAN DEFAULT false,
 
     CONSTRAINT "benachrichtigungs_typs_pkey" PRIMARY KEY ("id")
@@ -378,11 +380,11 @@ CREATE TABLE "benachrichtigungs_typs" (
 
 -- CreateTable
 CREATE TABLE "bereich_tagesverteilers" (
-    "id" BIGSERIAL NOT NULL,
-    "tagesverteiler_id" BIGINT,
-    "bereich_id" BIGINT,
-    "po_dienst_id" BIGINT,
-    "color" VARCHAR,
+    "id" SERIAL NOT NULL,
+    "tagesverteiler_id" INTEGER,
+    "bereich_id" INTEGER,
+    "po_dienst_id" INTEGER,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "content_layout" VARCHAR DEFAULT 'one_col',
@@ -392,9 +394,9 @@ CREATE TABLE "bereich_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereich_wochenverteilers" (
-    "id" BIGSERIAL NOT NULL,
-    "bereich_id" BIGINT,
-    "po_dienst_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "bereich_id" INTEGER,
+    "po_dienst_id" INTEGER,
     "color_bg" VARCHAR DEFAULT '#ffffff',
     "color_hl" VARCHAR DEFAULT '#ffffff',
     "order" INTEGER,
@@ -407,7 +409,7 @@ CREATE TABLE "bereich_wochenverteilers" (
 
 -- CreateTable
 CREATE TABLE "bereiches" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "info" TEXT,
@@ -415,7 +417,7 @@ CREATE TABLE "bereiches" (
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
     "planname" TEXT,
-    "bereiches_id" BIGINT,
+    "bereiches_id" INTEGER,
     "verteiler_frei" BOOLEAN DEFAULT false,
 
     CONSTRAINT "bereiches_pkey" PRIMARY KEY ("id")
@@ -423,9 +425,9 @@ CREATE TABLE "bereiches" (
 
 -- CreateTable
 CREATE TABLE "channel_room_users" (
-    "id" BIGSERIAL NOT NULL,
-    "channel_room_id" BIGINT,
-    "user_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "channel_room_id" INTEGER,
+    "user_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "subscription" INTEGER NOT NULL DEFAULT 0,
@@ -436,7 +438,7 @@ CREATE TABLE "channel_room_users" (
 
 -- CreateTable
 CREATE TABLE "channel_rooms" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR NOT NULL DEFAULT '',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -446,7 +448,7 @@ CREATE TABLE "channel_rooms" (
 
 -- CreateTable
 CREATE TABLE "datei_typs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -456,7 +458,7 @@ CREATE TABLE "datei_typs" (
 
 -- CreateTable
 CREATE TABLE "dateis" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "ersteller_id" INTEGER,
@@ -470,19 +472,19 @@ CREATE TABLE "dateis" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarves" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "min" INTEGER,
-    "po_dienst_id" BIGINT,
-    "bereich_id" BIGINT,
+    "po_dienst_id" INTEGER,
+    "bereich_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "end_date" DATE,
-    "dienstverteilungstyp_id" BIGINT,
+    "dienstverteilungstyp_id" INTEGER,
     "verteilungscode" VARCHAR,
     "opt" INTEGER,
-    "arbeitszeitverteilung_id" BIGINT,
-    "zeitraumkategories_id" BIGINT,
-    "kostenstelle_id" BIGINT DEFAULT 2,
+    "arbeitszeitverteilung_id" INTEGER,
+    "zeitraumkategories_id" INTEGER,
+    "kostenstelle_id" INTEGER DEFAULT 2,
     "ignore_in_urlaubssaldo" BOOLEAN DEFAULT false,
 
     CONSTRAINT "dienstbedarves_pkey" PRIMARY KEY ("id")
@@ -490,32 +492,32 @@ CREATE TABLE "dienstbedarves" (
 
 -- CreateTable
 CREATE TABLE "dienstbedarveshistory" (
-    "id" BIGSERIAL NOT NULL,
-    "dienstbedarf_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "dienstbedarf_id" INTEGER,
     "min" INTEGER,
     "opt" INTEGER,
-    "arbeitszeitverteilungs_id" BIGINT,
+    "arbeitszeitverteilungs_id" INTEGER,
 
     CONSTRAINT "dienstbedarveshistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "einteilungsstatus_id" BIGINT,
-    "po_dienst_id" BIGINT,
-    "dienstplan_id" BIGINT,
+    "einteilungsstatus_id" INTEGER,
+    "po_dienst_id" INTEGER,
+    "dienstplan_id" INTEGER,
     "reason" VARCHAR,
     "number" INTEGER,
     "tag" DATE,
-    "einteilungskontext_id" BIGINT,
+    "einteilungskontext_id" INTEGER,
     "doppeldienst_id" INTEGER DEFAULT 0,
     "schicht_nummern" INTEGER[] DEFAULT ARRAY[0]::INTEGER[],
     "arbeitsplatz_id" INTEGER DEFAULT 1,
-    "bereich_id" BIGINT,
+    "bereich_id" INTEGER,
     "context_comment" VARCHAR DEFAULT '',
     "info_comment" VARCHAR DEFAULT '',
     "is_optional" BOOLEAN DEFAULT false,
@@ -525,7 +527,7 @@ CREATE TABLE "diensteinteilungs" (
 
 -- CreateTable
 CREATE TABLE "diensteinteilungs_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -538,7 +540,7 @@ CREATE TABLE "diensteinteilungs_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabe_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -551,23 +553,23 @@ CREATE TABLE "dienstfreigabe_versions" (
 
 -- CreateTable
 CREATE TABLE "dienstfreigabes" (
-    "id" BIGSERIAL NOT NULL,
-    "freigabetyp_id" BIGINT,
-    "mitarbeiter_id" BIGINT,
-    "freigabestatus_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "freigabetyp_id" INTEGER,
+    "mitarbeiter_id" INTEGER,
+    "freigabestatus_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "user_id" BIGINT,
-    "standort_id" BIGINT,
+    "user_id" INTEGER,
+    "standort_id" INTEGER,
 
     CONSTRAINT "dienstfreigabes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstgruppes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "use_in_publish" BOOLEAN NOT NULL DEFAULT false,
@@ -581,9 +583,9 @@ CREATE TABLE "dienstgruppes" (
 
 -- CreateTable
 CREATE TABLE "dienstkategorie_teams" (
-    "id" BIGSERIAL NOT NULL,
-    "dienstkategorie_id" BIGINT,
-    "team_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "dienstkategorie_id" INTEGER,
+    "team_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -592,10 +594,10 @@ CREATE TABLE "dienstkategorie_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstkategories" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "poppix_name" VARCHAR DEFAULT '',
@@ -608,9 +610,9 @@ CREATE TABLE "dienstkategories" (
 
 -- CreateTable
 CREATE TABLE "dienstkategoriethemas" (
-    "id" BIGSERIAL NOT NULL,
-    "dienstkategorie_id" BIGINT,
-    "thema_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "dienstkategorie_id" INTEGER,
+    "thema_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -619,11 +621,11 @@ CREATE TABLE "dienstkategoriethemas" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_counters" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR DEFAULT 'Zähler',
     "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
-    "mitarbeiter_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
-    "dienstplan_custom_feld_id" BIGINT,
+    "mitarbeiter_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "dienstplan_custom_feld_id" INTEGER,
     "beschreibung" TEXT DEFAULT '',
     "cell_id" VARCHAR DEFAULT '',
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -642,10 +644,10 @@ CREATE TABLE "dienstplan_custom_counters" (
     "count" VARCHAR DEFAULT 'Einteilungen',
     "funktion" VARCHAR DEFAULT '',
     "feiertage" VARCHAR DEFAULT 'auch',
-    "mitarbeiterteam_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
-    "mitarbeiterfunktionen_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
-    "diensteteam_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
-    "wochentage" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "mitarbeiterteam_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "mitarbeiterfunktionen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "diensteteam_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "wochentage" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "empty_as_regeldienst" BOOLEAN DEFAULT false,
 
     CONSTRAINT "dienstplan_custom_counters_pkey" PRIMARY KEY ("id")
@@ -653,23 +655,23 @@ CREATE TABLE "dienstplan_custom_counters" (
 
 -- CreateTable
 CREATE TABLE "dienstplan_custom_felds" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "ansicht_id" INTEGER DEFAULT 0,
-    "vorlage_id" BIGINT,
+    "vorlage_id" INTEGER,
     "row" BOOLEAN DEFAULT true,
-    "index" BIGINT DEFAULT 0,
+    "index" INTEGER DEFAULT 0,
     "name" VARCHAR DEFAULT 'Neue Zeile',
-    "count_all_typ" BIGINT DEFAULT 0,
+    "count_all_typ" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "custom_counter_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "custom_counter_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
 
     CONSTRAINT "dienstplan_custom_felds_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplan_paths" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "path" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -677,8 +679,8 @@ CREATE TABLE "dienstplan_paths" (
     "offset_to_now" INTEGER DEFAULT 0,
     "nr_versions" INTEGER DEFAULT 0,
     "plan_pattern" VARCHAR DEFAULT '',
-    "planinterval_id" BIGINT,
-    "plan_tab_id" BIGINT,
+    "planinterval_id" INTEGER,
+    "plan_tab_id" INTEGER,
     "name" VARCHAR NOT NULL DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
     "begin_on_monday" BOOLEAN DEFAULT false,
@@ -689,24 +691,24 @@ CREATE TABLE "dienstplan_paths" (
 
 -- CreateTable
 CREATE TABLE "dienstplanbedarves" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "anfang" DATE,
     "ende" DATE,
-    "dienste" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "dienste" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
 
     CONSTRAINT "dienstplanbedarves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_farbgruppens" (
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT,
-    "color" VARCHAR DEFAULT '#000000',
-    "pos" BIGINT DEFAULT 1,
-    "dienste_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
-    "dienstkategorien_ids" BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "color" VARCHAR DEFAULT '#ffffff',
+    "pos" INTEGER DEFAULT 1,
+    "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
+    "dienstkategorien_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "show" BOOLEAN DEFAULT true,
@@ -716,8 +718,8 @@ CREATE TABLE "dienstplaner_user_farbgruppens" (
 
 -- CreateTable
 CREATE TABLE "dienstplaner_user_settings" (
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
     "abwesend" BOOLEAN DEFAULT true,
     "mehrfacheinteilung" BOOLEAN DEFAULT true,
     "ueberschneidung" BOOLEAN DEFAULT true,
@@ -746,9 +748,9 @@ CREATE TABLE "dienstplaner_user_settings" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_teams" (
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT,
-    "team_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "team_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -757,9 +759,9 @@ CREATE TABLE "dienstplaners_teams" (
 
 -- CreateTable
 CREATE TABLE "dienstplaners_verteiler_vorlagens" (
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT,
-    "vorlage_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "vorlage_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -768,27 +770,28 @@ CREATE TABLE "dienstplaners_verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "dienstplans" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "parameterset_id" BIGINT,
+    "parameterset_id" INTEGER,
     "anfang" DATE,
     "ende" DATE,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "beschreibung" VARCHAR,
-    "dienstplanstatus_id" BIGINT,
+    "dienstplanstatus_id" INTEGER,
     "sys" BOOLEAN DEFAULT false,
-    "dienstplanbedarf_id" BIGINT,
+    "dienstplanbedarf_id" INTEGER,
+    "parameter" VARCHAR,
 
     CONSTRAINT "dienstplans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "dienstplanstatuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "sys" BOOLEAN DEFAULT false,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -798,9 +801,9 @@ CREATE TABLE "dienstplanstatuses" (
 
 -- CreateTable
 CREATE TABLE "dienstratings" (
-    "id" BIGSERIAL NOT NULL,
-    "po_dienst_id" BIGINT,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "po_dienst_id" INTEGER,
+    "mitarbeiter_id" INTEGER,
     "rating" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -810,7 +813,7 @@ CREATE TABLE "dienstratings" (
 
 -- CreateTable
 CREATE TABLE "diensts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "datum" TIMESTAMP(6),
     "dienstname" VARCHAR(255),
     "kommentar" TEXT,
@@ -824,7 +827,7 @@ CREATE TABLE "diensts" (
 
 -- CreateTable
 CREATE TABLE "dienstverteilungstyps" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -836,10 +839,10 @@ CREATE TABLE "dienstverteilungstyps" (
 
 -- CreateTable
 CREATE TABLE "dienstwunsches" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "tag" DATE,
-    "dienstkategorie_id" BIGINT,
+    "dienstkategorie_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -848,9 +851,9 @@ CREATE TABLE "dienstwunsches" (
 
 -- CreateTable
 CREATE TABLE "einteilung_rotations" (
-    "id" BIGSERIAL NOT NULL,
-    "kontingent_id" BIGINT,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "kontingent_id" INTEGER,
+    "mitarbeiter_id" INTEGER,
     "mitarbeiter_planname" VARCHAR,
     "prioritaet" INTEGER,
     "von" DATE,
@@ -868,7 +871,7 @@ CREATE TABLE "einteilung_rotations" (
 
 -- CreateTable
 CREATE TABLE "einteilung_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -886,10 +889,10 @@ CREATE TABLE "einteilung_versions" (
 
 -- CreateTable
 CREATE TABLE "einteilungskontexts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "tagesverteiler" BOOLEAN DEFAULT false,
@@ -902,9 +905,9 @@ CREATE TABLE "einteilungskontexts" (
 
 -- CreateTable
 CREATE TABLE "einteilungsstatuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "public" BOOLEAN DEFAULT false,
     "counts" BOOLEAN DEFAULT false,
     "sys" BOOLEAN DEFAULT false,
@@ -918,7 +921,7 @@ CREATE TABLE "einteilungsstatuses" (
 
 -- CreateTable
 CREATE TABLE "feiertages" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "key" VARCHAR,
     "datum" DATE,
@@ -934,13 +937,13 @@ CREATE TABLE "feiertages" (
 
 -- CreateTable
 CREATE TABLE "freigabestatuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "counts_active" BOOLEAN,
     "sys" BOOLEAN DEFAULT false,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "beschreibung" VARCHAR,
     "qualifiziert" BOOLEAN,
 
@@ -949,7 +952,7 @@ CREATE TABLE "freigabestatuses" (
 
 -- CreateTable
 CREATE TABLE "freigabetyps" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "planname" VARCHAR,
     "beschreibung" TEXT,
@@ -962,8 +965,8 @@ CREATE TABLE "freigabetyps" (
 
 -- CreateTable
 CREATE TABLE "freistellungs" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "mitarbeiter_planname" VARCHAR(255),
     "plandatum" TIMESTAMP(6),
     "einteilung" VARCHAR(255),
@@ -975,24 +978,24 @@ CREATE TABLE "freistellungs" (
 
 -- CreateTable
 CREATE TABLE "funktions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "planname" VARCHAR,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "prio" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "team_id" BIGINT,
+    "team_id" INTEGER,
 
     CONSTRAINT "funktions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "geraetebereiches" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1001,9 +1004,9 @@ CREATE TABLE "geraetebereiches" (
 
 -- CreateTable
 CREATE TABLE "geraeteklasses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "beschreibung" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1013,11 +1016,11 @@ CREATE TABLE "geraeteklasses" (
 
 -- CreateTable
 CREATE TABLE "geraetepasses" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "einweiser" VARCHAR,
     "einweisungsdatum" DATE,
-    "geraet_id" BIGINT,
+    "geraet_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "herstellereinweisung" BOOLEAN DEFAULT false,
@@ -1028,11 +1031,11 @@ CREATE TABLE "geraetepasses" (
 
 -- CreateTable
 CREATE TABLE "geraets" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "hersteller" VARCHAR,
     "typ" VARCHAR,
-    "geraeteklasse_id" BIGINT,
+    "geraeteklasse_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "in_use" BOOLEAN DEFAULT true,
@@ -1043,7 +1046,7 @@ CREATE TABLE "geraets" (
 
 -- CreateTable
 CREATE TABLE "gruppes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255),
     "resource_id" INTEGER,
     "resource_type" VARCHAR(255),
@@ -1055,15 +1058,15 @@ CREATE TABLE "gruppes" (
 
 -- CreateTable
 CREATE TABLE "hains_tasks" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "als_popup" BOOLEAN,
     "gruppe_id" INTEGER,
-    "mitarbeiter_ids" BIGINT[],
-    "benachrichtigungs_typ_id" BIGINT,
+    "mitarbeiter_ids" INTEGER[],
+    "benachrichtigungs_typ_id" INTEGER,
     "send_notification" BOOLEAN DEFAULT false,
     "benachrichtigungs_text" TEXT,
     "benachrichtigungs_titel" VARCHAR,
@@ -1072,7 +1075,7 @@ CREATE TABLE "hains_tasks" (
     "alle_mitarbeiter" BOOLEAN DEFAULT false,
     "dienst_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "link" VARCHAR,
-    "zeitraumkategorie_id" BIGINT,
+    "zeitraumkategorie_id" INTEGER,
     "wiederholen" BOOLEAN DEFAULT false,
     "funktions_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "last_day" DATE,
@@ -1084,8 +1087,8 @@ CREATE TABLE "hains_tasks" (
 
 -- CreateTable
 CREATE TABLE "jahresbilanzs" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "plusstunden" DECIMAL(6,2) DEFAULT 0,
     "ueberstunden" DECIMAL(6,2) DEFAULT 0,
     "urlaubstage" INTEGER DEFAULT 0,
@@ -1099,10 +1102,10 @@ CREATE TABLE "jahresbilanzs" (
 
 -- CreateTable
 CREATE TABLE "kalendermarkierungs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "category" VARCHAR,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "year" INTEGER,
     "prio" INTEGER DEFAULT 1,
     "start" DATE,
@@ -1115,7 +1118,7 @@ CREATE TABLE "kalendermarkierungs" (
 
 -- CreateTable
 CREATE TABLE "kalenderwoches" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "jahr" INTEGER NOT NULL,
     "kw" INTEGER NOT NULL,
     "montag" DATE NOT NULL,
@@ -1131,9 +1134,9 @@ CREATE TABLE "kalenderwoches" (
 
 -- CreateTable
 CREATE TABLE "kontingent_po_diensts" (
-    "id" BIGSERIAL NOT NULL,
-    "kontingent_id" BIGINT,
-    "po_dienst_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "kontingent_id" INTEGER,
+    "po_dienst_id" INTEGER,
     "eingeteilt_count_factor" INTEGER NOT NULL DEFAULT 1,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1144,15 +1147,15 @@ CREATE TABLE "kontingent_po_diensts" (
 
 -- CreateTable
 CREATE TABLE "kontingents" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "kommentar" TEXT,
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
     "position" INTEGER,
     "kurzname" VARCHAR,
-    "thema_ids" BIGINT[],
-    "team_id" BIGINT DEFAULT 8,
+    "thema_ids" INTEGER[],
+    "team_id" INTEGER DEFAULT 8,
     "default" BOOLEAN DEFAULT false,
     "sonderrotation" BOOLEAN DEFAULT false,
     "show_all_rotations" BOOLEAN DEFAULT false,
@@ -1162,7 +1165,7 @@ CREATE TABLE "kontingents" (
 
 -- CreateTable
 CREATE TABLE "kostenstelles" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "nummer" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1173,7 +1176,7 @@ CREATE TABLE "kostenstelles" (
 
 -- CreateTable
 CREATE TABLE "links" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "url" VARCHAR,
@@ -1185,7 +1188,7 @@ CREATE TABLE "links" (
 
 -- CreateTable
 CREATE TABLE "mailer_addresses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "addresse" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1196,9 +1199,9 @@ CREATE TABLE "mailer_addresses" (
 
 -- CreateTable
 CREATE TABLE "mailer_ccs" (
-    "id" BIGSERIAL NOT NULL,
-    "mailer_context_id" BIGINT,
-    "mailer_addresse_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mailer_context_id" INTEGER,
+    "mailer_addresse_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1207,12 +1210,12 @@ CREATE TABLE "mailer_ccs" (
 
 -- CreateTable
 CREATE TABLE "mailer_contexts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "context" VARCHAR NOT NULL DEFAULT '',
     "subject" VARCHAR NOT NULL DEFAULT '',
     "body" TEXT NOT NULL DEFAULT '',
-    "from_id" BIGINT,
-    "reply_to_id" BIGINT,
+    "from_id" INTEGER,
+    "reply_to_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1221,9 +1224,9 @@ CREATE TABLE "mailer_contexts" (
 
 -- CreateTable
 CREATE TABLE "mailer_tos" (
-    "id" BIGSERIAL NOT NULL,
-    "mailer_context_id" BIGINT,
-    "mailer_addresse_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mailer_context_id" INTEGER,
+    "mailer_addresse_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1232,8 +1235,8 @@ CREATE TABLE "mailer_tos" (
 
 -- CreateTable
 CREATE TABLE "merkmal_options" (
-    "id" BIGSERIAL NOT NULL,
-    "merkmal_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "merkmal_id" INTEGER,
     "wert" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1243,7 +1246,7 @@ CREATE TABLE "merkmal_options" (
 
 -- CreateTable
 CREATE TABLE "merkmals" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "can_edit" BOOLEAN,
@@ -1256,9 +1259,9 @@ CREATE TABLE "merkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiter_default_eingeteilts" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "po_dienst_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "po_dienst_id" INTEGER,
     "year" INTEGER NOT NULL,
     "eingeteilt" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1269,9 +1272,9 @@ CREATE TABLE "mitarbeiter_default_eingeteilts" (
 
 -- CreateTable
 CREATE TABLE "mitarbeitermerkmals" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "merkmal_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "merkmal_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "wert" VARCHAR,
@@ -1282,7 +1285,7 @@ CREATE TABLE "mitarbeitermerkmals" (
 
 -- CreateTable
 CREATE TABLE "mitarbeiters" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255) DEFAULT '',
     "created_at" TIMESTAMP(6),
     "updated_at" TIMESTAMP(6),
@@ -1296,7 +1299,7 @@ CREATE TABLE "mitarbeiters" (
     "zeit_kommentar" VARCHAR,
     "abwesend" BOOLEAN DEFAULT false,
     "pass_count" INTEGER DEFAULT 0,
-    "funktion_id" BIGINT DEFAULT 6,
+    "funktion_id" INTEGER DEFAULT 6,
     "personalnummer" VARCHAR DEFAULT '',
 
     CONSTRAINT "mitarbeiters_pkey" PRIMARY KEY ("id")
@@ -1304,8 +1307,8 @@ CREATE TABLE "mitarbeiters" (
 
 -- CreateTable
 CREATE TABLE "nef_fahrts" (
-    "id" BIGSERIAL NOT NULL,
-    "notfallmedizin_register_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "notfallmedizin_register_id" INTEGER,
     "fahrtnummer" INTEGER,
     "datum" DATE,
     "einsatznummer" BIGINT,
@@ -1320,9 +1323,9 @@ CREATE TABLE "nef_fahrts" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_absprachens" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT NOT NULL,
-    "zeitraumkategorie_id" BIGINT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER NOT NULL,
+    "zeitraumkategorie_id" INTEGER NOT NULL,
     "von" DATE,
     "bis" DATE,
 
@@ -1331,17 +1334,17 @@ CREATE TABLE "nicht_einteilen_absprachens" (
 
 -- CreateTable
 CREATE TABLE "nicht_einteilen_standort_themen" (
-    "id" BIGSERIAL NOT NULL,
-    "absprache_id" BIGINT NOT NULL,
-    "standort_id" BIGINT NOT NULL,
-    "thema_id" BIGINT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "absprache_id" INTEGER NOT NULL,
+    "standort_id" INTEGER NOT NULL,
+    "thema_id" INTEGER NOT NULL,
 
     CONSTRAINT "nicht_einteilen_standort_themen_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "note_categories" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "category" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1351,25 +1354,25 @@ CREATE TABLE "note_categories" (
 
 -- CreateTable
 CREATE TABLE "notes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "notiz" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "ersteller_id" BIGINT,
+    "mitarbeiter_id" INTEGER,
+    "ersteller_id" INTEGER,
     "private_note" BOOLEAN DEFAULT false,
     "title" VARCHAR,
-    "note_category_id" BIGINT,
+    "note_category_id" INTEGER,
 
     CONSTRAINT "notes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "notes_histories" (
-    "id" BIGSERIAL NOT NULL,
-    "note_id" BIGINT,
-    "mitarbeiter_id" BIGINT,
-    "ersteller_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "note_id" INTEGER,
+    "mitarbeiter_id" INTEGER,
+    "ersteller_id" INTEGER,
     "private_note" BOOLEAN,
     "notiz" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1380,8 +1383,8 @@ CREATE TABLE "notes_histories" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_registers" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "titel" VARCHAR DEFAULT '',
     "anrede" VARCHAR DEFAULT '',
     "nasim" BOOLEAN DEFAULT false,
@@ -1400,7 +1403,7 @@ CREATE TABLE "notfallmedizin_registers" (
     "freigabe_date" DATE,
     "pruefung" DATE,
     "hospitation" DATE,
-    "notfallmedizin_status_id" BIGINT DEFAULT 1,
+    "notfallmedizin_status_id" INTEGER DEFAULT 1,
     "mails_send" BOOLEAN DEFAULT true,
     "aktiv" BOOLEAN DEFAULT true,
 
@@ -1409,9 +1412,9 @@ CREATE TABLE "notfallmedizin_registers" (
 
 -- CreateTable
 CREATE TABLE "notfallmedizin_statuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "send_mitarbeiter_email" BOOLEAN,
@@ -1429,7 +1432,7 @@ CREATE TABLE "notfallmedizin_statuses" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_grants" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "resource_owner_id" INTEGER NOT NULL,
     "application_id" INTEGER NOT NULL,
     "token" VARCHAR(255) NOT NULL,
@@ -1444,7 +1447,7 @@ CREATE TABLE "oauth_access_grants" (
 
 -- CreateTable
 CREATE TABLE "oauth_access_tokens" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "resource_owner_id" INTEGER,
     "application_id" INTEGER,
     "token" VARCHAR(255) NOT NULL,
@@ -1458,8 +1461,23 @@ CREATE TABLE "oauth_access_tokens" (
 );
 
 -- CreateTable
+CREATE TABLE "oauth_access_tokens_new" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "refresh_token_id" INTEGER NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_access_tokens_new_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "oauth_applications" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "uid" VARCHAR(255) NOT NULL,
     "secret" VARCHAR(255) NOT NULL,
@@ -1473,8 +1491,46 @@ CREATE TABLE "oauth_applications" (
 );
 
 -- CreateTable
+CREATE TABLE "oauth_authorization_codes" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_authorization_codes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "oauth_clients" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "client_secret" TEXT NOT NULL,
+
+    CONSTRAINT "oauth_clients_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "oauth_refresh_tokens" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "client_id" VARCHAR(255) NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "scopes" TEXT[],
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_refresh_tokens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "parametersets" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
     "sys" BOOLEAN DEFAULT false,
@@ -1491,7 +1547,7 @@ CREATE TABLE "parametersets" (
 
 -- CreateTable
 CREATE TABLE "plan_tabs" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR DEFAULT '',
     "position" INTEGER NOT NULL DEFAULT 0,
 
@@ -1500,7 +1556,7 @@ CREATE TABLE "plan_tabs" (
 
 -- CreateTable
 CREATE TABLE "planintervals" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "typ" VARCHAR DEFAULT '',
 
     CONSTRAINT "planintervals_pkey" PRIMARY KEY ("id")
@@ -1508,11 +1564,11 @@ CREATE TABLE "planintervals" (
 
 -- CreateTable
 CREATE TABLE "planparameters" (
-    "id" BIGSERIAL NOT NULL,
-    "parameterset_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "parameterset_id" INTEGER,
     "num_threads" INTEGER,
     "relevant_timeframe_size" INTEGER,
-    "einteilungsstatus_id" BIGINT,
+    "einteilungsstatus_id" INTEGER,
     "default_rating" INTEGER,
     "debugging" BOOLEAN,
     "reuse_bedarf" BOOLEAN,
@@ -1528,24 +1584,36 @@ CREATE TABLE "planparameters" (
 );
 
 -- CreateTable
+CREATE TABLE "planungsinformations" (
+    "id" SERIAL NOT NULL,
+    "tag" DATE NOT NULL,
+    "po_dienst_id" INTEGER,
+    "bereich_id" INTEGER,
+    "kommentar" TEXT NOT NULL,
+
+    CONSTRAINT "planungsinformations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "po_diensts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "planname" TEXT,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "freigabetypen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "preset" BOOLEAN DEFAULT false,
     "sys" BOOLEAN DEFAULT false,
-    "thema_ids" BIGINT[],
+    "reduziere_urlaub" BOOLEAN DEFAULT false,
+    "thema_ids" INTEGER[],
     "aufwand" INTEGER DEFAULT 0,
     "aneasy_name" VARCHAR DEFAULT '',
     "order" INTEGER DEFAULT 0,
     "priorisiere_wunsch" BOOLEAN DEFAULT false,
-    "team_id" BIGINT DEFAULT 8,
-    "kostenstelle_id" BIGINT DEFAULT 1,
+    "team_id" INTEGER DEFAULT 8,
+    "kostenstelle_id" INTEGER DEFAULT 1,
     "stundennachweis_urlaub" BOOLEAN DEFAULT false,
     "stundennachweis_krank" BOOLEAN DEFAULT false,
     "stundennachweis_sonstig" BOOLEAN DEFAULT false,
@@ -1574,11 +1642,11 @@ CREATE TABLE "schema_migrations" (
 
 -- CreateTable
 CREATE TABLE "schichts" (
-    "id" BIGSERIAL NOT NULL,
-    "bedarfs_eintrag_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "bedarfs_eintrag_id" INTEGER,
     "anfang" TIMESTAMP(6),
     "ende" TIMESTAMP(6),
-    "arbeitszeittyp_id" BIGINT,
+    "arbeitszeittyp_id" INTEGER,
     "schicht_nummer" INTEGER DEFAULT 1,
     "arbeitszeit" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1589,7 +1657,7 @@ CREATE TABLE "schichts" (
 
 -- CreateTable
 CREATE TABLE "standorts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255),
     "name_url" VARCHAR(255),
     "adresse" TEXT,
@@ -1607,9 +1675,9 @@ CREATE TABLE "standorts" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
-    "kostenstelle_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
+    "kostenstelle_id" INTEGER,
     "tag" DATE,
     "von" TIME(6),
     "bis" TIME(6),
@@ -1623,7 +1691,7 @@ CREATE TABLE "stundennachweis" (
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "von_einteilung" INTEGER DEFAULT -1,
-    "stundennachweis_status_id" BIGINT DEFAULT 1,
+    "stundennachweis_status_id" INTEGER DEFAULT 1,
     "vollarbeit" BOOLEAN DEFAULT true,
     "pause" TIME(6) DEFAULT '00:00:00'::time without time zone,
     "rufbereitschaft_von" TIME[] DEFAULT '{00:00:00}'::time without time zone[],
@@ -1635,7 +1703,7 @@ CREATE TABLE "stundennachweis" (
 
 -- CreateTable
 CREATE TABLE "stundennachweis_statuses" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "confirmed" BOOLEAN,
     "submitted" BOOLEAN,
@@ -1647,22 +1715,22 @@ CREATE TABLE "stundennachweis_statuses" (
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_layouts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "device" VARCHAR,
     "rows" INTEGER,
     "cols" INTEGER,
     "grid" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "verteiler_vorlagen_id" BIGINT,
+    "verteiler_vorlagen_id" INTEGER,
 
     CONSTRAINT "tagesverteiler_layouts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "tagesverteiler_user_settings" (
-    "id" BIGSERIAL NOT NULL,
-    "user_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
     "funktion_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "funktion_box" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1675,9 +1743,9 @@ CREATE TABLE "tagesverteiler_user_settings" (
 
 -- CreateTable
 CREATE TABLE "tagesverteilers" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "planname" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1687,7 +1755,7 @@ CREATE TABLE "tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "tagkategories" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1697,9 +1765,9 @@ CREATE TABLE "tagkategories" (
 
 -- CreateTable
 CREATE TABLE "team_funktions" (
-    "id" BIGSERIAL NOT NULL,
-    "team_id" BIGINT,
-    "funktion_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "team_id" INTEGER NOT NULL,
+    "funktion_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1708,7 +1776,7 @@ CREATE TABLE "team_funktions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffer_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1721,9 +1789,9 @@ CREATE TABLE "team_kw_krankpuffer_versions" (
 
 -- CreateTable
 CREATE TABLE "team_kw_krankpuffers" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "kw" INTEGER NOT NULL DEFAULT 0,
-    "team_id" BIGINT,
+    "team_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
     "puffer" INTEGER NOT NULL DEFAULT 0,
@@ -1732,22 +1800,49 @@ CREATE TABLE "team_kw_krankpuffers" (
 );
 
 -- CreateTable
-CREATE TABLE "teams" (
-    "id" BIGSERIAL NOT NULL,
-    "name" VARCHAR,
+CREATE TABLE "team_kopf_soll" (
+    "id" SERIAL NOT NULL,
+    "team_id" INTEGER NOT NULL,
+    "soll" INTEGER NOT NULL,
+    "von" DATE NOT NULL,
+    "bis" DATE NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "kostenstelle_id" BIGINT DEFAULT 2,
+
+    CONSTRAINT "team_kopf_soll_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "team_vk_soll" (
+    "id" SERIAL NOT NULL,
+    "team_id" INTEGER NOT NULL,
+    "soll" INTEGER NOT NULL,
+    "von" DATE NOT NULL,
+    "bis" DATE NOT NULL,
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT "team_vk_soll_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "teams" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR NOT NULL,
+    "created_at" TIMESTAMP(6) NOT NULL,
+    "updated_at" TIMESTAMP(6) NOT NULL,
+    "kostenstelle_id" INTEGER DEFAULT 2,
     "default" BOOLEAN DEFAULT false,
     "krank_puffer" INTEGER NOT NULL DEFAULT 0,
     "verteiler_default" BOOLEAN DEFAULT false,
+    "color" VARCHAR NOT NULL DEFAULT '#ffffff',
 
     CONSTRAINT "teams_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "telefonlistes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" TEXT,
     "mitarbeiter" VARCHAR,
@@ -1760,10 +1855,10 @@ CREATE TABLE "telefonlistes" (
 
 -- CreateTable
 CREATE TABLE "themas" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "color" VARCHAR,
+    "color" VARCHAR DEFAULT '#ffffff',
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1772,8 +1867,8 @@ CREATE TABLE "themas" (
 
 -- CreateTable
 CREATE TABLE "urlaubssaldo_abspraches" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "von" DATE,
     "bis" DATE,
 
@@ -1782,7 +1877,7 @@ CREATE TABLE "urlaubssaldo_abspraches" (
 
 -- CreateTable
 CREATE TABLE "user_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1800,7 +1895,7 @@ CREATE TABLE "user_versions" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(255),
     "uid" INTEGER,
     "login" VARCHAR(255),
@@ -1835,13 +1930,15 @@ CREATE TABLE "users" (
 
 -- CreateTable
 CREATE TABLE "users_gruppes" (
-    "user_id" BIGINT,
-    "gruppe_id" BIGINT
+    "user_id" INTEGER NOT NULL,
+    "gruppe_id" INTEGER NOT NULL,
+
+    CONSTRAINT "users_gruppes_pkey" PRIMARY KEY ("user_id","gruppe_id")
 );
 
 -- CreateTable
 CREATE TABLE "version_associations" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "version_id" INTEGER,
     "foreign_key_name" VARCHAR NOT NULL,
     "foreign_key_id" INTEGER,
@@ -1852,7 +1949,7 @@ CREATE TABLE "version_associations" (
 
 -- CreateTable
 CREATE TABLE "versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1867,7 +1964,7 @@ CREATE TABLE "versions" (
 
 -- CreateTable
 CREATE TABLE "verteiler_tagesverteilers" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "raw_json" TEXT,
     "datum" TIMESTAMP(6),
     "version" VARCHAR,
@@ -1879,11 +1976,11 @@ CREATE TABLE "verteiler_tagesverteilers" (
 
 -- CreateTable
 CREATE TABLE "verteiler_vorlagens" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR NOT NULL DEFAULT 'Vorlage',
     "beschreibung" VARCHAR NOT NULL DEFAULT '',
     "typ" VARCHAR NOT NULL DEFAULT 'wochenverteiler',
-    "dienstplan_path_id" BIGINT,
+    "dienstplan_path_id" INTEGER,
     "order" INTEGER NOT NULL DEFAULT 0,
     "bereiche_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "dienste_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
@@ -1897,10 +1994,10 @@ CREATE TABLE "verteiler_vorlagens" (
 
 -- CreateTable
 CREATE TABLE "verteilungsoverrides" (
-    "id" BIGSERIAL NOT NULL,
-    "parameterset_id" BIGINT,
-    "dienstbedarf_id" BIGINT,
-    "dienstverteilungstyp_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "parameterset_id" INTEGER,
+    "dienstbedarf_id" INTEGER,
+    "dienstverteilungstyp_id" INTEGER,
     "verteilungscode" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -1910,7 +2007,7 @@ CREATE TABLE "verteilungsoverrides" (
 
 -- CreateTable
 CREATE TABLE "vertrag_versions" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "item_type" VARCHAR NOT NULL,
     "item_id" INTEGER NOT NULL,
     "event" VARCHAR NOT NULL,
@@ -1923,13 +2020,13 @@ CREATE TABLE "vertrag_versions" (
 
 -- CreateTable
 CREATE TABLE "vertrags" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragstyp_id" BIGINT,
-    "anfang" DATE,
-    "ende" DATE,
+    "vertragstyp_id" INTEGER,
+    "anfang" DATE NOT NULL,
+    "ende" DATE NOT NULL,
     "unbefristet" BOOLEAN DEFAULT false,
     "kommentar" VARCHAR DEFAULT '',
 
@@ -1938,10 +2035,10 @@ CREATE TABLE "vertrags" (
 
 -- CreateTable
 CREATE TABLE "vertrags_arbeitszeits" (
-    "id" BIGSERIAL NOT NULL,
-    "vertrag_id" BIGINT,
-    "von" DATE,
-    "bis" DATE,
+    "id" SERIAL NOT NULL,
+    "vertrag_id" INTEGER,
+    "von" DATE NOT NULL,
+    "bis" DATE NOT NULL,
     "vk" DECIMAL(3,2),
     "tage_woche" DOUBLE PRECISION DEFAULT 5.0,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1952,23 +2049,23 @@ CREATE TABLE "vertrags_arbeitszeits" (
 
 -- CreateTable
 CREATE TABLE "vertrags_phases" (
-    "id" BIGSERIAL NOT NULL,
-    "vertrag_id" BIGINT,
-    "von" DATE,
-    "bis" DATE,
+    "id" SERIAL NOT NULL,
+    "vertrag_id" INTEGER,
+    "von" DATE NOT NULL,
+    "bis" DATE NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragsstufe_id" BIGINT,
+    "vertragsstufe_id" INTEGER,
 
     CONSTRAINT "vertrags_phases_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "vertrags_variantes" (
-    "id" BIGSERIAL NOT NULL,
-    "von" DATE,
-    "bis" DATE,
-    "vertragstyp_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "von" DATE NOT NULL,
+    "bis" DATE NOT NULL,
+    "vertragstyp_id" INTEGER,
     "name" VARCHAR,
     "wochenstunden" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
@@ -1980,9 +2077,9 @@ CREATE TABLE "vertrags_variantes" (
 
 -- CreateTable
 CREATE TABLE "vertragsgruppes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
-    "vertragstyp_id" BIGINT,
+    "vertragstyp_id" INTEGER,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
 
@@ -1991,21 +2088,21 @@ CREATE TABLE "vertragsgruppes" (
 
 -- CreateTable
 CREATE TABLE "vertragsstuves" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "stufe" INTEGER,
     "nach_jahren" INTEGER,
     "monatsgehalt" DECIMAL(15,2),
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "vertragsgruppe_id" BIGINT,
-    "vertrags_variante_id" BIGINT,
+    "vertragsgruppe_id" INTEGER,
+    "vertrags_variante_id" INTEGER,
 
     CONSTRAINT "vertragsstuves_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "vertragstyps" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2015,13 +2112,13 @@ CREATE TABLE "vertragstyps" (
 
 -- CreateTable
 CREATE TABLE "vorlages" (
-    "id" BIGSERIAL NOT NULL,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "mitarbeiter_id" INTEGER,
     "name" VARCHAR,
     "dienste" INTEGER[],
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
-    "team_id" BIGINT,
+    "team_id" INTEGER,
     "funktionen_ids" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "ansicht_id" INTEGER DEFAULT 0,
     "position" INTEGER NOT NULL DEFAULT 0,
@@ -2031,9 +2128,9 @@ CREATE TABLE "vorlages" (
 
 -- CreateTable
 CREATE TABLE "wochenbilanzs" (
-    "id" BIGSERIAL NOT NULL,
-    "kalenderwoche_id" BIGINT,
-    "mitarbeiter_id" BIGINT,
+    "id" SERIAL NOT NULL,
+    "kalenderwoche_id" INTEGER,
+    "mitarbeiter_id" INTEGER,
     "geplante_arbeitszeit" DECIMAL(6,2) DEFAULT 0,
     "geplante_rufbereitschaftszeit" DECIMAL(6,2) DEFAULT 0,
     "geplante_bereitschaftszeit" DECIMAL(6,2) DEFAULT 0,
@@ -2050,10 +2147,10 @@ CREATE TABLE "wochenbilanzs" (
 
 -- CreateTable
 CREATE TABLE "zeitraumkategories" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "beschreibung" VARCHAR,
-    "zeitraumregel_id" BIGINT,
+    "zeitraumregel_id" INTEGER,
     "prio" INTEGER,
     "anfang" DATE,
     "ende" DATE,
@@ -2068,7 +2165,7 @@ CREATE TABLE "zeitraumkategories" (
 
 -- CreateTable
 CREATE TABLE "zeitraumregels" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR,
     "created_at" TIMESTAMP(6) NOT NULL,
     "updated_at" TIMESTAMP(6) NOT NULL,
@@ -2089,6 +2186,12 @@ CREATE INDEX "index_abwesentheitenueberblick_settings_on_mitarbeiter_id" ON "abw
 
 -- CreateIndex
 CREATE INDEX "index_abwesentheitenueberblicks_on_mitarbeiter_id" ON "abwesentheitenueberblicks"("mitarbeiter_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "account_infos_mitarbeiter_id_key" ON "account_infos"("mitarbeiter_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "account_infos_user_id_key" ON "account_infos"("user_id");
 
 -- CreateIndex
 CREATE INDEX "index_account_infos_on_mitarbeiter_id" ON "account_infos"("mitarbeiter_id");
@@ -2478,7 +2581,19 @@ CREATE UNIQUE INDEX "index_oauth_access_tokens_on_refresh_token" ON "oauth_acces
 CREATE INDEX "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens"("resource_owner_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "oauth_access_tokens_new_token_key" ON "oauth_access_tokens_new"("token");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "index_oauth_applications_on_uid" ON "oauth_applications"("uid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_authorization_codes_code_key" ON "oauth_authorization_codes"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_clients_client_id_key" ON "oauth_clients"("client_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "oauth_refresh_tokens_token_key" ON "oauth_refresh_tokens"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "index_parametersets_on_email" ON "parametersets"("email");
@@ -2554,6 +2669,9 @@ CREATE UNIQUE INDEX "index_users_on_email" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "index_users_on_reset_password_token" ON "users"("reset_password_token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_account_info_id_key" ON "users"("account_info_id");
 
 -- CreateIndex
 CREATE INDEX "index_users_on_account_info_id" ON "users"("account_info_id");
@@ -2724,6 +2842,9 @@ ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e18eeada6a" FOREIGN KEY 
 ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "fk_rails_e8f3cb8e16" FOREIGN KEY ("dienstbedarf_id") REFERENCES "dienstbedarves"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "bedarfs_eintrags" ADD CONSTRAINT "bedarfs_eintrags_first_entry_fkey" FOREIGN KEY ("first_entry") REFERENCES "bedarfs_eintrags"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "benachrichtigungs" ADD CONSTRAINT "fk_rails_2d4826acc2" FOREIGN KEY ("benachrichtigungs_status_id") REFERENCES "benachrichtigungs_statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -2751,6 +2872,15 @@ ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_07d9c65830" FOREIGN KE
 ALTER TABLE "channel_room_users" ADD CONSTRAINT "fk_rails_fa37f889bb" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "dateis" ADD CONSTRAINT "dateis_besitzer_id_fkey" FOREIGN KEY ("besitzer_id") REFERENCES "mitarbeiters"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "dateis" ADD CONSTRAINT "dateis_ersteller_id_fkey" FOREIGN KEY ("ersteller_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "dateis" ADD CONSTRAINT "dateis_datei_typ_id_fkey" FOREIGN KEY ("datei_typ_id") REFERENCES "datei_typs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_05b1cdbc7e" FOREIGN KEY ("dienstverteilungstyp_id") REFERENCES "dienstverteilungstyps"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -2770,6 +2900,9 @@ ALTER TABLE "dienstbedarves" ADD CONSTRAINT "fk_rails_a8c5f3913d" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_0c69b8191a" FOREIGN KEY ("po_dienst_id") REFERENCES "po_diensts"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "diensteinteilungs_einteilungskontext_id_fkey" FOREIGN KEY ("einteilungskontext_id") REFERENCES "einteilungskontexts"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "diensteinteilungs" ADD CONSTRAINT "fk_rails_2a437cd8da" FOREIGN KEY ("einteilungsstatus_id") REFERENCES "einteilungsstatuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -2970,6 +3103,15 @@ ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_7e6262d50a" FORE
 ALTER TABLE "notfallmedizin_registers" ADD CONSTRAINT "fk_rails_8497fb4436" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_refresh_token_id_fkey" FOREIGN KEY ("refresh_token_id") REFERENCES "oauth_refresh_tokens"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "oauth_access_tokens_new" ADD CONSTRAINT "oauth_access_tokens_new_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "oauth_refresh_tokens" ADD CONSTRAINT "oauth_refresh_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "planparameters" ADD CONSTRAINT "fk_rails_024b3ff545" FOREIGN KEY ("parameterset_id") REFERENCES "parametersets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -3009,10 +3151,19 @@ ALTER TABLE "team_funktions" ADD CONSTRAINT "fk_rails_bec8e126a9" FOREIGN KEY ("
 ALTER TABLE "team_kw_krankpuffers" ADD CONSTRAINT "fk_rails_5eded83672" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "team_kopf_soll" ADD CONSTRAINT "team_kopf_soll_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "team_vk_soll" ADD CONSTRAINT "team_vk_soll_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "teams" ADD CONSTRAINT "fk_rails_9d14807ce7" FOREIGN KEY ("kostenstelle_id") REFERENCES "kostenstelles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "urlaubssaldo_abspraches" ADD CONSTRAINT "fk_rails_cdbde270f4" FOREIGN KEY ("mitarbeiter_id") REFERENCES "mitarbeiters"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_account_info_id_fkey" FOREIGN KEY ("account_info_id") REFERENCES "account_infos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "users_gruppes" ADD CONSTRAINT "fk_rails_0c3453aa77" FOREIGN KEY ("gruppe_id") REFERENCES "gruppes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
