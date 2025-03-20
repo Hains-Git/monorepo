@@ -406,71 +406,75 @@ async function getWochenbilanzen(dienstplan: TDienstplan) {
 function getRotationenIdsInRangeDate(
   dateStr: string,
   data: Awaited<ReturnType<typeof getRotationen>>,
-  kontingenteDienste: any
+  kontingenteDienste: Record<number, number[]>
 ) {
   const date = newDate(dateStr);
 
-  return data.reduce((dateHash: any, rotation: any) => {
-    const vonDate = rotation.von;
-    const bisDate = rotation.bis;
-    const mitarbeiter_id = rotation.mitarbeiter_id;
+  return data.reduce(
+    (
+      dateHash: Record<
+        string,
+        {
+          by_dienst: Record<number, number[]>;
+          by_mitarbeiter: Record<number, number[]>;
+          ids: number[];
+        }
+      >,
+      rotation
+    ) => {
+      if (!rotation.von || !rotation.bis || !rotation.mitarbeiter_id || !rotation.kontingent_id) return dateHash;
+      const vonDate = rotation.von;
+      const bisDate = rotation.bis;
+      const mitarbeiter_id = rotation.mitarbeiter_id;
 
-    if (date >= vonDate && date <= bisDate) {
-      if (!dateHash[dateStr]) {
-        dateHash[dateStr] = {
+      if (date >= vonDate && date <= bisDate) {
+        dateHash[dateStr] ||= {
           by_dienst: {},
           by_mitarbeiter: {},
           ids: []
         };
-      }
-      dateHash[dateStr].ids.push(rotation.id);
+        dateHash[dateStr].ids.push(rotation.id);
 
-      if (!dateHash[dateStr].by_mitarbeiter[mitarbeiter_id]) {
-        dateHash[dateStr].by_mitarbeiter[mitarbeiter_id] = [];
-      }
-      dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
+        dateHash[dateStr].by_mitarbeiter[mitarbeiter_id] ||= [];
+        dateHash[dateStr].by_mitarbeiter[mitarbeiter_id].push(rotation.id);
 
-      kontingenteDienste?.[rotation.kontingent_id]?.forEach?.((dienstId: number) => {
-        if (!dateHash[dateStr].by_dienst[dienstId]) {
-          dateHash[dateStr].by_dienst[dienstId] = [];
-        }
-        dateHash[dateStr].by_dienst[dienstId].push(rotation.id);
-      });
-    }
-    return dateHash;
-  }, {});
+        kontingenteDienste?.[rotation.kontingent_id]?.forEach?.((dienstId: number) => {
+          dateHash[dateStr].by_dienst[dienstId] ||= [];
+          dateHash[dateStr].by_dienst[dienstId].push(rotation.id);
+        });
+      }
+      return dateHash;
+    },
+    {}
+  );
 }
 
 function createDateIdMap<T extends (dienstwunsches & { mitarbeiters: mitarbeiters | null }) | bedarfs_eintrags>(
   data: T[],
   keys: string[],
-  tagKey = 'tag'
+  tagKey: keyof T = 'tag'
 ) {
-  return data.reduce((map: { [key: string]: any }, value: any) => {
-    const dateFormatted = format(value[tagKey], 'yyyy-MM-dd');
-    if (!map[dateFormatted]) {
-      map[dateFormatted] = {};
-    }
+  return data.reduce((map: Record<string, Record<string, Date[]>>, value) => {
+    const day = value[tagKey];
+    if (!(day instanceof Date)) return map;
+    const dateFormatted = format(day, 'yyyy-MM-dd');
+    map[dateFormatted] ||= {};
     keys.forEach((key: string) => {
-      if (!map[dateFormatted][key]) {
-        map[dateFormatted][key] = [];
-      }
-      map[dateFormatted][key].push(value[key]);
+      map[dateFormatted][key] ||= [];
+      map[dateFormatted][key].push(day);
     });
     return map;
   }, {});
 }
 
-function createDateEinteilungMap(data: any[]) {
-  return data.reduce((map: { [key: string]: any }, value: any) => {
-    const dateFormatted = format(value.tag, 'yyyy-MM-dd');
+function createDateEinteilungMap(data: diensteinteilungs[]) {
+  return data.reduce((map: Record<string, Record<number, number[]>>, value) => {
+    const day = value.tag;
+    if (!day || !value.dienstplan_id) return map;
+    const dateFormatted = format(day, 'yyyy-MM-dd');
     const dienstplan_id = value.dienstplan_id;
-    if (!map[dateFormatted]) {
-      map[dateFormatted] = {};
-    }
-    if (!map[dateFormatted][dienstplan_id]) {
-      map[dateFormatted][dienstplan_id] = [];
-    }
+    map[dateFormatted] ||= {};
+    map[dateFormatted][dienstplan_id] ||= [];
     map[dateFormatted][dienstplan_id].push(value.id);
     return map;
   }, {});
@@ -588,8 +592,13 @@ function getDienstkategorieDienste(
   return dienstkategoreieDienste;
 }
 
-function computeWuensche(wuensche: any[], dates: any, dienstkategoreieDienste: any) {
-  wuensche.forEach((wunsch: any) => {
+function computeWuensche(
+  wuensche: dienstwunsches[],
+  dates: Record<string, PlanerDate>,
+  dienstkategoreieDienste: Record<number, number[]>
+) {
+  wuensche.forEach((wunsch) => {
+    if (!wunsch.tag || !wunsch.mitarbeiter_id || !wunsch.dienstkategorie_id) return;
     const dateStr = format(wunsch.tag, 'yyyy-MM-dd');
     dates[dateStr].by_mitarbeiter[wunsch.mitarbeiter_id].wunsch_id = wunsch.id;
     const dienstKategorieId = wunsch.dienstkategorie_id;
@@ -631,10 +640,11 @@ async function computeDates(props: {
   const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
-    dates[dateStr].bedarfseintraege = bedarfsEintraegeMap?.[dateStr]?.id || [];
-    dates[dateStr].bedarf = bedarfsEintraegeMap?.[dateStr]?.dienstbedarf_id || [];
+    const beMap = bedarfsEintraegeMap?.[dateStr];
+    dates[dateStr].bedarfseintraege = beMap?.['id'] || [];
+    dates[dateStr].bedarf = beMap?.['dienstbedarf_id'] || [];
     dates[dateStr].einteilungen = einteilungenMap?.[dateStr] || {};
-    dates[dateStr].wuensche = wuenscheMap?.[dateStr]?.id || [];
+    dates[dateStr].wuensche = wuenscheMap?.[dateStr]?.['id'] || [];
     const rotationenHash = getRotationenIdsInRangeDate(dateStr, rotationenArr, kontigentDienste);
     dates[dateStr].rotationen = rotationenHash?.[dateStr]?.ids || [];
 
