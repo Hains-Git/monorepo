@@ -480,7 +480,12 @@ function createDateEinteilungMap(data: diensteinteilungs[]) {
   }, {});
 }
 
-function setBereicheIdsObject(planerDate: any, po_dienst_id: number, bereichId: number, bedarfEintragId: number) {
+function setBereicheIdsObject(
+  planerDate: PlanerDate,
+  po_dienst_id: number,
+  bereichId: number,
+  bedarfEintragId: number
+) {
   if (!planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId]) {
     planerDate.by_dienst[po_dienst_id].bereiche_ids[bereichId] = {
       id: bereichId,
@@ -490,10 +495,15 @@ function setBereicheIdsObject(planerDate: any, po_dienst_id: number, bereichId: 
   }
 }
 
-function computeEinteilung(einteilungen: any, dates: any, bedarfs_eintraege: any, dienst_bedarfeintrag: any) {
-  einteilungen.forEach((einteilung: any) => {
+function computeEinteilung(
+  einteilungen: diensteinteilungs[],
+  dates: Record<string, PlanerDate>,
+  bedarfs_eintraege: Awaited<ReturnType<typeof getBedarfe>>,
+  dienst_bedarfeintrag: Awaited<ReturnType<typeof getDienstbedarfEintrag>>
+) {
+  einteilungen.forEach((einteilung) => {
     let bereichId = 0;
-
+    if (!einteilung.tag || !einteilung.po_dienst_id || !einteilung.mitarbeiter_id) return;
     const dateId = format(einteilung.tag, 'yyyy-MM-dd');
     const planerDate = dates[dateId];
     const po_dienst_id = einteilung.po_dienst_id;
@@ -529,10 +539,10 @@ function computeEinteilung(einteilungen: any, dates: any, bedarfs_eintraege: any
   });
 }
 
-function computeBedarfsEintraege(bedarfsEintraege: any, dates: any) {
-  bedarfsEintraege.forEach((bedarfsEintrag: any) => {
+function computeBedarfsEintraege(bedarfsEintraege: bedarfs_eintrags[], dates: Record<string, PlanerDate>) {
+  bedarfsEintraege.forEach((bedarfsEintrag) => {
     let bereichId = 0;
-
+    if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id) return;
     const dateId = format(bedarfsEintrag.tag, 'yyyy-MM-dd');
     const planerDate = dates[dateId];
     if (!planerDate) return;
