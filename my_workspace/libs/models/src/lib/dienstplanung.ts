@@ -650,6 +650,7 @@ async function computeDates(props: {
   const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
+    console.log(dateStr, dates[dateStr]);
     const beMap = bedarfsEintraegeMap?.[dateStr];
     dates[dateStr].bedarfseintraege = beMap?.['id'] || [];
     dates[dateStr].bedarf = beMap?.['dienstbedarf_id'] || [];
