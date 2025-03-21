@@ -6,8 +6,8 @@ apt-get install -y lsof
 echo "Show open Ports"
 lsof -i -P -n -U
 # export NX_DAEMON=true
-
-rm /tmp/f53b52ad6d21cceb72df/fp340.sock
+ls -R /tmp/ | grep "fp*.sock" 
+rm /tmp/f53b52ad6d21cceb72df/fp454.sock
 
 npm install --force
 
