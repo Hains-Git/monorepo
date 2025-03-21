@@ -650,14 +650,14 @@ async function computeDates(props: {
   const kontigentDienste = await getKontingenteDienste(diensteArr);
 
   Object.keys(dates).forEach((dateStr) => {
-    console.log(dateStr, dates[dateStr]);
     const beMap = bedarfsEintraegeMap?.[dateStr];
     dates[dateStr].bedarfseintraege = beMap?.['id'] || [];
     dates[dateStr].bedarf = beMap?.['dienstbedarf_id'] || [];
     dates[dateStr].einteilungen = einteilungenMap?.[dateStr] || {};
     dates[dateStr].wuensche = wuenscheMap?.[dateStr]?.['id'] || [];
     const rotationenHash = getRotationenIdsInRangeDate(dateStr, rotationenArr, kontigentDienste);
-    dates[dateStr].rotationen = rotationenHash?.[dateStr]?.ids || [];
+    const rotDate = rotationenHash?.[dateStr];
+    dates[dateStr].rotationen = rotDate?.ids || [];
 
     diensteArr.forEach((dienst) => {
       dates[dateStr].by_dienst[dienst.id] = {
@@ -668,7 +668,7 @@ async function computeDates(props: {
         rotation_ids: [],
         wunsch_ids: []
       };
-      dates[dateStr].by_dienst[dienst.id].rotation_ids = rotationenHash?.[dateStr].by_dienst[dienst.id] || [];
+      dates[dateStr].by_dienst[dienst.id].rotation_ids = rotDate?.by_dienst?.[dienst.id] || [];
     });
 
     mitarbeiter.forEach((mId) => {
@@ -678,7 +678,7 @@ async function computeDates(props: {
         rotation_ids: [],
         wunsch_id: 0
       };
-      dates[dateStr].by_mitarbeiter[mId].rotation_ids = rotationenHash?.[dateStr].by_mitarbeiter[mId] || [];
+      dates[dateStr].by_mitarbeiter[mId].rotation_ids = rotDate?.by_mitarbeiter?.[mId] || [];
     });
   });
   computeEinteilung(Object.values(einteilungen), dates, bedarfs_eintraege, dienst_bedarfeintrag);
