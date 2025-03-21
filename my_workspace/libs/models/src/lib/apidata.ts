@@ -29,7 +29,7 @@ async function transformMitarbeiter(mitarbeiter: any) {
       }
     }
   });
-  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe: any) => freigabe.freigabetyp_id);
+  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe) => freigabe.freigabetyp_id || 0);
   mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map((dienstfreigabe: any) => dienstfreigabe.id);
   mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map((dienstrating: any) => dienstrating.id);
   mitarbeiter['vertragphasen_ids'] = [];
