@@ -1,17 +1,17 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
 
-export async function getAbwesenheitenSettings(userId: number) {
+export async function getAbwesenheitenSettings(mitarbeiterId: number) {
   return await prismaDb.abwesentheitenueberblick_settings.findFirst({
     where: {
-      mitarbeiter_id: userId
+      mitarbeiter_id: mitarbeiterId
     }
   });
 }
 
-export async function getAbwesenheitenCounters(userId: number) {
+export async function getAbwesenheitenCounters(mitarbeiterId: number) {
   return await prismaDb.abwesentheitenueberblick_counters.findMany({
     where: {
-      mitarbeiter_id: userId
+      mitarbeiter_id: mitarbeiterId
     }
   });
 }
