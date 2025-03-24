@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 // import { AuthModule } from './_modules//auth/auth.module';
 import { FileUploadModule } from './_modules/file-upload/file-upload.module';
 import { PrismaModule } from './_modules/prisma/prisma.module';
+import { UserModule } from './user/user.module';
 // import { GlobalAuthGuard } from './guards/auth.guard';
 // import { APP_GUARD } from '@nestjs/core';
 
@@ -27,7 +28,7 @@ import { UserService } from './user/user.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
-  imports: [PrismaModule, FileUploadModule, FileStreamModule],
+  imports: [PrismaModule, FileUploadModule, FileStreamModule, UserModule],
   controllers: [
     AppController,
     MetricsController,
@@ -35,8 +36,7 @@ import { UserService } from './user/user.service';
     MitarbeiterInfoController,
     TeamController,
     FraunhoferController,
-    ZeitraumkategorienController,
-    UserController
+    ZeitraumkategorienController
   ],
   providers: [
     Logger,
@@ -46,8 +46,7 @@ import { UserService } from './user/user.service';
     MitarbeiterInfoService,
     TeamService,
     FraunhoferService,
-    ZeitraumkategorienService,
-    UserService
+    ZeitraumkategorienService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard

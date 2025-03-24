@@ -7,15 +7,36 @@ import { _user } from '@my-workspace/prisma_cruds';
 export class UserService {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
-  updateUserCertificate({
+  async updateUserCertificate({
     mitarbeiterId,
-    datei_typ_ids,
     files
   }: {
-    mitarbeiterId: number;
-    datei_typ_ids: number[];
+    mitarbeiterId: string;
     files: Express.Multer.File[];
   }) {
-    throw new Error('Method not implemented.');
+    const dateiTypIds = files
+      .map((file) => {
+        console.log('Fieldname:', file.fieldname); // Debug the exact fieldname
+        const match = file.fieldname.match(/\[(\d+)\]\]$/);
+        console.log('Match:', match); // Debug the match result
+        const dateiTypeId = match ? parseInt(match[1], 10) : null;
+        return dateiTypeId;
+      })
+      .filter((id) => id !== null);
+
+    const owner = 'mitarbeiter';
+    const ownerId = mitarbeiterId;
+    const recordId = 10001;
+    const category = 'certificate';
+
+    const result = await this.fileUploadService.processFile({
+      file: files[0],
+      owner,
+      ownerId,
+      category,
+      recordId
+    });
+
+    return result;
   }
 }

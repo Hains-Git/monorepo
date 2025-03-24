@@ -13,7 +13,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let status = 500;
     let errorDetails: string | object = {
       error: 'Internal Server Error',
-      message: 'Something went wrong',
+      message: ['Something went wrong'],
       statusCode: status
     };
     if (exception instanceof HttpException) {

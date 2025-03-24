@@ -1,38 +1,32 @@
 import { Module } from '@nestjs/common';
-import { FileUploadController } from './file-upload.controller';
+import { FileUploadController } from './file-upload.controller'; // If you have this
 import { FileUploadService } from './file-upload.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { join } from 'path';
 
 @Module({
   imports: [
     MulterModule.register({
       storage: diskStorage({
-        // destination: './uploads', // Base upload path
-        destination: join(process.cwd(), 'uploads'), // Absolute path
+        destination: join(process.cwd(), 'uploads'),
         filename: (req, file, cb) => {
-          // const fileExt = extname(file.originalname);
-          // cb(null, `${file.originalname}${fileExt}`);
-          cb(null, `${file.originalname}`); // when filename has extension: blnak.png
+          console.log('Multer Config: Saving', file.originalname, 'to uploads/');
+          cb(null, file.originalname);
         }
       }),
       fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|pdf/;
-        const extName = allowedTypes.test(extname(file.originalname).toLowerCase());
+        const extName = allowedTypes.test(file.originalname.toLowerCase());
         const mimeType = allowedTypes.test(file.mimetype);
-        if (extName && mimeType) {
-          return cb(null, true);
-        }
-        cb(new Error('Invalid file type'), false);
+        if (extName && mimeType) cb(null, true);
+        else cb(new Error('Invalid file type'), false);
       },
-      limits: {
-        fileSize: 1024 * 1024 * 10 // 10MB limit
-      }
+      limits: { fileSize: 1024 * 1024 * 10 }
     })
   ],
-  controllers: [FileUploadController],
+  controllers: [FileUploadController], // Remove if not needed
   providers: [FileUploadService],
-  exports: [FileUploadService]
+  exports: [MulterModule, FileUploadService] // Export MulterModule to ensure config propagates
 })
 export class FileUploadModule {}
