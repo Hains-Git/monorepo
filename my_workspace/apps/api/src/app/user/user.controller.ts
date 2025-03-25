@@ -49,6 +49,8 @@ export class UserController {
     console.log('Transformed Body:', body);
 
     const mitarbeiterId = body.user.mitarbeiter_id;
+    const vorname = body.user.vorname;
+    const nachname = body.user.nachname;
     const uploadedFiles = files || [];
 
     let message1 = '';
@@ -56,9 +58,11 @@ export class UserController {
     if (files.length) {
       const savedFiles = await this.userService.updateUserCertificate({
         files: uploadedFiles,
-        mitarbeiterId
+        mitarbeiterId,
+        vorname,
+        nachname
       });
-      message1 = savedFiles.status === 'success' ? 'Files uploaded' : '';
+      // message1 = savedFiles.status === 'success' ? 'Files uploaded' : '';
     }
 
     return {

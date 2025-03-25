@@ -48,3 +48,32 @@ export async function findManyTyp<TInclude extends Prisma.datei_typsInclude | un
   });
   return result as Prisma.datei_typsGetPayload<{ include: Prisma.datei_typsInclude }>[];
 }
+
+type TDataCreate = {
+  name: string;
+  beschreibung?: string;
+  ersteller_id: number;
+  besitzer_id: number;
+  datei_typ_id: number;
+  created_at: Date;
+  updated_at: Date;
+};
+export async function createOne(data: TDataCreate) {
+  return await prismaDb.dateis.create({
+    data: data
+  });
+}
+
+type TDataUpdate = {
+  id: number;
+  path: string;
+  url: string;
+};
+export async function updateOne(data: TDataUpdate) {
+  return await prismaDb.dateis.update({
+    where: {
+      id: data.id
+    },
+    data: data
+  });
+}
