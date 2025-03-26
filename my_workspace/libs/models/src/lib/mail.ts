@@ -29,6 +29,5 @@ export async function getMailerContext(context: string) {
       reply_to: mContext.addresses_reply_to
     };
   });
-  console.log(context, result);
   return result;
 }
