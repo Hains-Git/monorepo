@@ -90,7 +90,7 @@ model account_infos {
   mittelname          String?       @db.VarChar
   nachname            String?       @default("") @db.VarChar
   mobileTelefon       String?       @db.VarChar(16)
-  dienstEmail         String?       @db.VarChar(50)
+  dienstEmail         String?       @db.VarChar(100)
   dienstTelefon       String?       @db.VarChar(16)
   adresseStrasse      String?       @db.VarChar(50)
   adressePlz          String?       @db.VarChar(10)
@@ -154,7 +154,7 @@ model active_storage_blobs {
 
 model admin_users {
   id                     Int       @id @default(autoincrement())
-  email                  String    @unique(map: "index_admin_users_on_email") @default("") @db.VarChar(50)
+  email                  String    @unique(map: "index_admin_users_on_email") @default("") @db.VarChar(100)
   encrypted_password     String    @default("") @db.VarChar
   reset_password_token   String?   @unique(map: "index_admin_users_on_reset_password_token") @db.VarChar(160)
   reset_password_sent_at DateTime? @db.Timestamp(6)
