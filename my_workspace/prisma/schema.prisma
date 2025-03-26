@@ -1292,15 +1292,15 @@ model links {
 }
 
 model mailer_addresses {
-  id                                                            Int               @id @default(autoincrement())
-  name                                                          String?           @db.VarChar
-  addresse                                                      String?           @db.VarChar
-  created_at                                                    DateTime          @db.Timestamp(6)
-  updated_at                                                    DateTime          @db.Timestamp(6)
-  mailer_ccs                                                    mailer_ccs[]
-  mailer_contexts_mailer_contexts_from_idTomailer_addresses     mailer_contexts[] @relation("mailer_contexts_from_idTomailer_addresses")
-  mailer_contexts_mailer_contexts_reply_to_idTomailer_addresses mailer_contexts[] @relation("mailer_contexts_reply_to_idTomailer_addresses")
-  mailer_tos                                                    mailer_tos[]
+  id                Int               @id @default(autoincrement())
+  name              String?           @db.VarChar
+  addresse          String?           @db.VarChar
+  created_at        DateTime          @db.Timestamp(6)
+  updated_at        DateTime          @db.Timestamp(6)
+  mailer_ccs        mailer_ccs[]
+  contexts_from     mailer_contexts[] @relation("mailer_contexts_from_idTomailer_addresses")
+  contexts_reply_to mailer_contexts[] @relation("mailer_contexts_reply_to_idTomailer_addresses")
+  mailer_tos        mailer_tos[]
 }
 
 model mailer_ccs {
@@ -1317,18 +1317,18 @@ model mailer_ccs {
 }
 
 model mailer_contexts {
-  id                                                             Int               @id @default(autoincrement())
-  context                                                        String            @default("") @db.VarChar
-  subject                                                        String            @default("") @db.VarChar
-  body                                                           String            @default("")
-  from_id                                                        Int?
-  reply_to_id                                                    Int?
-  created_at                                                     DateTime          @db.Timestamp(6)
-  updated_at                                                     DateTime          @db.Timestamp(6)
-  mailer_ccs                                                     mailer_ccs[]
-  mailer_addresses_mailer_contexts_from_idTomailer_addresses     mailer_addresses? @relation("mailer_contexts_from_idTomailer_addresses", fields: [from_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_35af776dcd")
-  mailer_addresses_mailer_contexts_reply_to_idTomailer_addresses mailer_addresses? @relation("mailer_contexts_reply_to_idTomailer_addresses", fields: [reply_to_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d9811e872a")
-  mailer_tos                                                     mailer_tos[]
+  id                 Int               @id @default(autoincrement())
+  context            String            @default("") @db.VarChar
+  subject            String            @default("") @db.VarChar
+  body               String            @default("")
+  from_id            Int?
+  reply_to_id        Int?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_ccs         mailer_ccs[]
+  addresses_from     mailer_addresses? @relation("mailer_contexts_from_idTomailer_addresses", fields: [from_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_35af776dcd")
+  addresses_reply_to mailer_addresses? @relation("mailer_contexts_reply_to_idTomailer_addresses", fields: [reply_to_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d9811e872a")
+  mailer_tos         mailer_tos[]
 
   @@index([from_id], map: "index_mailer_contexts_on_from_id")
   @@index([reply_to_id], map: "index_mailer_contexts_on_reply_to_id")

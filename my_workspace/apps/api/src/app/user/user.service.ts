@@ -57,7 +57,7 @@ export class UserService {
         category,
         recordId
       });
-      result.push(moved);
+      result.push({ filename: moved.filename, status: moved.status });
     }
     return result;
   }
@@ -73,6 +73,8 @@ export class UserService {
       const ownerId = parts[2];
       const category = parts[3];
 
+      console.log({ path, parts, dateiTypId, owner, ownerId, category, recordId });
+
       const moved = await this.fileUploadService.processFile({
         file: dateiTypFiles.get(dateiTypId),
         owner,
@@ -80,8 +82,7 @@ export class UserService {
         category,
         recordId
       });
-      console.log('moved:', moved);
-      result.push(moved);
+      result.push({ filename: moved.filename, status: moved.status });
     }
     return result;
   }

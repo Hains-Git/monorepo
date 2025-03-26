@@ -102,6 +102,7 @@ export function proceesDataForVertragsTyps(vertragTyps) {
         const vonBis = vertragsVarianteVonBis(vertragsstufe);
         vertragsstufe['von_bis'] = vonBis;
         vertragsstufe['vertragsgruppe'] = vertragsstufe?.vertragsgruppes;
+        vertragsstufe['vertrags_variante'] = vertragsstufe?.vertrags_variantes;
         acc.push(vertragsstufe);
         return acc;
       }, []);

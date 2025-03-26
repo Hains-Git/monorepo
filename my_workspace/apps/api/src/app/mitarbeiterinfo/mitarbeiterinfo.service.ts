@@ -36,7 +36,8 @@ import {
   Dienstkategorie,
   Dienstwunsch,
   Vertrag,
-  Dienstfrei
+  Dienstfrei,
+  Mail
 } from '@my-workspace/models';
 import { addMonths, endOfMonth, startOfMonth } from 'date-fns';
 
@@ -46,19 +47,29 @@ export class MitarbeiterInfoService {
     const result = {};
     const dataVertragsTyps = await _vertrag.getVertragsTypsForMitarbeiterinfo();
     const vertragsTyps = proceesDataForVertragsTyps(dataVertragsTyps);
-    result['mitarbeiter_infos'] = await getMitarbeiterInfos();
-    result['hains_groups'] = await _hains_groups.getAllHainsGroups();
+
+    result['all_mitarbeiters'] = await _mitarbeiter.getAllMitarbeiter();
+    result['datei_typs'] = await _datei.findManyTyp({
+      where: {
+        category: {
+          equals: 'certificate'
+        }
+      }
+    });
+    result['dienste'] = await _po_dienst.getAllPoDiensts();
     result['funktionen'] = await _funktion.getAllFunktionen();
-    result['datei_typs'] = await _datei.getAllDateiTyps();
+    result['hains_groups'] = await _hains_groups.getAllHainsGroups();
+    result['mailer_contexts_deactivate'] = await Mail.getMailerContext('Nutzer deaktivieren');
+    result['mailer_contexts_reactivate'] = await Mail.getMailerContext('Nutzer reaktivieren');
+
+    result['merkmale'] = await _merkmal.getAll();
+    result['mitarbeiter_infos'] = await getMitarbeiterInfos();
+    result['mitarbeiters'] = await _mitarbeiter.getAllActiveMitarbeiter();
+    result['standorte'] = await _standort.getAllStandorte();
+    result['teams'] = await _team.findMany();
+    result['themen'] = await _thema.findMany();
     result['vertrags_typ'] = vertragsTyps;
     result['zeitraumkategorie'] = await _zeitraum_kategorie.getAllZeitraumKategories();
-    result['mitarbeiters'] = await _mitarbeiter.getAllActiveMitarbeiter();
-    result['all_mitarbeiters'] = await _mitarbeiter.getAllMitarbeiter();
-    result['dienste'] = await _po_dienst.getAllPoDiensts();
-    result['teams'] = await _team.findMany();
-    result['merkmale'] = await _merkmal.getAll();
-    result['standorte'] = await _standort.getAllStandorte();
-    result['themen'] = await _thema.findMany();
 
     return result;
   }
@@ -158,7 +169,7 @@ export class MitarbeiterInfoService {
     result['arbeitszeit_absprachen'] = arbeitszeitAbsprachen;
     result['automatische_einteilungen'] = automatischeEinteilungen;
     result['dienste'] = dienste.map((dienst) => ({ id: dienst.id, name: dienst.name }));
-    // result['dienstfrei'] = await Dienstfrei.getDienstfreis([mitarbeiterId]);
+    result['dienstfrei'] = await Dienstfrei.getDienstfreis([mitarbeiterId]);
     result['dienstkategories'] = await Dienstkategorie.getDienstKategorieForMitarbeiterInfo();
     result['dienstwunsch_verteilung'] = diesntwunschVerteilung;
     result['dienstwunsche'] = dienstwunsche;
