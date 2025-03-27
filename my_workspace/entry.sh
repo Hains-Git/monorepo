@@ -17,7 +17,6 @@ npm run migrate:prod
 # Development
 npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose -- --inspect
 
-
 echo "Show open Ports after nx run-many"
 lsof -i -P -n -U
 
