@@ -15,7 +15,7 @@ import {
 } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { startOfMonth, endOfMonth, parseISO, formatDate } from 'date-fns';
-import { formatDateForDB, getDateStr, newDate } from '@my-workspace/utils';
+import { formatDateForDB, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
 
 type TParamsOhneBedarf = {
   von: Date;
@@ -49,7 +49,11 @@ export async function getEinteilungenOhneBedarf({
     JOIN public.po_diensts AS po ON de.po_dienst_id = po.id
     JOIN public.einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
     JOIN public.mitarbeiters AS m ON m.id = de.mitarbeiter_id
-    WHERE ${!mitarbeiterIds ? `m.aktiv = true AND m.platzhalter != true` : `m.id IN (${mitarbeiterIds.join(',')})`}
+    WHERE ${
+      !mitarbeiterIds
+        ? `m.aktiv = true AND m.platzhalter != true`
+        : `m.id IN (${mitarbeiterIds.join(',')})`
+    }
     ${!poDienstIds ? `` : `AND de.po_dienst_id IN (${poDienstIds.join(',')})`}
     AND de.tag >= $1 AND de.tag <= $2
     AND de.dienstplan_id IN (
@@ -82,12 +86,9 @@ export async function getEinteilungenOhneBedarf({
   return result;
 }
 
-export async function getPublicRangeEinteilungenForMitarbeiter<TInclude extends Prisma.diensteinteilungsInclude>(
-  id: number,
-  start: Date,
-  end: Date,
-  include?: TInclude
-) {
+export async function getPublicRangeEinteilungenForMitarbeiter<
+  TInclude extends Prisma.diensteinteilungsInclude
+>(id: number, start: Date, end: Date, include?: TInclude) {
   const startDate = formatDateForDB(start);
   const endDate = formatDateForDB(end);
 
@@ -186,12 +187,14 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
             || ',' || p.stundennachweis_sonstig
             || ',' || CASE WHEN (
                         SELECT COUNT(*) FROM dienstbedarves AS db
-                          WHERE db.po_dienst_id = p.id
+                          WHERE db.po_dienst_id = p.id 
+                          AND (db.end_date >= de.tag OR db.end_date IS NULL)
                         ) > 0
                       THEN CAST((
                           SELECT COUNT(*)  FROM dienstbedarves AS db
                           WHERE db.po_dienst_id = p.id
                           AND db.ignore_in_urlaubssaldo
+                          AND (db.end_date >= de.tag OR db.end_date IS NULL)
                         ) AS varchar)
                       ELSE 'false'
                       END
@@ -201,20 +204,20 @@ export async function getMitarbeiterEinteilungenNachTagen(start: Date, ende: Dat
             , ';'
           ) as einteilungen
           FROM diensteinteilungs AS de
-          JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id AND counts
-          JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id AND platzhalter = FALSE
+          JOIN einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id AND es.counts
+          JOIN mitarbeiters AS m ON m.id = de.mitarbeiter_id AND m.platzhalter = FALSE
           JOIN po_diensts AS p ON p.id = de.po_dienst_id
           JOIN teams AS t ON p.team_id = t.id
           GROUP BY m.id, de.tag
-          HAVING de.tag >= ${start} AND de.tag <= ${ende}
+          HAVING de.tag >= ${start}::Date AND de.tag <= ${ende}::Date
           ORDER BY m.id, de.tag
     `;
   return einteilungen.reduce((acc: Record<number, Record<string, string[][]>>, e) => {
     const dateStr = getDateStr(e.tag);
     const mId = e.mitarbeiter_id;
-    const einteilungen = e.einteilungen.split(';').map((e) => e.split(','));
+    const einteilungenArr = e.einteilungen.split(';').map((e) => e.split(','));
     acc[mId] ||= {};
-    acc[mId][dateStr] = einteilungen;
+    acc[mId][dateStr] = einteilungenArr;
     return acc;
   }, {});
 }
@@ -245,7 +248,11 @@ export type TDienstfrei = diensteinteilungs & {
     | null;
 };
 
-export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number[] = [], onlyCounts = false) {
+export async function getPossibleDienstfrei(
+  tage: Date[],
+  mitarbeiterIds: number[] = [],
+  onlyCounts = false
+) {
   const firstDate = tage[0];
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);

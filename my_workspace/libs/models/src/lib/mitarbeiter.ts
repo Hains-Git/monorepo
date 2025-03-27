@@ -19,7 +19,13 @@ import {
   TResultEinteilungenInKontingente
 } from '@my-workspace/prisma_cruds';
 
-import { getDateStr, newDate, newDateYearMonthDay, processData, transformObject } from '@my-workspace/utils';
+import {
+  getDateStr,
+  newDate,
+  newDateYearMonthDay,
+  processData,
+  transformObject
+} from '@my-workspace/utils';
 import { formatDate } from 'date-fns';
 import { Vertrag } from '..';
 
@@ -143,14 +149,16 @@ export async function getArbeitszeitAbsprachen(mitarbeiterId: number) {
   arbeitszeitAbsprachen = arbeitszeitAbsprachen.map((aa) => {
     const aaObj = transformObject(aa, [
       { key: 'anfang', method: arbeitszeitAbspracheAnfang },
-      { key: 'anfang', method: arbeitszeitAbspracheEnde },
+      { key: 'ende', method: arbeitszeitAbspracheEnde },
       {
         key: 'arbeitszeit_von_time',
-        method: (ae) => (ae?.arbeitszeit_von ? formatDate(ae.arbeitszeit_von, 'HH:mm') : ae.arbeitszeit_von)
+        method: (ae) =>
+          ae?.arbeitszeit_von ? formatDate(ae.arbeitszeit_von, 'HH:mm') : ae.arbeitszeit_von
       },
       {
         key: 'arbeitszeit_bis_time',
-        method: (ae) => (ae?.arbeitszeit_bis ? formatDate(ae.arbeitszeit_bis, 'HH:mm') : ae.arbeitszeit_bis)
+        method: (ae) =>
+          ae?.arbeitszeit_bis ? formatDate(ae.arbeitszeit_bis, 'HH:mm') : ae.arbeitszeit_bis
       }
     ]);
     return aaObj;
@@ -435,11 +443,13 @@ export async function mitarbeiterTeamAmByMitarbeiter(
   return team;
 }
 
-export function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo, date = newDate()) {
+export function mitarbeiterAktivAm(
+  mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo,
+  date = newDate()
+) {
   let aktiv = !!mitarbeiter.aktiv;
   const tag = newDate(date);
   tag.setHours(12, 0, 0, 0);
-  console.log(mitarbeiter.planname, tag, aktiv);
   if (aktiv && mitarbeiter.aktiv_bis) {
     mitarbeiter.aktiv_bis.setHours(12, 0, 0, 0);
     aktiv = mitarbeiter.aktiv_bis >= tag;
@@ -450,13 +460,14 @@ export function mitarbeiterAktivAm(mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubs
   }
   if (aktiv) {
     aktiv = !!(
-      Vertrag.vertragsPhaseAm(tag, mitarbeiter.vertrags) && Vertrag.vertragsArbeitszeitAm(tag, mitarbeiter.vertrags)
+      Vertrag.vertragsPhaseAm(tag, mitarbeiter.vertrags) &&
+      Vertrag.vertragsArbeitszeitAm(tag, mitarbeiter.vertrags)
     );
   }
   return aktiv;
 }
 
-export async function mitarbeiterUrlaubssaldoAktivAm(
+export function mitarbeiterUrlaubssaldoAktivAm(
   mitarbeiter: _mitarbeiter.TMitarbeiterUrlaubssaldo,
   date = newDate()
 ) {
@@ -527,7 +538,10 @@ type TTeamVKOverview = Record<
         {
           vk: number;
           kontingent: string;
-          mitarbeiter: Record<number, ReturnType<typeof Vertrag.vkAndVgruppeInMonth> & { planname: string }>;
+          mitarbeiter: Record<
+            number,
+            ReturnType<typeof Vertrag.vkAndVgruppeInMonth> & { planname: string }
+          >;
         }
       >;
     }
@@ -584,7 +598,14 @@ export async function getTeamVkOverview(von: Date, bis: Date) {
         rot.von.setHours(12, 0, 0, 0);
         rot.bis.setHours(12, 0, 0, 0);
         if (rot.von <= date && rot.bis >= date) {
-          addToVKKontingentResult(result, rot?.kontingents?.teams || null, rot?.kontingents || null, mit, date, vk);
+          addToVKKontingentResult(
+            result,
+            rot?.kontingents?.teams || null,
+            rot?.kontingents || null,
+            mit,
+            date,
+            vk
+          );
           return true;
         }
         return false;

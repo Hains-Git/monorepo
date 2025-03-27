@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getDienstplanung, PlanerDate, Urlaubssaldi } from '@my-workspace/models';
+import { Dienstfrei, getDienstplanung, PlanerDate, Urlaubssaldi } from '@my-workspace/models';
 import { getAllApiData } from '@my-workspace/models';
 import { PlanungsInfo } from '@my-workspace/models';
 import { newDate } from '@my-workspace/utils';
@@ -45,5 +45,13 @@ export class AppService {
       if (feiertag) feiertage.push(feiertag);
     }
     return feiertage;
+  }
+
+  async getDienstfrei(body: any) {
+    let mitarbeiterIds: number[] = [];
+    if (Array.isArray(body?.mitarbeiter_ids)) {
+      mitarbeiterIds = body.mitarbeiter_ids.map(Number).filter((id) => !isNaN(id));
+    }
+    return await Dienstfrei.getDienstfreis(mitarbeiterIds);
   }
 }

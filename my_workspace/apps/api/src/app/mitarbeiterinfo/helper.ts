@@ -1,6 +1,6 @@
 import { newDate, processData } from '@my-workspace/utils';
 import { formatDate, isValid, startOfToday } from 'date-fns';
-import { mitarbeiters } from '@prisma/client';
+import { diensteinteilungs, mitarbeiters } from '@prisma/client';
 
 import { _account_info, _mitarbeiter } from '@my-workspace/prisma_cruds';
 import { Vertrag } from '@my-workspace/models';
@@ -102,6 +102,7 @@ export function proceesDataForVertragsTyps(vertragTyps) {
         const vonBis = vertragsVarianteVonBis(vertragsstufe);
         vertragsstufe['von_bis'] = vonBis;
         vertragsstufe['vertragsgruppe'] = vertragsstufe?.vertragsgruppes;
+        vertragsstufe['vertrags_variante'] = vertragsstufe?.vertrags_variantes;
         acc.push(vertragsstufe);
         return acc;
       }, []);
