@@ -50,3 +50,4 @@ export * as _nicht_einteilen_absprache from './lib/nicht-einteilen-absprache';
 export * as _dienstkategorie_team from './lib/dienstkategorie-team';
 export * as _zeitraumregel from './lib/zeitraumregel';
 export * as _fraunhofer from './lib/fraunhofer';
+export * as _mail from './lib/mail';
