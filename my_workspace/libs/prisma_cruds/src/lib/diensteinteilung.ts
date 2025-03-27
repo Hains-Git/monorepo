@@ -75,7 +75,7 @@ export async function getEinteilungenOhneBedarf({
     dateEnd,
     dpAnfang,
     dpEnde,
-    isPublic,
+    // isPublic,
     counts
   );
 
