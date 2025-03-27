@@ -2,3 +2,4 @@
 *.norg
 .nvim-dap.json
 /.nvim-dap.json
+my_workspace/uploads/**/*
