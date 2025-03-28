@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { _addWeeks, _subWeeks, newDate, processData } from '@my-workspace/utils';
-import { _abwesenheiten, _diensteinteilung, _kalender_markierung } from '@my-workspace/prisma_cruds';
+import { _abwesenheiten, _diensteinteilung, _kalender_markierung, _user } from '@my-workspace/prisma_cruds';
 
 import { addCountsValue, createDates } from './helper';
 import { Urlaubssaldi } from '@my-workspace/models';
@@ -22,8 +22,16 @@ export class AbwesenheitenService {
     let dateEnd = _addWeeks(dateView, 10);
 
     if (init) {
-      const userSettingsAbwesenheiten = await _abwesenheiten.getAbwesenheitenSettings(userId);
-      const counters = await _abwesenheiten.getAbwesenheitenCounters(userId);
+      const user = await _user.getUserById(userId, {
+        account_info: {
+          include: {
+            mitarbeiter: true
+          }
+        }
+      });
+      const mitarbeiterId = user.account_info?.mitarbeiter_id || 0;
+      const userSettingsAbwesenheiten = await _abwesenheiten.getAbwesenheitenSettings(mitarbeiterId);
+      const counters = await _abwesenheiten.getAbwesenheitenCounters(mitarbeiterId);
       const awColumnNames = await _abwesenheiten.getAllAbwesenheitenSpalten();
       const abwesentheiten = await _abwesenheiten.getAbwesenheitenByYear(year);
       const awHash = processData('mitarbeiter_id', abwesentheiten);
@@ -58,10 +66,7 @@ export class AbwesenheitenService {
       dateRangeDate.setDate(currentDate.getDate() + 1);
     }
 
-    const kalendermarkierungen = await _kalender_markierung.getKalenderMarkierungByDateRange(
-      dateStart,
-      dateEnd
-    );
+    const kalendermarkierungen = await _kalender_markierung.getKalenderMarkierungByDateRange(dateStart, dateEnd);
 
     result['einteilungen'] = einteilungen;
     result['dates'] = dates;

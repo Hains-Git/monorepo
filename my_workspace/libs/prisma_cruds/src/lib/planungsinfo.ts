@@ -5,22 +5,15 @@ import { format } from 'date-fns';
 import { newDate } from '@my-workspace/utils';
 
 function convertPlanungsinfoData(data: planungsinformations[]) {
-  const result: { [key: string]: any } = {};
+  const result: Record<string, Record<number, Record<number, planungsinformations>>> = {};
 
   data.forEach((item) => {
     const tag = format(item.tag, 'yyyy-MM-dd');
     const bereich_id = item.bereich_id || 0;
     const po_dienst_id = item.po_dienst_id || 0;
-    if (!result[tag]) {
-      result[tag] = {};
-    }
-    if (!result[tag][bereich_id]) {
-      result[tag][bereich_id] = {};
-    }
-    if (!result[tag][bereich_id][po_dienst_id]) {
-      result[tag][bereich_id][po_dienst_id] = {};
-    }
-    result[tag][bereich_id][po_dienst_id] = item;
+    result[tag] ||= {};
+    result[tag][bereich_id] ||= {};
+    result[tag][bereich_id][po_dienst_id] ||= item;
   });
 
   return result;
