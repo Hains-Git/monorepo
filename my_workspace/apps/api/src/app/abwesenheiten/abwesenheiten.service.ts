@@ -51,12 +51,14 @@ export class AbwesenheitenService {
     const dateRange: Date[] = [];
     const dateRangeDate = newDate(dateStart);
     const dates = {};
+    console.time('while');
     while (dateRangeDate <= dateEnd) {
       const currentDate = newDate(dateRangeDate);
       dateRange.push(currentDate);
       await createDates({ day: currentDate, dates });
       dateRangeDate.setDate(currentDate.getDate() + 1);
     }
+    console.timeEnd('while');
 
     const kalendermarkierungen = await _kalender_markierung.getKalenderMarkierungByDateRange(
       dateStart,
