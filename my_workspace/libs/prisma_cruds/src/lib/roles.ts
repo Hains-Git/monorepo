@@ -21,3 +21,5 @@ class RolesMap {
 }
 
 export const map = new RolesMap().rolesMap;
+
+console.log('---roles', map.entries());
