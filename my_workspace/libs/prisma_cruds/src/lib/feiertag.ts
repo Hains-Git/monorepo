@@ -175,7 +175,7 @@ async function createFeiertage(year: number) {
   }
 }
 
-function osterSonntag(jahr: number): Date {
+function osterSonntag(jahr: number) {
   const a = jahr % 19;
   const d = (19 * a + 24) % 30;
   let tag = d + ((2 * (jahr % 4) + 4 * (jahr % 7) + 6 * d + 5) % 7);

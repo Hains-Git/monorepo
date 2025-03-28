@@ -16,7 +16,12 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback
+  ): Promise<any> {
     const user = {
       access_token: accessToken,
       refresh_token: refreshToken,

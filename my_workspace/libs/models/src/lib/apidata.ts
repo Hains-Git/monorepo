@@ -1,5 +1,5 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { _user, findManyByModelKey } from '@my-workspace/prisma_cruds';
+import { _roles, _user, findManyByModelKey } from '@my-workspace/prisma_cruds';
 import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
@@ -29,7 +29,7 @@ async function transformMitarbeiter(mitarbeiter: any) {
       }
     }
   });
-  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe: any) => freigabe.freigabetyp_id);
+  mitarbeiter['freigabetypen_ids'] = freigabenTypenIds.map((freigabe) => freigabe.freigabetyp_id || 0);
   mitarbeiter['dienstfreigabes'] = mitarbeiter.dienstfreigabes.map((dienstfreigabe: any) => dienstfreigabe.id);
   mitarbeiter['dienstratings'] = mitarbeiter.dienstratings.map((dienstrating: any) => dienstrating.id);
   mitarbeiter['vertragphasen_ids'] = [];
@@ -263,8 +263,10 @@ async function getAllApiData(userId: number) {
   }
 
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
-  const isAdmin = userGroupsNames.includes('Admins');
-  const canAcces = userGroupsNames.includes('Dienstplaner') || userGroupsNames.includes('Urlaubsplaner');
+  const isAdmin = userGroupsNames.includes(_roles.map.get('Admins'));
+  const canAcces =
+    userGroupsNames.includes(_roles.map.get('Dienstplaner')) ||
+    userGroupsNames.includes(_roles.map.get('Urlaubsplaner'));
 
   const bereicheArr = await findManyByModelKey('bereiches', {});
   const poDiensteArr = await findManyByModelKey('po_diensts', {
