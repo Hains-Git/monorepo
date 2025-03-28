@@ -2,8 +2,11 @@ import { newDate } from '@my-workspace/utils';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 const isDev = process.env['NODE_ENV'] === 'development';
+const showPrismaLogs = process.env['SHOW_PRISMA_LOGS'] === 'true';
 
-const options: Prisma.Subset<Prisma.PrismaClientOptions, Prisma.PrismaClientOptions> = isDev
+console.log('PRISMA_HAINS', { isDev, showPrismaLogs });
+
+const options: Prisma.Subset<Prisma.PrismaClientOptions, Prisma.PrismaClientOptions> = showPrismaLogs
   ? { log: ['query', 'info', 'warn', 'error'] }
   : {};
 
@@ -20,7 +23,9 @@ type TPrismaModelsVersions =
   | 'vertrag_versions';
 
 type TVersionsCreateManyArgsTypes = {
-  [K in TPrismaModelsVersions]: K extends keyof PrismaClient ? Parameters<PrismaClient[K]['createMany']>[0] : never;
+  [K in TPrismaModelsVersions]: K extends keyof PrismaClient
+    ? Parameters<PrismaClient[K]['createMany']>[0]
+    : never;
 };
 
 const versionsMap: Partial<Record<TPrismaModels, { table: TPrismaModelsVersions; type: string }>> = {
@@ -99,7 +104,11 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
           }
         }
 
-        if (operation === 'create' || operation === 'createMany' || operation === 'createManyAndReturn') {
+        if (
+          operation === 'create' ||
+          operation === 'createMany' ||
+          operation === 'createManyAndReturn'
+        ) {
           return async () => {
             const results = await query(args);
             const ids = await (prismaDb[model] as any).findMany({
@@ -163,7 +172,7 @@ export const prismaDbExtended = new PrismaClient(options).$extends({
   }
 });
 
-if (isDev) {
+if (showPrismaLogs) {
   prismaDb.$on('query', (e: any) => {
     console.log('Params: ' + e.params);
     console.log('Duration: ' + e.duration + 'ms');
