@@ -15,7 +15,7 @@ import {
 } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { startOfMonth, endOfMonth, parseISO, formatDate } from 'date-fns';
-import { formatDateForDB, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { formatDateForDB, getDateStr, newDate } from '@my-workspace/utils';
 
 type TParamsOhneBedarf = {
   von: Date;
