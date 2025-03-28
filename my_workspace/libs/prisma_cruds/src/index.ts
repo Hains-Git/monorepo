@@ -8,6 +8,7 @@ export * as _planungsinfo from './lib/planungsinfo';
 export * as _abwesenheiten from './lib/abwesenheiten';
 export * as _diensteinteilung from './lib/diensteinteilung';
 export * as _planerdate from './lib/planerdate';
+export * as _roles from './lib/roles';
 export * as _kalender_markierung from './lib/kalendermarkierung';
 export * as _datei from './lib/datei';
 export * as _funktion from './lib/funktion';
