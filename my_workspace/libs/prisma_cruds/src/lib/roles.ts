@@ -9,10 +9,8 @@ class RolesMap {
         if (!role.name) return;
 
         let name = role.name.trim();
-        if (process.env['INSTANCE_NAME'] !== 'hains') {
-          name = name.replace('HAINS', '').trim();
-          name = name.replace('Anästhesie HD', '').trim();
-        }
+        name = name.replace('HAINS', '').trim();
+        name = name.replace('Anästhesie HD', '').trim();
 
         this.rolesMap.set(name, role.name);
       });
