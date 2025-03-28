@@ -1,5 +1,5 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
-import { _user, findManyByModelKey } from '@my-workspace/prisma_cruds';
+import { _roles, _user, findManyByModelKey } from '@my-workspace/prisma_cruds';
 import { format } from 'date-fns';
 
 import { processData, processAsyncData, convertBereichPlanname, convertDienstPlanname } from '@my-workspace/utils';
@@ -263,9 +263,10 @@ async function getAllApiData(userId: number) {
   }
 
   const userGroupsNames = user.user_gruppes.map((userGruppe: any) => userGruppe.gruppes.name);
-  const isAdmin = userGroupsNames.includes('HAINS Admins');
+  const isAdmin = userGroupsNames.includes(_roles.map.get('Admins'));
   const canAcces =
-    userGroupsNames.includes('Dienstplaner Anästhesie HD') || userGroupsNames.includes('Urlaubsplaner Anästhesie HD');
+    userGroupsNames.includes(_roles.map.get('Dienstplaner')) ||
+    userGroupsNames.includes(_roles.map.get('Urlaubsplaner'));
 
   const bereicheArr = await findManyByModelKey('bereiches', {});
   const poDiensteArr = await findManyByModelKey('po_diensts', {
