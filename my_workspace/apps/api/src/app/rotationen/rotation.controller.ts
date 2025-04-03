@@ -7,7 +7,6 @@ export class RotationController {
 
   @Post('rotations_interval')
   getRotationInterval(@Body() body: { anfang: string; ende: string; init: boolean; user_id: string }) {
-    console.log('---body', body);
     return this.rotationService.getRotationInterval(body);
   }
 }

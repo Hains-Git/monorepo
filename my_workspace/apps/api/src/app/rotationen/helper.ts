@@ -1,7 +1,7 @@
 import { _mitarbeiter, _mitarbeiter_default_eingeteilt } from '@my-workspace/prisma_cruds';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { processData } from '@my-workspace/utils';
-import { einteilung_rotations } from '@prisma/client';
+import { User } from '@my-workspace/models';
 
 type TKontingentHash = {
   rotationen: Record<number, any>;
@@ -231,9 +231,7 @@ function addKontingents(mitarbeiter) {
 }
 
 export async function kontingentMitarbeiter(authUserId: number): Promise<Record<number, any>> {
-  // const isRotationsplaner = currentUser.checkHasRole?.('Rotationsplaner') || false;
-  const isRotationsplaner = true; // Placeholder for actual role check
-
+  const isRotationsplaner = await User.hasRole(authUserId, 'Rotationsplaner');
   const mitarbeiters = await _mitarbeiter.findMany(
     {
       where: { platzhalter: false }
