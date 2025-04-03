@@ -15,7 +15,7 @@ import {
 } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { startOfMonth, endOfMonth, parseISO, formatDate } from 'date-fns';
-import { formatDateForDB, getDateStr, newDate, newDateYearMonthDay } from '@my-workspace/utils';
+import { formatDateForDB, getDateStr, newDate } from '@my-workspace/utils';
 
 type TParamsOhneBedarf = {
   von: Date;
@@ -38,7 +38,7 @@ export async function getEinteilungenOhneBedarf({
   const dateEnd = typeof bis === 'string' ? parseISO(bis) : bis;
   const dpAnfang = formatDate(startOfMonth(dateStart), 'yyyy-MM-dd');
   const dpEnde = formatDate(endOfMonth(dateEnd), 'yyyy-MM-dd');
-
+  // AND es.public = ${isPublic} AND es.counts = ${counts}
   const result = await prismaDb.$queryRawUnsafe(
     `
   WITH RankedResults AS (
@@ -49,7 +49,11 @@ export async function getEinteilungenOhneBedarf({
     JOIN public.po_diensts AS po ON de.po_dienst_id = po.id
     JOIN public.einteilungsstatuses AS es ON es.id = de.einteilungsstatus_id
     JOIN public.mitarbeiters AS m ON m.id = de.mitarbeiter_id
-    WHERE ${!mitarbeiterIds ? `m.aktiv = true AND m.platzhalter != true` : `m.id IN (${mitarbeiterIds.join(',')})`}
+    WHERE ${
+      !mitarbeiterIds
+        ? `m.aktiv = true AND m.platzhalter != true`
+        : `m.id IN (${mitarbeiterIds.join(',')})`
+    }
     ${!poDienstIds ? `` : `AND de.po_dienst_id IN (${poDienstIds.join(',')})`}
     AND de.tag >= $1 AND de.tag <= $2
     AND de.dienstplan_id IN (
@@ -59,7 +63,7 @@ export async function getEinteilungenOhneBedarf({
       OR (dp.anfang >= '${dpAnfang}' AND dp.ende <= '${dpEnde}')
       OR (dp.anfang IS NULL AND dp.ende IS NULL)
     )
-    AND es.public = ${isPublic} AND es.counts = ${counts}
+    AND es.counts = ${counts}
     AND db.id IS NULL
   )
   SELECT id,
@@ -75,19 +79,16 @@ export async function getEinteilungenOhneBedarf({
     dateEnd,
     dpAnfang,
     dpEnde,
-    isPublic,
+    // isPublic,
     counts
   );
 
   return result;
 }
 
-export async function getPublicRangeEinteilungenForMitarbeiter<TInclude extends Prisma.diensteinteilungsInclude>(
-  id: number,
-  start: Date,
-  end: Date,
-  include?: TInclude
-) {
+export async function getPublicRangeEinteilungenForMitarbeiter<
+  TInclude extends Prisma.diensteinteilungsInclude
+>(id: number, start: Date, end: Date, include?: TInclude) {
   const startDate = formatDateForDB(start);
   const endDate = formatDateForDB(end);
 
@@ -247,7 +248,11 @@ export type TDienstfrei = diensteinteilungs & {
     | null;
 };
 
-export async function getPossibleDienstfrei(tage: Date[], mitarbeiterIds: number[] = [], onlyCounts = false) {
+export async function getPossibleDienstfrei(
+  tage: Date[],
+  mitarbeiterIds: number[] = [],
+  onlyCounts = false
+) {
   const firstDate = tage[0];
   const lastMonth = newDate(firstDate);
   lastMonth.setMonth(lastMonth.getMonth() - 1);
