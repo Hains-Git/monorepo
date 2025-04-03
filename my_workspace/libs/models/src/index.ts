@@ -18,3 +18,4 @@ export * as NichtEinteilenAbsprache from './lib/nicht-einteilen-absprache';
 export * as Dienstkategorie from './lib/dienstkategorie';
 export * as Dienstwunsch from './lib/dienstwunsch';
 export * as Mail from './lib/mail';
+export * as EinteilungRotation from './lib/einteilungrotation';
