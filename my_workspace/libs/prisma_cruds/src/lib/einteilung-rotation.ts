@@ -2,6 +2,32 @@ import { Prisma } from '@prisma/client';
 import { prismaDb } from '@my-workspace/prisma_hains';
 import { TResultEinteilungenInKontingente } from './utils/types';
 
+export async function findOne<TInclude extends Prisma.einteilung_rotationsInclude | undefined>(
+  condition: Omit<Prisma.einteilung_rotationsFindUniqueArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.einteilung_rotations.findUnique({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.einteilung_rotationsGetPayload<{
+    include: Prisma.einteilung_rotationsInclude;
+  }> | null;
+}
+
+export async function findMany<TInclude extends Prisma.einteilung_rotationsInclude | undefined>(
+  condition?: Omit<Prisma.einteilung_rotationsFindManyArgs, 'include'>,
+  include?: TInclude
+) {
+  const result = await prismaDb.einteilung_rotations.findMany({
+    ...condition,
+    include: include
+  });
+  return result as Prisma.einteilung_rotationsGetPayload<{
+    include: Prisma.einteilung_rotationsInclude;
+  }>[];
+}
+
 export async function einteilungRotationByTag(tag: Date, mitarbeiterId: number) {
   return await prismaDb.einteilung_rotations.findMany({
     where: {

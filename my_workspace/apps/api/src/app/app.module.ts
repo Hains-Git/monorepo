@@ -25,6 +25,8 @@ import { FileStreamModule } from './_modules/file-stream/file-stream.module';
 import { LoggerMiddleware } from './middlewares/logger-middleware';
 import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
+import { RotationController } from './rotationen/rotation.controller';
+import { RotationService } from './rotationen/rotation.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
@@ -36,7 +38,8 @@ import { UserService } from './user/user.service';
     MitarbeiterInfoController,
     TeamController,
     FraunhoferController,
-    ZeitraumkategorienController
+    ZeitraumkategorienController,
+    RotationController
   ],
   providers: [
     Logger,
@@ -46,7 +49,8 @@ import { UserService } from './user/user.service';
     MitarbeiterInfoService,
     TeamService,
     FraunhoferService,
-    ZeitraumkategorienService
+    ZeitraumkategorienService,
+    RotationService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard
