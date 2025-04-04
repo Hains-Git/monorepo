@@ -15,7 +15,7 @@ npm run prisma:check
 npm run migrate:prod
 
 # Development
-npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose -- --inspect
+# npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose -- --inspect
 # npx nx run-many --target=serve --projects=hains,api --configuration=development --parallel --verbose -- --inspect
 
 echo "Show open Ports after nx run-many"
@@ -23,5 +23,5 @@ lsof -i -P -n -U
 
 # Production
 # echo "Start build"
-# npx nx run-many --target=build --configuration=production --projects=hains,api --parallel --verbose
-# npx nx run-many --target=serve --configuration=production --projects=hains,api --parallel --verbose
+npx nx run-many --target=build --configuration=production --projects=hains,api --parallel --verbose
+npx nx run-many --target=serve --configuration=production --projects=hains,api --parallel --verbose
