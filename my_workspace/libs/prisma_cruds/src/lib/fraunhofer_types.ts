@@ -112,7 +112,7 @@ export type TPlanData = {
   Bedarfsblöcke: TBedarfsblock[];
   Ausgleichsdienste: TAusgleichsdienstgruppe[];
   FixierteEinteilungen: TEinteilung[];
-  AuslgeichsfreiDienstID: number;
+  AusgleichsfreiDienstID: number;
   MinPräferenz: number;
   MaxPräferenz: number;
   msg: string;
