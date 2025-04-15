@@ -30,7 +30,7 @@ const defaultPlanData: FraunhoferTypes.TPlanData = {
   Bedarfsblöcke: [],
   Ausgleichsdienste: [],
   FixierteEinteilungen: [],
-  AuslgeichsfreiDienstID: 0,
+  AusgleichsfreiDienstID: 0,
   MinPräferenz: 1,
   MaxPräferenz: 5,
   msg: ''
@@ -722,7 +722,7 @@ export async function getFraunhoferPlanData(
       });
     });
 
-    result.AuslgeichsfreiDienstID = await _fraunhofer.getAusgleichsDienstfreiId();
+    result.AusgleichsfreiDienstID = await _fraunhofer.getAusgleichsDienstfreiId();
 
     result.FixierteEinteilungen = fixedEinteilungen.reduce((acc: FraunhoferTypes.TEinteilung[], e) => {
       if (e.mitarbeiter_id && e.po_dienst_id && e.tag) {
