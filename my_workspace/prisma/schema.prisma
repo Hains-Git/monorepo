@@ -284,8 +284,8 @@ model arbeitszeit_absprachens {
   arbeitszeit_bis      DateTime           @db.Time(6)
   pause                Int                @default(0)
   bemerkung            String             @default("")
-  mitarbeiters         mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d5cc996a1")
-  zeitraumkategories   zeitraumkategories @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4a9339ea11")
+  mitarbeiter          mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d5cc996a1")
+  zeitraumkategorie    zeitraumkategories @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4a9339ea11")
 
   @@index([mitarbeiter_id], map: "index_arbeitszeit_absprachens_on_mitarbeiter_id")
   @@index([zeitraumkategorie_id], map: "index_arbeitszeit_absprachens_on_zeitraumkategorie_id")
@@ -335,9 +335,9 @@ model automatische_einteilungens {
   bis                  DateTime?           @db.Date
   zeitraumkategorie_id Int?
   days                 Int?                @default(0)
-  po_diensts           po_diensts          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
-  mitarbeiters         mitarbeiters        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
-  zeitraumkategories   zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3651daf545")
+  po_dienst            po_diensts          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
+  mitarbeiter          mitarbeiters        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
+  zeitraumkategorie    zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3651daf545")
 
   @@index([mitarbeiter_id], map: "index_automatische_einteilungens_on_mitarbeiter_id")
   @@index([po_dienst_id], map: "index_automatische_einteilungens_on_po_dienst_id")
@@ -1482,27 +1482,27 @@ model nef_fahrts {
 }
 
 model nicht_einteilen_absprachens {
-  id                              Int                               @id @default(autoincrement())
-  mitarbeiter_id                  Int
-  zeitraumkategorie_id            Int
-  von                             DateTime?                         @db.Date
-  bis                             DateTime?                         @db.Date
-  mitarbeiters                    mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c13db17963")
-  zeitraumkategories              zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f981032257")
-  nicht_einteilen_standort_themen nicht_einteilen_standort_themen[]
+  id                               Int                               @id @default(autoincrement())
+  mitarbeiter_id                   Int
+  zeitraumkategorie_id             Int
+  von                              DateTime?                         @db.Date
+  bis                              DateTime?                         @db.Date
+  mitarbeiter                      mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c13db17963")
+  zeitraumkategorie                zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f981032257")
+  nicht_einteilen_standort_themens nicht_einteilen_standort_themen[]
 
   @@index([mitarbeiter_id], map: "index_nicht_einteilen_absprachens_on_mitarbeiter_id")
   @@index([zeitraumkategorie_id], map: "index_nicht_einteilen_absprachens_on_zeitraumkategorie_id")
 }
 
 model nicht_einteilen_standort_themen {
-  id                          Int                         @id @default(autoincrement())
-  absprache_id                Int
-  standort_id                 Int
-  thema_id                    Int
-  nicht_einteilen_absprachens nicht_einteilen_absprachens @relation(fields: [absprache_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_44fd8a9177")
-  standorts                   standorts                   @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_77f147e42b")
-  themas                      themas                      @relation(fields: [thema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fd8449d811")
+  id           Int                         @id @default(autoincrement())
+  absprache_id Int
+  standort_id  Int
+  thema_id     Int
+  absprache    nicht_einteilen_absprachens @relation(fields: [absprache_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_44fd8a9177")
+  standort     standorts                   @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_77f147e42b")
+  thema        themas                      @relation(fields: [thema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fd8449d811")
 
   @@index([absprache_id], map: "index_nicht_einteilen_standort_themen_on_absprache_id")
   @@index([standort_id], map: "index_nicht_einteilen_standort_themen_on_standort_id")
