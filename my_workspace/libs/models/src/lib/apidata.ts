@@ -287,7 +287,7 @@ async function getAllApiData(userId: number) {
     'mitarbeiter_id',
     await findManyByModelKey('arbeitszeit_absprachens', {
       where: {
-        mitarbeiters: {
+        mitarbeiter: {
           platzhalter: false
         }
       },
@@ -372,12 +372,12 @@ async function getAllApiData(userId: number) {
     'mitarbeiter_id',
     await findManyByModelKey('nicht_einteilen_absprachens', {
       where: {
-        mitarbeiters: {
+        mitarbeiter: {
           platzhalter: false
         }
       },
       include: {
-        nicht_einteilen_standort_themen: true
+        nicht_einteilen_standort_themens: true
       },
       orderBy: [{ mitarbeiter_id: 'asc' }, { von: 'desc' }, { bis: 'desc' }]
     }),

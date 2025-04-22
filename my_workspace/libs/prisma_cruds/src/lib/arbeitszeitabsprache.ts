@@ -6,7 +6,7 @@ export async function getByMitarbeiterId(mitarbeiterId: number) {
       mitarbeiter_id: Number(mitarbeiterId)
     },
     include: {
-      zeitraumkategories: true
+      zeitraumkategorie: true
     }
   });
   return result;

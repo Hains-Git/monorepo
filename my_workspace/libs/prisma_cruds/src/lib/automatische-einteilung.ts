@@ -6,8 +6,8 @@ export async function getByMitarbeiterId(mitarbeiterId: number) {
       mitarbeiter_id: Number(mitarbeiterId)
     },
     include: {
-      po_diensts: true,
-      zeitraumkategories: true
+      po_dienst: true,
+      zeitraumkategorie: true
     }
   });
   return automatischeEinteilungen;
