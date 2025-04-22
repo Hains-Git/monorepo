@@ -1781,6 +1781,7 @@ model po_diensts {
   pep_name                                                           String                              @default("") @db.VarChar
   pep_color                                                          String                              @default("") @db.VarChar
   as_abwesenheit                                                     Boolean?                            @default(false)
+  nef_stunden                                                        Int?                                @default(0)
   abwesentheitenueberblick_counters                                  abwesentheitenueberblick_counters[]
   antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
   antragstyps_antragstyps_we_holiday_po_dienst_idTopo_diensts        antragstyps[]                       @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts")
