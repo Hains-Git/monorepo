@@ -2014,6 +2014,21 @@ model teams {
   @@index([kostenstelle_id], map: "index_teams_on_kostenstelle_id")
 }
 
+model telefonliste_joomla {
+  id                 Int                @id @default(autoincrement())
+  name               String             @default("")
+  position           Int                @default(0)
+  label_id           Int                @default(0)
+  telefonliste_label telefonliste_label @relation(fields: [label_id], references: [id])
+}
+
+model telefonliste_label {
+  id                  Int                   @id @default(autoincrement())
+  title               String                @default("")
+  position            Int                   @default(0)
+  telefonliste_joomla telefonliste_joomla[]
+}
+
 model telefonlistes {
   id           Int      @id @default(autoincrement())
   name         String?  @db.VarChar
@@ -2093,6 +2108,7 @@ model users {
   otp_secret_key                    String?                             @db.VarChar
   otp_enabled                       Boolean?                            @default(false)
   otp_counter                       Int?                                @default(0)
+  provider                          String?                             
   channel_room_users                channel_room_users[]
   dienstfreigabes                   dienstfreigabes[]
   dienstplaner_user_farbgruppens    dienstplaner_user_farbgruppens[]
