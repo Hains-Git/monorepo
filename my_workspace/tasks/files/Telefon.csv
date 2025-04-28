@@ -1,0 +1,43 @@
+MET/NOTFALL,
+CHIRURGIE (Station E99),6000
+KOKLI,7777
+UFHK,34000
+ORTHO Intensiv-Dienst,35382
+Anrufbeantworter Krankmeldung,06221/56-36444
+OP-Organisation,
+OP-Koordination Chirurgie,36159
+OP-Koordination Kopfklinik,36183
+OP-Koordination UFHK,36336
+OP-Koordination Ortho,34810
+Chirurgie,
+ORG Chirurgie,35555
+C1 Dienst,311201
+C2 Dienst,311202
+Arzt E99,38000
+Arzt AWR,38001
+OP-Pflege-CHIR,36144
+Anä Schicht Ltg-Tag-CHIR,36363
+Anä Schicht Ltg-Nacht-CHIR,32305
+Anä Pfl.Schockraum Tag,35446
+Anä Pfl.Schockraum Nacht,35447
+Kopfklinik,
+ORG Kopfklinik,35566
+K1 Dienst,35566
+K2 Dienst,311204
+K3 Dienst,311203
+Arzt Kopf Intensiv,36993
+Anä Schicht Ltg-KOPF,37777
+UFK,
+F1 Dienst - Kreißsaal,37964
+F2 Dienst,32230
+Anä Schicht,35383
+Orthopädie,
+O1 Dienst,36699
+Anästhesiesprechstunde,
+Prämed CHIR,38888
+Prämed KoKli,35885
+Prämed UFK (Inga),37474
+Prämed Kinder,32233
+Intensivbereiche,
+Station E99 Stützpunkt,6517
+Station F99 Stützpunkt,6512
