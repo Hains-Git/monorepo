@@ -2017,6 +2017,7 @@ model teams {
 model telefonliste_joomla {
   id                 Int                @id @default(autoincrement())
   name               String             @default("")
+  telefon            String             @default("")
   position           Int                @default(0)
   label_id           Int                @default(0)
   telefonliste_label telefonliste_label @relation(fields: [label_id], references: [id])
@@ -2108,7 +2109,7 @@ model users {
   otp_secret_key                    String?                             @db.VarChar
   otp_enabled                       Boolean?                            @default(false)
   otp_counter                       Int?                                @default(0)
-  provider                          String?                             
+  provider                          String?
   channel_room_users                channel_room_users[]
   dienstfreigabes                   dienstfreigabes[]
   dienstplaner_user_farbgruppens    dienstplaner_user_farbgruppens[]
