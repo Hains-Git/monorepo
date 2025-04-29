@@ -402,7 +402,8 @@ function calculateBedarfArbeitszeit(
 function createBedarf(
   bedarfsEintrag: TMainBedarfsEintrag,
   uberschneidungSchichten: TUeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[]
+  relevantTeamIds: number[],
+  dienstHash: Record<number, FraunhoferTypes.TDienst>
 ): FraunhoferTypes.TBedarf | null {
   if (!bedarfsEintrag.tag || !bedarfsEintrag.po_dienst_id || !bedarfsEintrag.bereich_id) return null;
   const { arbeitszeitInMinuten, wochenende, bereitschaft } = calculateBedarfArbeitszeit(
@@ -410,6 +411,7 @@ function createBedarf(
     uberschneidungSchichten
   );
   const teamId = bedarfsEintrag.po_diensts?.team_id;
+  const frDienst = dienstHash[bedarfsEintrag.po_dienst_id];
   return {
     ID: {
       Tag: bedarfsEintrag.tag,
@@ -422,7 +424,7 @@ function createBedarf(
     ArbeitszeitInMinuten: arbeitszeitInMinuten,
     Belastung: 0,
     IstWochenendEinteilung: wochenende,
-    SollAutomatischGeplantWerden: !!(teamId && relevantTeamIds.includes(teamId))
+    SollAutomatischGeplantWerden: frDienst?.Typ != 'OnTopFD' && !!(teamId && relevantTeamIds.includes(teamId))
   };
 }
 
@@ -430,14 +432,15 @@ function checkBedarf(
   be: TMainBedarfsEintrag,
   addedBedarfe: Record<string, Record<string, TMainBedarfsEintrag>> = {},
   uberschneidungSchichten: TUeberschneidungSchichtenSammlung,
-  relevantTeamIds: number[]
+  relevantTeamIds: number[],
+  dienstHash: Record<number, FraunhoferTypes.TDienst>
 ) {
   if (!be.tag || !be.po_dienst_id) return;
   const tagKey = getDateStr(be.tag);
   const key = `${be.po_dienst_id}_${be.bereich_id}`;
   addedBedarfe[tagKey] ||= {};
   if (addedBedarfe[tagKey][key]) return;
-  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds);
+  const bedarf = createBedarf(be, uberschneidungSchichten, relevantTeamIds, dienstHash);
   if (!bedarf) return;
   addedBedarfe[tagKey][key] = be;
   return bedarf;
@@ -448,7 +451,8 @@ function getBedarfeAndBloecke(
   start: Date,
   end: Date,
   nachtdienste: number[],
-  relevantTeamIds: number[]
+  relevantTeamIds: number[],
+  dienstHash: Record<number, FraunhoferTypes.TDienst>
 ) {
   const bedarfe: FraunhoferTypes.TBedarf[] = [];
   const bloecke: FraunhoferTypes.TBedarfsblock[] = [];
@@ -515,7 +519,7 @@ function getBedarfeAndBloecke(
       const firstBedarf = be.first_bedarf;
       const isBlock = firstBedarf && firstBedarf.block_bedarfe.length > 1;
       if (!isBlock) {
-        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
+        const bedarf = checkBedarf(be, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dienstHash);
         if (bedarf) {
           bedarfe.push(bedarf);
           addToAusgleichsDienstgruppe(be, true);
@@ -528,7 +532,7 @@ function getBedarfeAndBloecke(
       bloecke.push({
         Einträge: firstBedarf.block_bedarfe.reduce((acc: FraunhoferTypes.TBedarfsID[], bb, i) => {
           if (!bb.tag || !bb.po_dienst_id || !bb.bereich_id) return acc;
-          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds);
+          const bedarf = checkBedarf(bb, addedBedarfe, uberschneidungSchichten, relevantTeamIds, dienstHash);
           if (bedarf) {
             bedarfe.push(bedarf);
             addToAusgleichsDienstgruppe(bb, i === l);
@@ -643,7 +647,7 @@ export async function getFraunhoferPlanData(
     result.Dienste = Object.values(dienstHash);
 
     const { bedarfe, bloecke, bedarfeTageOutSideInterval, uberschneidungSchichten, ausgleichsdienstgruppen } =
-      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds);
+      getBedarfeAndBloecke(dienstplaene, start, end, nachtdienste, relevantTeamIds, dienstHash);
 
     const fixedEinteilungen = await _fraunhofer.getFixedEinteilungen(
       start,

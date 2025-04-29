@@ -76,15 +76,10 @@ export class MitarbeiterInfoService {
 
   async getEinteilungenInTime(body) {
     const { start, end, id: mitarbeiter_id } = body;
-    const einteilungen = await _diensteinteilung.getPublicRangeEinteilungenForMitarbeiter(
-      mitarbeiter_id,
-      start,
-      end,
-      {
-        po_diensts: true,
-        einteilungsstatuses: true
-      }
-    );
+    const einteilungen = await _diensteinteilung.getPublicRangeEinteilungenForMitarbeiter(mitarbeiter_id, start, end, {
+      po_diensts: true,
+      einteilungsstatuses: true
+    });
     return einteilungen;
   }
 
@@ -134,11 +129,11 @@ export class MitarbeiterInfoService {
         }
       },
       {
-        zeitraumkategories: true,
-        nicht_einteilen_standort_themen: {
+        zeitraumkategorie: true,
+        nicht_einteilen_standort_themens: {
           include: {
-            standorts: true,
-            themas: true
+            standort: true,
+            thema: true
           }
         }
       }
@@ -149,10 +144,7 @@ export class MitarbeiterInfoService {
       isRotationsPlaner
     );
 
-    const statistic = await Mitarbeiter.getKontingentEingeteiltBasis(
-      mitarbeiterId,
-      einteilungenInKontingenten
-    );
+    const statistic = await Mitarbeiter.getKontingentEingeteiltBasis(mitarbeiterId, einteilungenInKontingenten);
 
     const currentDate = newDate();
     const anfang = startOfMonth(currentDate);
