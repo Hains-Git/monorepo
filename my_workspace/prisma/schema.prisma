@@ -2082,7 +2082,7 @@ model user_versions {
 model users {
   id                                Int                                 @id @default(autoincrement())
   name                              String?                             @db.VarChar(255)
-  uid                               Int?
+  uid                               String?                             @db.VarChar(255)
   login                             String?                             @db.VarChar(255)
   created_at                        DateTime?                           @db.Timestamp(6)
   updated_at                        DateTime?                           @db.Timestamp(6)
