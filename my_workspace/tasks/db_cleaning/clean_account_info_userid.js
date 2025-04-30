@@ -7,13 +7,15 @@ async function run() {
   const prismaDb = new PrismaClient();
   const accounts = await prismaDb.account_infos.findMany({
     include: {
-      user: true
+      user: true,
+      mitarbeiter: true
     }
   });
   const usersWithoutAcc = await prismaDb.$queryRawUnsafe(`
     SELECT u.id, u.name 
     FROM users AS u
     WHERE u.id NOT IN (SELECT user_id FROM account_infos)
+    OR u.account_info_id IS NULL
   `);
   console.log("users without Account-Info result: ", usersWithoutAcc.length, usersWithoutAcc);
   const l = accounts.length;
@@ -27,7 +29,11 @@ async function run() {
       continue;
     }
     const user = usersWithoutAcc.find(u => u.id === acc.user_id);
-    console.log(`Account-Info without user`, acc.id, acc.nameKurz, acc.vorname, acc.name, "user", user?.id, user?.name);
+    if(user) {
+      console.log(`Account-Info not related to user`, acc.id, acc.mitarbeiter?.planname, "user", user?.id, user?.name);
+    } else {
+      console.log(`Account-Info without user`, acc.id, acc.mitarbeiter?.planname);
+    }
   }
   console.log("Job finished!");
 }
