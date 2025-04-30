@@ -1,0 +1,2240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model abwesentheiten_spaltens {
+  id           BigInt   @id @default(autoincrement())
+  planname     String?  @db.VarChar
+  name         String?  @db.VarChar
+  beschreibung String?  @db.VarChar
+  created_at   DateTime @db.Timestamp(6)
+  updated_at   DateTime @db.Timestamp(6)
+  po_dienst_id Int?
+}
+
+model abwesentheitenueberblick_counters {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  po_dienst_id   Int?
+  planname       String?       @db.VarChar
+  description    String?       @db.VarChar
+  von            DateTime?     @db.Date
+  bis            DateTime?     @db.Date
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_336f14c2e2")
+  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_daea018e64")
+
+  @@index([mitarbeiter_id], map: "index_abwesentheitenueberblick_counters_on_mitarbeiter_id")
+  @@index([po_dienst_id], map: "index_abwesentheitenueberblick_counters_on_po_dienst_id")
+}
+
+model abwesentheitenueberblick_settings {
+  id               BigInt        @id @default(autoincrement())
+  mitarbeiter_id   Int?
+  visible_columns  String[]      @default([]) @db.VarChar
+  visible_team_ids Int[]         @default([])
+  created_at       DateTime      @db.Timestamp(6)
+  updated_at       DateTime      @db.Timestamp(6)
+  data_sorting     String?       @default("") @db.VarChar
+  mitarbeiters     mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d45bd1bd3")
+
+  @@index([mitarbeiter_id], map: "index_abwesentheitenueberblick_settings_on_mitarbeiter_id")
+}
+
+model abwesentheitenueberblicks {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  jahr           Int?
+  ug             Int?          @default(30)
+  u              Int?          @default(30)
+  uv             Int?          @default(0)
+  uz             Int?          @default(0)
+  ru             Int?          @default(0)
+  gu             Int?          @default(0)
+  tzu            Int?          @default(0)
+  fo_max         Int?          @default(3)
+  fo             Int?          @default(0)
+  dr             Int?          @default(0)
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  vu             Int?
+  bu             Int?
+  soll_tzu       Int?          @default(0)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ed4202ea8e")
+
+  @@index([mitarbeiter_id], map: "index_abwesentheitenueberblicks_on_mitarbeiter_id")
+}
+
+model account_infos {
+  id                  Int           @id @default(autoincrement())
+  old_user_id         Int?
+  comments            String?
+  nameKurz            String?       @default("") @db.VarChar
+  telephone           String?       @db.VarChar
+  privateEmail        String?       @db.VarChar
+  privateTelephone    String?       @db.VarChar
+  created_at          DateTime?     @db.Timestamp(6)
+  updated_at          DateTime?     @db.Timestamp(6)
+  anrede              String?       @db.VarChar
+  titelPraefix        String?       @db.VarChar(20)
+  titelPostfix        String?       @db.VarChar(20)
+  vorname             String?       @default("") @db.VarChar
+  mittelname          String?       @db.VarChar
+  nachname            String?       @default("") @db.VarChar
+  mobileTelefon       String?       @db.VarChar(16)
+  dienstEmail         String?       @db.VarChar(50)
+  dienstTelefon       String?       @db.VarChar(16)
+  adresseStrasse      String?       @db.VarChar(50)
+  adressePlz          String?       @db.VarChar(10)
+  adresseOrt          String?       @db.VarChar(30)
+  adresseLand         String?       @db.VarChar(30)
+  aktivAb             DateTime?     @db.Timestamp(6)
+  aktivBis            DateTime?     @db.Timestamp(6)
+  mitarbeiter_id      Int?
+  geburtsdatum        DateTime?     @db.Date
+  teilzeit            String?       @db.VarChar
+  funktion            String?       @db.VarChar
+  vertragsbeginn_ukhd String?       @db.VarChar
+  vertragsende        String?       @db.VarChar
+  geburtsort          String?       @default("") @db.VarChar
+  ueber_mich          String?       @db.VarChar
+  users               users?        @relation(fields: [old_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0978a630f4")
+  mitarbeiter         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_58245fd0a4")
+
+  @@index([mitarbeiter_id], map: "index_account_infos_on_mitarbeiter_id")
+}
+
+model active_admin_comments {
+  id            BigInt   @id @default(autoincrement())
+  namespace     String?  @db.VarChar
+  body          String?
+  resource_type String?  @db.VarChar
+  resource_id   BigInt?
+  author_type   String?  @db.VarChar
+  author_id     BigInt?
+  created_at    DateTime @db.Timestamp(6)
+  updated_at    DateTime @db.Timestamp(6)
+
+  @@index([author_type, author_id], map: "index_active_admin_comments_on_author_type_and_author_id")
+  @@index([namespace], map: "index_active_admin_comments_on_namespace")
+  @@index([resource_type, resource_id], map: "index_active_admin_comments_on_resource_type_and_resource_id")
+}
+
+model active_storage_attachments {
+  id                   BigInt               @id @default(autoincrement())
+  name                 String               @db.VarChar
+  record_type          String               @db.VarChar
+  record_id            BigInt
+  blob_id              BigInt
+  created_at           DateTime             @db.Timestamp(6)
+  active_storage_blobs active_storage_blobs @relation(fields: [blob_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c3b3935057")
+
+  @@unique([record_type, record_id, name, blob_id], map: "index_active_storage_attachments_uniqueness")
+  @@index([blob_id], map: "index_active_storage_attachments_on_blob_id")
+}
+
+model active_storage_blobs {
+  id                         BigInt                       @id @default(autoincrement())
+  key                        String                       @unique(map: "index_active_storage_blobs_on_key") @db.VarChar
+  filename                   String                       @db.VarChar
+  content_type               String?                      @db.VarChar
+  metadata                   String?
+  byte_size                  BigInt
+  checksum                   String                       @db.VarChar
+  created_at                 DateTime                     @db.Timestamp(6)
+  active_storage_attachments active_storage_attachments[]
+}
+
+model admin_users {
+  id                     BigInt    @id @default(autoincrement())
+  email                  String    @unique(map: "index_admin_users_on_email") @default("") @db.VarChar(50)
+  encrypted_password     String    @default("") @db.VarChar
+  reset_password_token   String?   @unique(map: "index_admin_users_on_reset_password_token") @db.VarChar(160)
+  reset_password_sent_at DateTime? @db.Timestamp(6)
+  remember_created_at    DateTime? @db.Timestamp(6)
+  created_at             DateTime  @db.Timestamp(6)
+  updated_at             DateTime  @db.Timestamp(6)
+}
+
+model allgemeine_vorlages {
+  id                 BigInt            @id @default(autoincrement())
+  vorlage_id         BigInt?
+  dienstplan_path_id BigInt?
+  publishable        Boolean?          @default(false)
+  filepattern        String?           @default("") @db.VarChar
+  order              Int?              @default(0)
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  pdf_zusatz_dienste BigInt[]          @default([])
+  freitext           String            @default("")
+  dienstplan_paths   dienstplan_paths? @relation(fields: [dienstplan_path_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_01e0e49755")
+  vorlages           vorlages?         @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c44f45c22")
+
+  @@index([dienstplan_path_id], map: "index_allgemeine_vorlages_on_dienstplan_path_id")
+  @@index([vorlage_id], map: "index_allgemeine_vorlages_on_vorlage_id")
+}
+
+model antraege_histories {
+  id               BigInt           @id @default(autoincrement())
+  mitarbeiter_id   Int?
+  antraege_id      BigInt?
+  antragsstatus_id BigInt?
+  weiteres         String?          @db.VarChar
+  kommentar        String?          @db.VarChar
+  created_at       DateTime         @db.Timestamp(6)
+  updated_at       DateTime         @db.Timestamp(6)
+  mitarbeiters     mitarbeiters?    @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_6b4c176fee")
+  antragsstatuses  antragsstatuses? @relation(fields: [antragsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_702e44afb0")
+  antraeges        antraeges?       @relation(fields: [antraege_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d2c22a9e1a")
+
+  @@index([antraege_id], map: "index_antraege_histories_on_antraege_id")
+  @@index([antragsstatus_id], map: "index_antraege_histories_on_antragsstatus_id")
+  @@index([mitarbeiter_id], map: "index_antraege_histories_on_mitarbeiter_id")
+}
+
+model antraeges {
+  id                 BigInt               @id @default(autoincrement())
+  mitarbeiter_id     Int?
+  antragstyp_id      BigInt?
+  antragsstatus_id   BigInt?
+  start              DateTime?            @db.Date
+  ende               DateTime?            @db.Date
+  abgesprochen       String?              @db.VarChar
+  kommentar          String?              @db.VarChar
+  created_at         DateTime             @db.Timestamp(6)
+  updated_at         DateTime             @db.Timestamp(6)
+  antraege_histories antraege_histories[]
+  antragsstatuses    antragsstatuses?     @relation(fields: [antragsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0101e13655")
+  mitarbeiters       mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a5f48af37e")
+  antragstyps        antragstyps?         @relation(fields: [antragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f887e40996")
+
+  @@index([antragsstatus_id], map: "index_antraeges_on_antragsstatus_id")
+  @@index([antragstyp_id], map: "index_antraeges_on_antragstyp_id")
+  @@index([mitarbeiter_id], map: "index_antraeges_on_mitarbeiter_id")
+}
+
+model antragsstatuses {
+  id                 BigInt               @id @default(autoincrement())
+  name               String?              @db.VarChar
+  color              String?              @db.VarChar
+  created_at         DateTime             @db.Timestamp(6)
+  updated_at         DateTime             @db.Timestamp(6)
+  antraege_histories antraege_histories[]
+  antraeges          antraeges[]
+}
+
+model antragstyps {
+  id                                                                BigInt      @id @default(autoincrement())
+  name                                                              String?     @db.VarChar
+  created_at                                                        DateTime    @db.Timestamp(6)
+  updated_at                                                        DateTime    @db.Timestamp(6)
+  po_dienst_id                                                      Int?
+  we_holiday_po_dienst_id                                           Int?
+  check_alternative_po_dienst_id                                    Int?
+  alternative_po_dienst_id                                          Int?
+  antraeges                                                         antraeges[]
+  po_diensts_antragstyps_check_alternative_po_dienst_idTopo_diensts po_diensts? @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts", fields: [check_alternative_po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3734c17d7f")
+  po_diensts_antragstyps_we_holiday_po_dienst_idTopo_diensts        po_diensts? @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts", fields: [we_holiday_po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5dd7757f25")
+  po_diensts_antragstyps_po_dienst_idTopo_diensts                   po_diensts? @relation("antragstyps_po_dienst_idTopo_diensts", fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8ac569efac")
+  po_diensts_antragstyps_alternative_po_dienst_idTopo_diensts       po_diensts? @relation("antragstyps_alternative_po_dienst_idTopo_diensts", fields: [alternative_po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a43ad8c57f")
+
+  @@index([alternative_po_dienst_id], map: "index_antragstyps_on_alternative_po_dienst_id")
+  @@index([check_alternative_po_dienst_id], map: "index_antragstyps_on_check_alternative_po_dienst_id")
+  @@index([po_dienst_id], map: "index_antragstyps_on_po_dienst_id")
+  @@index([we_holiday_po_dienst_id], map: "index_antragstyps_on_we_holiday_po_dienst_id")
+}
+
+model ar_internal_metadata {
+  key        String   @id @db.VarChar
+  value      String?  @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+}
+
+model arbeitsplatzs {
+  id          BigInt     @id @default(autoincrement())
+  name        String?    @default("") @db.VarChar
+  bereich_id  Int?
+  created_at  DateTime   @db.Timestamp(6)
+  updated_at  DateTime   @db.Timestamp(6)
+  standort_id Int?
+  bereiches   bereiches? @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1029690348")
+  standorts   standorts? @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4ce8e3dfb0")
+
+  @@index([bereich_id], map: "index_arbeitsplatzs_on_bereich_id")
+  @@index([standort_id], map: "index_arbeitsplatzs_on_standort_id")
+}
+
+model arbeitszeit_absprachens {
+  id                   BigInt             @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  zeitraumkategorie_id BigInt
+  von                  DateTime?          @db.Date
+  bis                  DateTime?          @db.Date
+  arbeitszeit_von      DateTime           @db.Time(6)
+  arbeitszeit_bis      DateTime           @db.Time(6)
+  pause                Int                @default(0)
+  bemerkung            String             @default("")
+  mitarbeiter          mitarbeiters?      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d5cc996a1")
+  zeitraumkategorie    zeitraumkategories @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4a9339ea11")
+
+  @@index([mitarbeiter_id], map: "index_arbeitszeit_absprachens_on_mitarbeiter_id")
+  @@index([zeitraumkategorie_id], map: "index_arbeitszeit_absprachens_on_zeitraumkategorie_id")
+}
+
+model arbeitszeittyps {
+  id              BigInt     @id @default(autoincrement())
+  name            String?    @db.VarChar
+  beschreibung    String?    @db.VarChar
+  sys             Boolean?   @default(false)
+  dienstzeit      Boolean?   @default(false)
+  arbeitszeit     Boolean?   @default(false)
+  count           Boolean?   @default(false)
+  max             Int?       @default(0)
+  min             Int?       @default(0)
+  bereitschaft    Boolean?   @default(false)
+  rufbereitschaft Boolean?   @default(false)
+  schichts        schichts[]
+}
+
+model arbeitszeitverteilungs {
+  id                          BigInt           @id @default(autoincrement())
+  name                        String?          @db.VarChar
+  dauer                       Int?
+  verteilung                  DateTime[]       @db.Time
+  zeittypen                   Int[]
+  created_at                  DateTime         @db.Timestamp(6)
+  updated_at                  DateTime         @db.Timestamp(6)
+  std                         Decimal?         @default(0) @db.Decimal(6, 2)
+  dienstgruppe_id             BigInt?
+  pre_std                     Decimal?         @default(0) @db.Decimal(6, 2)
+  pre_dienstgruppe_id         BigInt?
+  pre_ueberschneidung_minuten Int              @default(30)
+  post_dienstgruppes          dienstgruppes?   @relation("arbeitszeitverteiler_post", fields: [dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7b802cfd89")
+  pre_dienstgruppes           dienstgruppes?   @relation("arbeitszeitverteiler_pre", fields: [pre_dienstgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fe777cf5f2")
+  dienstbedarves              dienstbedarves[]
+
+  @@index([dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_dienstgruppe_id")
+  @@index([pre_dienstgruppe_id], map: "index_arbeitszeitverteilungs_on_pre_dienstgruppe_id")
+}
+
+model automatische_einteilungens {
+  id                   BigInt              @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  po_dienst_id         Int?
+  von                  DateTime?           @db.Date
+  bis                  DateTime?           @db.Date
+  zeitraumkategorie_id BigInt?
+  days                 Int?                @default(0)
+  po_dienst            po_diensts?         @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_03e173cb8b")
+  mitarbeiter          mitarbeiters?       @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2286cd78f3")
+  zeitraumkategorie    zeitraumkategories? @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3651daf545")
+
+  @@index([mitarbeiter_id], map: "index_automatische_einteilungens_on_mitarbeiter_id")
+  @@index([po_dienst_id], map: "index_automatische_einteilungens_on_po_dienst_id")
+  @@index([zeitraumkategorie_id], map: "index_automatische_einteilungens_on_zeitraumkategorie_id")
+}
+
+model bedarfs_eintrags {
+  id                      BigInt                 @id @default(autoincrement())
+  tag                     DateTime?              @db.Date
+  dienstplanbedarf_id     BigInt?
+  po_dienst_id            Int?
+  dienstbedarf_id         Int?
+  dienstverteilungstyp_id BigInt?
+  bereich_id              Int?
+  verteilungscode         String?                @db.VarChar
+  is_block                Boolean?               @default(false)
+  first_entry             BigInt?
+  min                     Int?                   @default(1)
+  opt                     Int?                   @default(0)
+  created_at              DateTime               @db.Timestamp(6)
+  updated_at              DateTime               @db.Timestamp(6)
+  ausgleich_tage          Int?                   @default(0)
+  kostenstelle_id         BigInt?                @default(2)
+  dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_00545eb639")
+  po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c867c460")
+  dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0f89581c7b")
+  kostenstelles           kostenstelles?         @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_aa2e3d95aa")
+  bereiches               bereiches?             @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e18eeada6a")
+  dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e8f3cb8e16")
+  schichts                schichts[]
+
+  @@index([bereich_id], map: "index_bedarfs_eintrags_on_bereich_id")
+  @@index([dienstbedarf_id], map: "index_bedarfs_eintrags_on_dienstbedarf_id")
+  @@index([dienstplanbedarf_id], map: "index_bedarfs_eintrags_on_dienstplanbedarf_id")
+  @@index([dienstverteilungstyp_id], map: "index_bedarfs_eintrags_on_dienstverteilungstyp_id")
+  @@index([kostenstelle_id], map: "index_bedarfs_eintrags_on_kostenstelle_id")
+  @@index([po_dienst_id], map: "index_bedarfs_eintrags_on_po_dienst_id")
+}
+
+model benachrichtigungs {
+  id                          BigInt                      @id @default(autoincrement())
+  mitarbeiter_id              Int?
+  mitarbeiter_kommentar       String?                     @db.VarChar
+  hains_task_id               Int?
+  created_at                  DateTime                    @db.Timestamp(6)
+  updated_at                  DateTime                    @db.Timestamp(6)
+  benachrichtigungs_status_id BigInt?                        @default(1)
+  mitarbeiter_rating          Int?
+  benachrichtigungs_statuses  benachrichtigungs_statuses? @relation(fields: [benachrichtigungs_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2d4826acc2")
+  mitarbeiters                mitarbeiters?               @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d72e570086")
+
+  @@index([benachrichtigungs_status_id], map: "index_benachrichtigungs_on_benachrichtigungs_status_id")
+  @@index([mitarbeiter_id], map: "index_benachrichtigungs_on_mitarbeiter_id")
+}
+
+model benachrichtigungs_statuses {
+  id                BigInt              @id @default(autoincrement())
+  name              String?             @db.VarChar
+  color             String?             @db.VarChar
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  benachrichtigungs benachrichtigungs[]
+}
+
+model benachrichtigungs_typs {
+  id              BigInt   @id @default(autoincrement())
+  name            String?  @db.VarChar
+  respond         Boolean? @default(false)
+  status_optionen Int[]
+  comment         Boolean? @default(false)
+  rate            Boolean? @default(false)
+  created_at      DateTime @db.Timestamp(6)
+  updated_at      DateTime @db.Timestamp(6)
+  color           String?  @db.VarChar
+  stars           Boolean? @default(false)
+}
+
+model bereich_tagesverteilers {
+  id                BigInt           @id @default(autoincrement())
+  tagesverteiler_id BigInt?
+  bereich_id        Int?
+  po_dienst_id      Int?
+  color             String?          @db.VarChar
+  created_at        DateTime         @db.Timestamp(6)
+  updated_at        DateTime         @db.Timestamp(6)
+  content_layout    String?          @default("one_col") @db.VarChar
+  bereiches         bereiches?       @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_082f661ba0")
+  po_diensts        po_diensts?      @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c9d75975f6")
+  tagesverteilers   tagesverteilers? @relation(fields: [tagesverteiler_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fdf23f3f87")
+
+  @@index([bereich_id], map: "index_bereich_tagesverteilers_on_bereich_id")
+  @@index([po_dienst_id], map: "index_bereich_tagesverteilers_on_po_dienst_id")
+  @@index([tagesverteiler_id], map: "index_bereich_tagesverteilers_on_tagesverteiler_id")
+}
+
+model bereich_wochenverteilers {
+  id             BigInt      @id @default(autoincrement())
+  bereich_id     Int?
+  po_dienst_id   Int?
+  color_bg       String?     @default("#ffffff") @db.VarChar
+  color_hl       String?     @default("#ffffff") @db.VarChar
+  order          Int?
+  content_layout String?     @db.VarChar
+  created_at     DateTime    @db.Timestamp(6)
+  updated_at     DateTime    @db.Timestamp(6)
+  bereiches      bereiches?  @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2430b21746")
+  po_diensts     po_diensts? @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ef32afba54")
+
+  @@index([bereich_id], map: "index_bereich_wochenverteilers_on_bereich_id")
+  @@index([po_dienst_id], map: "index_bereich_wochenverteilers_on_po_dienst_id")
+}
+
+model bereiches {
+  id                       Int                        @id @default(autoincrement())
+  name                     String?                    @db.VarChar
+  planname                 String?                    @db.VarChar
+  name_url                 String?                    @db.VarChar
+  info                     String?
+  standort_id              Int?
+  created_at               DateTime?                  @db.Timestamp(6)
+  updated_at               DateTime?                  @db.Timestamp(6)
+  bereiches_id             BigInt?
+  verteiler_frei           Boolean?                   @default(false)
+  arbeitsplatzs            arbeitsplatzs[]
+  bedarfs_eintrags         bedarfs_eintrags[]
+  bereich_tagesverteilers  bereich_tagesverteilers[]
+  bereich_wochenverteilers bereich_wochenverteilers[]
+  dienstbedarves           dienstbedarves[]
+  diensteinteilungs        diensteinteilungs[]
+
+  @@index([bereiches_id], map: "index_bereiches_on_bereiches_id")
+}
+
+model channel_room_users {
+  id              BigInt         @id @default(autoincrement())
+  channel_room_id BigInt?
+  user_id         Int?
+  created_at      DateTime       @db.Timestamp(6)
+  updated_at      DateTime       @db.Timestamp(6)
+  subscription    Int            @default(0)
+  chat            String         @default("")
+  channel_rooms   channel_rooms? @relation(fields: [channel_room_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_07d9c65830")
+  users           users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fa37f889bb")
+
+  @@index([channel_room_id], map: "index_channel_room_users_on_channel_room_id")
+  @@index([user_id], map: "index_channel_room_users_on_user_id")
+}
+
+model channel_rooms {
+  id                 BigInt               @id @default(autoincrement())
+  name               String               @default("") @db.VarChar
+  created_at         DateTime             @db.Timestamp(6)
+  updated_at         DateTime             @db.Timestamp(6)
+  channel_room_users channel_room_users[]
+}
+
+model datei_typs {
+  id         BigInt   @id @default(autoincrement())
+  name       String?  @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+}
+
+model dateis {
+  id            BigInt   @id @default(autoincrement())
+  name          String?  @db.VarChar
+  beschreibung  String?  @db.VarChar
+  ersteller_id  BigInt?
+  besitzer_id   BigInt?
+  created_at    DateTime @db.Timestamp(6)
+  updated_at    DateTime @db.Timestamp(6)
+  datei_typs_id BigInt?
+
+  @@index([datei_typs_id], map: "index_dateis_on_datei_typs_id")
+}
+
+model dienstbedarves {
+  id                       Int                     @id @default(autoincrement())
+  min                      Int
+  po_dienst_id             Int
+  bereich_id               Int
+  created_at               DateTime                @db.Timestamp(6)
+  updated_at               DateTime                @db.Timestamp(6)
+  end_date                 DateTime?               @db.Date
+  dienstverteilungstyp_id  BigInt?
+  verteilungscode          String?                 @db.VarChar
+  opt                      Int?
+  arbeitszeitverteilung_id BigInt?
+  zeitraumkategories_id    BigInt?
+  kostenstelle_id          BigInt?                 @default(2)
+  ignore_in_urlaubssaldo   Boolean?                @default(false)
+  bedarfs_eintrags         bedarfs_eintrags[]
+  dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_05b1cdbc7e")
+  arbeitszeitverteilungs   arbeitszeitverteilungs? @relation(fields: [arbeitszeitverteilung_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2b3b1e6b71")
+  bereiches                bereiches               @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_434a8ef988")
+  kostenstelles            kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_495258659a")
+  po_diensts               po_diensts              @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9ae4035ecf")
+  zeitraumkategories       zeitraumkategories?     @relation(fields: [zeitraumkategories_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a8c5f3913d")
+  verteilungsoverrides     verteilungsoverrides[]
+
+  @@index([kostenstelle_id], map: "index_dienstbedarves_on_kostenstelle_id")
+  @@index([zeitraumkategories_id], map: "index_dienstbedarves_on_zeitraumkategories_id")
+}
+
+model dienstbedarveshistory {
+  id                        BigInt  @id @default(autoincrement())
+  dienstbedarf_id           BigInt?
+  min                       Int?
+  opt                       Int?
+  arbeitszeitverteilungs_id BigInt?
+
+  @@index([arbeitszeitverteilungs_id], map: "index_dienstbedarveshistory_on_arbeitszeitverteilungs_id")
+  @@index([dienstbedarf_id], map: "index_dienstbedarveshistory_on_dienstbedarf_id")
+}
+
+model diensteinteilungs {
+  id                    Int                  @id @default(autoincrement())
+  mitarbeiter_id        Int?
+  created_at            DateTime             @db.Timestamp(6)
+  updated_at            DateTime             @db.Timestamp(6)
+  einteilungsstatus_id  BigInt?
+  po_dienst_id          Int?
+  dienstplan_id         BigInt?
+  reason                String?              @db.VarChar
+  number                Int?
+  tag                   DateTime?            @db.Date
+  einteilungskontext_id BigInt?
+  doppeldienst_id       Int?                 @default(0)
+  schicht_nummern       Int[]                @default([0])
+  bereich_id            Int?
+  arbeitsplatz_id       Int?                 @default(1)
+  context_comment       String?              @default("") @db.VarChar
+  info_comment          String?              @default("") @db.VarChar
+  is_optional           Boolean?             @default(false)
+  po_diensts            po_diensts?          @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c69b8191a")
+  einteilungsstatuses   einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2a437cd8da")
+  dienstplans           dienstplans?         @relation(fields: [dienstplan_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_37afbd5ac9")
+  mitarbeiters          mitarbeiters?        @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8d2ed7f2ce")
+  bereiches             bereiches?           @relation(fields: [bereich_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f7e8479926")
+
+  @@index([bereich_id], map: "index_diensteinteilungs_on_bereich_id")
+  @@index([einteilungskontext_id], map: "index_diensteinteilungs_on_einteilungskontext_id")
+  @@index([mitarbeiter_id], map: "index_diensteinteilungs_on_mitarbeiter_id")
+  @@index([mitarbeiter_id, tag], map: "index_diensteinteilungs_on_mitarbeiter_id_and_tag")
+  @@index([tag, mitarbeiter_id], map: "index_diensteinteilungs_on_tag_and_mitarbeiter_id")
+}
+
+model diensteinteilungs_versions {
+  id         BigInt    @id @default(autoincrement())
+  item_type  String    @db.VarChar
+  item_id    Int
+  event      String    @db.VarChar
+  whodunnit  String?   @db.VarChar
+  object     String?
+  created_at DateTime? @db.Timestamp(6)
+
+  @@index([item_type, item_id], map: "index_diensteinteilungs_versions_on_item_type_and_item_id")
+}
+
+model dienstfreigabe_versions {
+  id         Int       @id @default(autoincrement())
+  item_type  String    @db.VarChar
+  item_id    Int
+  event      String    @db.VarChar
+  whodunnit  String?   @db.VarChar
+  object     String?
+  created_at DateTime? @db.Timestamp(6)
+
+  @@index([item_type, item_id], map: "index_dienstfreigabe_versions_on_item_type_and_item_id")
+  @@index([whodunnit], map: "index_dienstfreigabe_versions_on_whodunnit")
+}
+
+model dienstfreigabes {
+  id                Int               @id @default(autoincrement())
+  freigabetyp_id    Int
+  mitarbeiter_id    Int
+  user_id           Int
+  freigabestatus_id Int?
+  created_at        DateTime          @db.Timestamp(6)
+  updated_at        DateTime          @db.Timestamp(6)
+  mitarbeiters      mitarbeiters      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3a9471d624")
+  freigabetyps      freigabetyps      @relation(fields: [freigabetyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7c27a8ab72")
+  users             users             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ab3f7cd811")
+  freigabestatuses  freigabestatuses? @relation(fields: [freigabestatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b201a8e9f5")
+
+  @@index([freigabetyp_id], map: "index_dienstfreigabes_on_freigabetyp_id")
+}
+
+model dienstgruppes {
+  id                        BigInt                   @id @default(autoincrement())
+  name                      String?                  @db.VarChar
+  dienste                   BigInt[]                 @default([])
+  created_at                DateTime                 @db.Timestamp(6)
+  updated_at                DateTime                 @db.Timestamp(6)
+  use_in_publish            Boolean                  @default(false)
+  publish_prio              Int                      @default(0)
+  publish_label             String                   @default("") @db.VarChar
+  publish_color_bg          String                   @default("#ffffff") @db.VarChar
+  publish_color_hl          String                   @default("#ffffff") @db.VarChar
+  arbeitszeitverteiler_post arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_post")
+  arbeitszeitverteiler_pre  arbeitszeitverteilungs[] @relation("arbeitszeitverteiler_pre")
+}
+
+model dienstkategorie_teams {
+  id                 BigInt            @id @default(autoincrement())
+  dienstkategorie_id BigInt?
+  team_id            BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_10d49ef0f8")
+  teams              teams?            @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8c261f9aef")
+
+  @@index([dienstkategorie_id], map: "index_dienstkategorie_teams_on_dienstkategorie_id")
+  @@index([team_id], map: "index_dienstkategorie_teams_on_team_id")
+}
+
+model dienstkategories {
+  id                    BigInt                  @id @default(autoincrement())
+  name                  String?                 @db.VarChar
+  beschreibung          String?                 @db.VarChar
+  color                 String?                 @db.VarChar
+  created_at            DateTime                @db.Timestamp(6)
+  updated_at            DateTime                @db.Timestamp(6)
+  poppix_name           String?                 @default("") @db.VarChar
+  selectable            Boolean?                @default(true)
+  order                 Int                     @default(0)
+  mark                  Boolean                 @default(false)
+  dienstkategorie_teams dienstkategorie_teams[]
+  dienstkategoriethemas dienstkategoriethemas[]
+  dienstwunsches        dienstwunsches[]
+}
+
+model dienstkategoriethemas {
+  id                 BigInt            @id @default(autoincrement())
+  dienstkategorie_id BigInt?
+  thema_id           BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_27dd54d2f6")
+  themas             themas?           @relation(fields: [thema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a1ff9468f4")
+
+  @@index([dienstkategorie_id], map: "index_dienstkategoriethemas_on_dienstkategorie_id")
+  @@index([thema_id], map: "index_dienstkategoriethemas_on_thema_id")
+}
+
+model dienstplan_custom_counters {
+  id                        BigInt                   @id @default(autoincrement())
+  name                      String?                  @default("Zähler") @db.VarChar
+  dienste_ids               Int[]                    @default([])
+  mitarbeiter_ids           Int[]                 @default([])
+  zeilen_counter_ids        BigInt[]                 @default([])
+  spalten_counter_ids       BigInt[]                 @default([])
+  dienstplan_custom_feld_id BigInt?
+  beschreibung              String?                  @default("")
+  index_all_type            BigInt?                  @default(0)
+  counter_typ               String?                  @default("current") @db.VarChar
+  cell_id                   String?                  @default("") @db.VarChar
+  created_at                DateTime                 @db.Timestamp(6)
+  updated_at                DateTime                 @db.Timestamp(6)
+  date_ids                  String[]                 @default([]) @db.VarChar
+  count_arbeitszeiten       Boolean?                 @default(false)
+  team_ids                  BigInt[]                 @default([])
+  colors                    String[]                 @default([]) @db.VarChar
+  hidden                    Boolean?                 @default(false)
+  aktiv                     Boolean?                 @default(true)
+  inaktiv                   Boolean?                 @default(false)
+  currently_in_team         Boolean?                 @default(true)
+  mit_bedarf                Boolean?                 @default(true)
+  ohne_bedarf               Boolean?                 @default(true)
+  act_as_funktion           Boolean?                 @default(false)
+  evaluate_seperate         Boolean?                 @default(false)
+  add_kein_mitarbeiterteam  Boolean?                 @default(true)
+  count                     String?                  @default("Einteilungen") @db.VarChar
+  funktion                  String?                  @default("") @db.VarChar
+  feiertage                 String?                  @default("auch") @db.VarChar
+  mitarbeiterteam_ids       BigInt[]                 @default([])
+  mitarbeiterfunktionen_ids BigInt[]                 @default([])
+  diensteteam_ids           BigInt[]                 @default([])
+  wochentage                BigInt[]                 @default([])
+  empty_as_regeldienst      Boolean?                 @default(false)
+  dienstplan_custom_felds   dienstplan_custom_felds? @relation(fields: [dienstplan_custom_feld_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cc48ac5d4f")
+
+  @@index([dienstplan_custom_feld_id], map: "index_dienstplan_custom_counters_on_dienstplan_custom_feld_id")
+}
+
+model dienstplan_custom_felds {
+  id                         BigInt                       @id @default(autoincrement())
+  ansicht_id                 Int?                         @default(0)
+  vorlage_id                 BigInt?
+  row                        Boolean?                     @default(true)
+  index                      BigInt?                      @default(0)
+  name                       String?                      @default("Neue Zeile") @db.VarChar
+  count_all_typ              BigInt?                      @default(0)
+  created_at                 DateTime                     @db.Timestamp(6)
+  updated_at                 DateTime                     @db.Timestamp(6)
+  custom_counter_ids         BigInt[]                     @default([])
+  dienstplan_custom_counters dienstplan_custom_counters[]
+  vorlages                   vorlages?                    @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3b768fab84")
+
+  @@index([vorlage_id], map: "index_dienstplan_custom_felds_on_vorlage_id")
+}
+
+model dienstplan_paths {
+  id                  BigInt                @id @default(autoincrement())
+  path                String?               @db.VarChar
+  created_at          DateTime              @db.Timestamp(6)
+  updated_at          DateTime              @db.Timestamp(6)
+  nr_intervall        Int?                  @default(0)
+  offset_to_now       Int?                  @default(0)
+  nr_versions         Int?                  @default(0)
+  plan_pattern        String?               @default("") @db.VarChar
+  planinterval_id     BigInt?
+  plan_tab_id         BigInt?
+  name                String                @default("") @db.VarChar
+  position            Int                   @default(0)
+  begin_on_monday     Boolean?              @default(false)
+  kalender_name       String?               @default("") @db.VarChar
+  allgemeine_vorlages allgemeine_vorlages[]
+  planintervals       planintervals?        @relation(fields: [planinterval_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1ef594e615")
+  plan_tabs           plan_tabs?            @relation(fields: [plan_tab_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5a0e779422")
+  verteiler_vorlagens verteiler_vorlagens[]
+
+  @@index([plan_tab_id], map: "index_dienstplan_paths_on_plan_tab_id")
+  @@index([planinterval_id], map: "index_dienstplan_paths_on_planinterval_id")
+}
+
+model dienstplanbedarves {
+  id               BigInt             @id @default(autoincrement())
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  anfang           DateTime?          @db.Date
+  ende             DateTime?          @db.Date
+  dienste          BigInt[]           @default([])
+  bedarfs_eintrags bedarfs_eintrags[]
+  dienstplans      dienstplans[]
+}
+
+model dienstplaner_user_farbgruppens {
+  id                   BigInt   @id @default(autoincrement())
+  user_id              Int?
+  color                String?  @default("#000000") @db.VarChar
+  pos                  BigInt?  @default(1)
+  dienste_ids          BigInt[] @default([])
+  dienstkategorien_ids BigInt[] @default([])
+  created_at           DateTime @db.Timestamp(6)
+  updated_at           DateTime @db.Timestamp(6)
+  show                 Boolean? @default(true)
+  users                users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d0e228908c")
+
+  @@index([user_id], map: "index_dienstplaner_user_farbgruppens_on_user_id")
+}
+
+model dienstplaner_user_settings {
+  id                     BigInt   @id @default(autoincrement())
+  user_id                Int?
+  abwesend               Boolean? @default(true)
+  mehrfacheinteilung     Boolean? @default(true)
+  ueberschneidung        Boolean? @default(true)
+  wochenenden            Boolean? @default(true)
+  arbeitszeittyp         Boolean? @default(true)
+  freigaben              Boolean? @default(true)
+  team                   Boolean? @default(true)
+  dienstgruppe           Boolean? @default(true)
+  wuensche               Boolean? @default(true)
+  only_vorlagedienste    Boolean? @default(false)
+  dienstfarben           Boolean? @default(true)
+  dientkategoriefarben   Boolean? @default(false)
+  created_at             DateTime @db.Timestamp(6)
+  updated_at             DateTime @db.Timestamp(6)
+  dienstplan_fontsize    Float?   @default(0.7)
+  fordertdienstgruppe    Boolean? @default(true)
+  predienstgruppe        Boolean? @default(true)
+  standard_vorlage_id    Int?     @default(0)
+  only_planungszeitraum  Boolean? @default(false)
+  mark_einteilungsstatus Boolean? @default(true)
+  empty_as_regeldienst   Boolean? @default(false)
+  mitarbeiter_sort       Int?     @default(0)
+  users                  users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0e9ce655bd")
+
+  @@index([user_id], map: "index_dienstplaner_user_settings_on_user_id")
+}
+
+model dienstplaners_teams {
+  id         BigInt   @id @default(autoincrement())
+  user_id    Int?
+  team_id    BigInt?
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  teams      teams?   @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75274a3398")
+  users      users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ae25869849")
+
+  @@index([team_id], map: "index_dienstplaners_teams_on_team_id")
+  @@index([user_id], map: "index_dienstplaners_teams_on_user_id")
+}
+
+model dienstplaners_verteiler_vorlagens {
+  id                  BigInt               @id @default(autoincrement())
+  user_id             Int?
+  vorlage_id          BigInt?
+  created_at          DateTime             @db.Timestamp(6)
+  updated_at          DateTime             @db.Timestamp(6)
+  verteiler_vorlagens verteiler_vorlagens? @relation(fields: [vorlage_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4924e39a88")
+  users               users?               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9e9354836f")
+
+  @@index([user_id], map: "index_dienstplaners_verteiler_vorlagens_on_user_id")
+  @@index([vorlage_id], map: "index_dienstplaners_verteiler_vorlagens_on_vorlage_id")
+}
+
+model dienstplans {
+  id                  BigInt              @id @default(autoincrement())
+  name                String?             @db.VarChar
+  parameterset_id     BigInt?
+  anfang              DateTime?           @db.Date
+  ende                DateTime?           @db.Date
+  created_at          DateTime            @db.Timestamp(6)
+  updated_at          DateTime            @db.Timestamp(6)
+  beschreibung        String?             @db.VarChar
+  dienstplanstatus_id BigInt?
+  sys                 Boolean?            @default(false)
+  dienstplanbedarf_id BigInt?
+  diensteinteilungs   diensteinteilungs[]
+  dienstplanbedarves  dienstplanbedarves? @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_36027a91b3")
+  dienstplanstatuses  dienstplanstatuses? @relation(fields: [dienstplanstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_55a766d44f")
+  parametersets       parametersets?      @relation(fields: [parameterset_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5f55bd1d2e")
+
+  @@index([dienstplanbedarf_id], map: "index_dienstplans_on_dienstplanbedarf_id")
+  @@index([parameterset_id], map: "index_dienstplans_on_parameterset_id")
+}
+
+model dienstplanstatuses {
+  id           BigInt        @id @default(autoincrement())
+  name         String?       @db.VarChar
+  beschreibung String?       @db.VarChar
+  color        String?       @db.VarChar
+  sys          Boolean?      @default(false)
+  created_at   DateTime      @db.Timestamp(6)
+  updated_at   DateTime      @db.Timestamp(6)
+  dienstplans  dienstplans[]
+}
+
+model dienstratings {
+  id             BigInt        @id @default(autoincrement())
+  po_dienst_id   Int?
+  mitarbeiter_id Int?
+  rating         Int?
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_514befc444")
+  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_661abcf60e")
+
+  @@index([mitarbeiter_id], map: "index_dienstratings_on_mitarbeiter_id")
+  @@index([mitarbeiter_id, po_dienst_id], map: "index_dienstratings_on_mitarbeiter_id_and_po_dienst_id")
+  @@index([po_dienst_id], map: "index_dienstratings_on_po_dienst_id")
+}
+
+model diensts {
+  id          Int       @id @default(autoincrement())
+  datum       DateTime? @db.Timestamp(6)
+  dienstname  String?   @db.VarChar
+  kommentar   String?
+  mitarbeiter String?   @db.VarChar
+  user_id     Int?
+  created_at  DateTime? @db.Timestamp(6)
+  updated_at  DateTime? @db.Timestamp(6)
+}
+
+model dienstverteilungstyps {
+  id                   BigInt                 @id @default(autoincrement())
+  name                 String?                @db.VarChar
+  beschreibung         String?                @db.VarChar
+  created_at           DateTime               @db.Timestamp(6)
+  updated_at           DateTime               @db.Timestamp(6)
+  sys                  Boolean?               @default(false)
+  bedarfs_eintrags     bedarfs_eintrags[]
+  dienstbedarves       dienstbedarves[]
+  verteilungsoverrides verteilungsoverrides[]
+}
+
+model dienstwunsches {
+  id                 BigInt            @id @default(autoincrement())
+  mitarbeiter_id     Int?
+  tag                DateTime?         @db.Date
+  dienstkategorie_id BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mitarbeiters       mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0839dc09ce")
+  dienstkategories   dienstkategories? @relation(fields: [dienstkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_28e8d817f4")
+
+  @@unique([tag, mitarbeiter_id], map: "index_dienstwunsches_on_tag_and_mitarbeiter_id")
+  @@index([dienstkategorie_id], map: "index_dienstwunsches_on_dienstkategorie_id")
+  @@index([mitarbeiter_id], map: "index_dienstwunsches_on_mitarbeiter_id")
+}
+
+model einteilung_rotations {
+  id                   Int           @id @default(autoincrement())
+  kontingent_id        Int?
+  mitarbeiter_id       Int?
+  mitarbeiter_planname String?       @db.VarChar
+  prioritaet           Int?
+  von                  DateTime?     @db.Date
+  bis                  DateTime?     @db.Date
+  kommentar            String?
+  created_at           DateTime?     @db.Timestamp(6)
+  updated_at           DateTime?     @db.Timestamp(6)
+  published            Boolean?
+  published_by         String?       @db.VarChar
+  published_at         DateTime?     @db.Timestamp(6)
+  position             Int?
+  mitarbeiters         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0754d2d566")
+  kontingents          kontingents?  @relation(fields: [kontingent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eeae3bb85")
+}
+
+model einteilung_versions {
+  id             Int       @id @default(autoincrement())
+  item_type      String    @db.VarChar
+  item_id        Int
+  event          String    @db.VarChar
+  whodunnit      String?   @db.VarChar
+  object         String?
+  created_at     DateTime? @db.Timestamp(6)
+  object_changes String?
+  api_version    String?   @db.VarChar
+  api_userinfo   String?   @db.VarChar
+  userinfo       String?   @db.VarChar
+  api_info       String?   @db.VarChar
+
+  @@index([item_type, item_id], map: "index_einteilung_versions_on_item_type_and_item_id")
+  @@index([whodunnit], map: "index_einteilung_versions_on_whodunnit")
+}
+
+model einteilungskontexts {
+  id             BigInt   @id @default(autoincrement())
+  name           String?  @db.VarChar
+  beschreibung   String?  @db.VarChar
+  color          String?  @db.VarChar
+  created_at     DateTime @db.Timestamp(6)
+  updated_at     DateTime @db.Timestamp(6)
+  tagesverteiler Boolean? @default(false)
+  default        Boolean? @default(false)
+  ersatz         Boolean? @default(false)
+  einspringen    Boolean? @default(false)
+}
+
+model einteilungsstatuses {
+  id                BigInt              @id @default(autoincrement())
+  name              String?             @db.VarChar
+  color             String?             @db.VarChar
+  public            Boolean?            @default(false)
+  counts            Boolean?            @default(false)
+  sys               Boolean?            @default(false)
+  created_at        DateTime            @db.Timestamp(6)
+  updated_at        DateTime            @db.Timestamp(6)
+  waehlbar          Boolean             @default(false)
+  vorschlag         Boolean             @default(false)
+  diensteinteilungs diensteinteilungs[]
+  planparameters    planparameters[]
+}
+
+model feiertages {
+  id                BigInt    @id @default(autoincrement())
+  name              String?   @db.VarChar
+  key               String?   @db.VarChar
+  datum             DateTime? @db.Date
+  counts_every_year Boolean?  @default(false)
+  created_at        DateTime  @db.Timestamp(6)
+  updated_at        DateTime  @db.Timestamp(6)
+  jahr              Int?
+  monat             Int?
+  tag               Int?
+}
+
+model freigabestatuses {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar
+  counts_active   Boolean?
+  created_at      DateTime          @db.Timestamp(6)
+  updated_at      DateTime          @db.Timestamp(6)
+  sys             Boolean?          @default(false)
+  color           String?           @db.VarChar
+  beschreibung    String?           @db.VarChar
+  qualifiziert    Boolean?
+  dienstfreigabes dienstfreigabes[]
+}
+
+model freigabetyps {
+  id              Int               @id @default(autoincrement())
+  name            String?           @db.VarChar
+  planname        String?           @db.VarChar
+  beschreibung    String?
+  created_at      DateTime          @db.Timestamp(6)
+  updated_at      DateTime          @db.Timestamp(6)
+  sort            Int?              @default(0)
+  dienstfreigabes dienstfreigabes[]
+}
+
+model freistellungs {
+  id                   Int           @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  mitarbeiter_planname String?       @db.VarChar
+  plandatum            DateTime?     @db.Timestamp(6)
+  einteilung           String?       @db.VarChar
+  created_at           DateTime?     @db.Timestamp(6)
+  updated_at           DateTime?     @db.Timestamp(6)
+  mitarbeiters         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f7bfd583fd")
+
+  @@index([mitarbeiter_id, plandatum], map: "by_mitarbeiter_datum")
+}
+
+model funktions {
+  id             BigInt           @id @default(autoincrement())
+  planname       String?          @db.VarChar
+  name           String?          @db.VarChar
+  beschreibung   String?          @db.VarChar
+  color          String?          @db.VarChar
+  prio           Int?
+  created_at     DateTime         @db.Timestamp(6)
+  updated_at     DateTime         @db.Timestamp(6)
+  team_id        BigInt?
+  teams          teams?           @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1a9f2cf982")
+  mitarbeiters   mitarbeiters[]
+  team_funktions team_funktions[]
+
+  @@index([team_id], map: "index_funktions_on_team_id")
+}
+
+model geraetebereiches {
+  id         BigInt   @id @default(autoincrement())
+  name       String?  @db.VarChar
+  color      String?  @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+}
+
+model geraeteklasses {
+  id           BigInt    @id @default(autoincrement())
+  name         String?   @db.VarChar
+  color        String?   @db.VarChar
+  beschreibung String?   @db.VarChar
+  created_at   DateTime  @db.Timestamp(6)
+  updated_at   DateTime  @db.Timestamp(6)
+  geraets      geraets[]
+}
+
+model geraetepasses {
+  id                   BigInt        @id @default(autoincrement())
+  mitarbeiter_id       Int?
+  einweiser            String?       @db.VarChar
+  einweisungsdatum     DateTime?     @db.Date
+  geraet_id            BigInt?
+  created_at           DateTime      @db.Timestamp(6)
+  updated_at           DateTime      @db.Timestamp(6)
+  herstellereinweisung Boolean?      @default(false)
+  extern               Boolean?      @default(false)
+  geraets              geraets?      @relation(fields: [geraet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_01560b5637")
+  mitarbeiters         mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e3a3b73828")
+
+  @@index([geraet_id], map: "index_geraetepasses_on_geraet_id")
+  @@index([mitarbeiter_id], map: "index_geraetepasses_on_mitarbeiter_id")
+}
+
+model geraets {
+  id                 BigInt          @id @default(autoincrement())
+  name               String?         @db.VarChar
+  hersteller         String?         @db.VarChar
+  typ                String?         @db.VarChar
+  geraeteklasse_id   BigInt?
+  created_at         DateTime        @db.Timestamp(6)
+  updated_at         DateTime        @db.Timestamp(6)
+  in_use             Boolean?        @default(true)
+  geraetebereich_ids Int[]
+  geraetepasses      geraetepasses[]
+  geraeteklasses     geraeteklasses? @relation(fields: [geraeteklasse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_87c8fbadfa")
+
+  @@index([geraeteklasse_id], map: "index_geraets_on_geraeteklasse_id")
+}
+
+model gruppes {
+  id            Int             @id @default(autoincrement())
+  name          String?         @db.VarChar
+  resource_type String?         @db.VarChar
+  resource_id   Int?
+  created_at    DateTime?       @db.Timestamp(6)
+  updated_at    DateTime?       @db.Timestamp(6)
+  users_gruppes users_gruppes[] @ignore
+
+  @@index([name], map: "index_gruppes_on_name")
+  @@index([name, resource_type, resource_id], map: "index_gruppes_on_name_and_resource_type_and_resource_id")
+}
+
+model hains_tasks {
+  id                       BigInt    @id @default(autoincrement())
+  name                     String?   @db.VarChar
+  beschreibung             String?
+  created_at               DateTime  @db.Timestamp(6)
+  updated_at               DateTime  @db.Timestamp(6)
+  als_popup                Boolean?
+  gruppe_id                Int?
+  mitarbeiter_ids          Int[]
+  benachrichtigungs_typ_id BigInt?
+  send_notification        Boolean?  @default(false)
+  benachrichtigungs_text   String?
+  benachrichtigungs_titel  String?   @db.VarChar
+  send_counter             Int?      @default(0)
+  public_results           Boolean?  @default(false)
+  alle_mitarbeiter         Boolean?  @default(false)
+  dienst_ids               Int[]     @default([])
+  link                     String?   @db.VarChar
+  zeitraumkategorie_id     BigInt?
+  wiederholen              Boolean?  @default(false)
+  funktions_ids            Int[]     @default([])
+  last_day                 DateTime? @db.Date
+  send_date                DateTime? @db.Date
+  send_time                DateTime? @db.Timestamp(6)
+
+  @@index([benachrichtigungs_typ_id], map: "index_hains_tasks_on_benachrichtigungs_typ_id")
+  @@index([zeitraumkategorie_id], map: "index_hains_tasks_on_zeitraumkategorie_id")
+}
+
+model jahresbilanzs {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  plusstunden    Decimal?      @default(0) @db.Decimal(6, 2)
+  ueberstunden   Decimal?      @default(0) @db.Decimal(6, 2)
+  urlaubstage    Int?          @default(0)
+  krankstunden   Decimal?      @default(0) @db.Decimal(6, 2)
+  arbeitsstunden Decimal?      @default(0) @db.Decimal(6, 2)
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5221012030")
+
+  @@index([mitarbeiter_id], map: "index_jahresbilanzs_on_mitarbeiter_id")
+}
+
+model kalendermarkierungs {
+  id         BigInt    @id @default(autoincrement())
+  category   String?   @db.VarChar
+  name       String?   @db.VarChar
+  color      String?   @db.VarChar
+  year       Int?
+  prio       Int?      @default(1)
+  start      DateTime? @db.Date
+  ende       DateTime? @db.Date
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+}
+
+model kalenderwoches {
+  id            BigInt          @id @default(autoincrement())
+  jahr          Int
+  kw            Int
+  montag        DateTime        @db.Date
+  freitag       DateTime        @db.Date
+  sonntag       DateTime        @db.Date
+  arbeitstage   Int?            @default(0)
+  feiertage     Int?            @default(0)
+  created_at    DateTime        @db.Timestamp(6)
+  updated_at    DateTime        @db.Timestamp(6)
+  wochenbilanzs wochenbilanzs[]
+}
+
+model kontingent_po_diensts {
+  id                      BigInt       @id @default(autoincrement())
+  kontingent_id           Int?
+  po_dienst_id            Int?
+  eingeteilt_count_factor Int          @default(1)
+  created_at              DateTime     @db.Timestamp(6)
+  updated_at              DateTime     @db.Timestamp(6)
+  magic_einteilung        Boolean?     @default(false)
+  po_diensts              po_diensts?  @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3d72be3049")
+  kontingents             kontingents? @relation(fields: [kontingent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e01ed6b5a5")
+
+  @@index([kontingent_id], map: "index_kontingent_po_diensts_on_kontingent_id")
+  @@index([po_dienst_id], map: "index_kontingent_po_diensts_on_po_dienst_id")
+}
+
+model kontingents {
+  id                    Int                     @id @default(autoincrement())
+  name                  String?                 @db.VarChar
+  kommentar             String?
+  created_at            DateTime?               @db.Timestamp(6)
+  updated_at            DateTime?               @db.Timestamp(6)
+  position              Int?
+  kurzname              String?                 @db.VarChar
+  thema_ids             BigInt[]
+  team_id               BigInt?                 @default(1)
+  default               Boolean?                @default(false)
+  sonderrotation        Boolean?                @default(false)
+  show_all_rotations    Boolean?                @default(false)
+  einteilung_rotations  einteilung_rotations[]
+  kontingent_po_diensts kontingent_po_diensts[]
+  teams                 teams?                  @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_99108947ac")
+
+  @@index([team_id], map: "index_kontingents_on_team_id")
+}
+
+model kostenstelles {
+  id               BigInt             @id @default(autoincrement())
+  name             String?            @db.VarChar
+  nummer           String?            @db.VarChar
+  created_at       DateTime           @db.Timestamp(6)
+  updated_at       DateTime           @db.Timestamp(6)
+  bedarfs_eintrags bedarfs_eintrags[]
+  dienstbedarves   dienstbedarves[]
+  po_diensts       po_diensts[]
+  stundennachweis  stundennachweis[]
+  teams            teams[]
+}
+
+model links {
+  id           BigInt   @id @default(autoincrement())
+  name         String?  @db.VarChar
+  beschreibung String?  @db.VarChar
+  url          String?  @db.VarChar
+  created_at   DateTime @db.Timestamp(6)
+  updated_at   DateTime @db.Timestamp(6)
+}
+
+model mailer_addresses {
+  id                BigInt            @id @default(autoincrement())
+  name              String?           @db.VarChar
+  addresse          String?           @db.VarChar
+  created_at        DateTime          @db.Timestamp(6)
+  updated_at        DateTime          @db.Timestamp(6)
+  mailer_ccs        mailer_ccs[]
+  contexts_from     mailer_contexts[] @relation("mailer_contexts_from_idTomailer_addresses")
+  contexts_reply_to mailer_contexts[] @relation("mailer_contexts_reply_to_idTomailer_addresses")
+  mailer_tos        mailer_tos[]
+}
+
+model mailer_ccs {
+  id                 BigInt            @id @default(autoincrement())
+  mailer_context_id  BigInt?
+  mailer_addresse_id BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_6fb0b59cad")
+  mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75d69d0976")
+
+  @@index([mailer_addresse_id], map: "index_mailer_ccs_on_mailer_addresse_id")
+  @@index([mailer_context_id], map: "index_mailer_ccs_on_mailer_context_id")
+}
+
+model mailer_contexts {
+  id                 BigInt            @id @default(autoincrement())
+  context            String            @default("") @db.VarChar
+  subject            String            @default("") @db.VarChar
+  body               String            @default("")
+  from_id            BigInt?
+  reply_to_id        BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_ccs         mailer_ccs[]
+  addresses_from     mailer_addresses? @relation("mailer_contexts_from_idTomailer_addresses", fields: [from_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_35af776dcd")
+  addresses_reply_to mailer_addresses? @relation("mailer_contexts_reply_to_idTomailer_addresses", fields: [reply_to_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_d9811e872a")
+  mailer_tos         mailer_tos[]
+
+  @@index([from_id], map: "index_mailer_contexts_on_from_id")
+  @@index([reply_to_id], map: "index_mailer_contexts_on_reply_to_id")
+}
+
+model mailer_tos {
+  id                 BigInt            @id @default(autoincrement())
+  mailer_context_id  BigInt?
+  mailer_addresse_id BigInt?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  mailer_contexts    mailer_contexts?  @relation(fields: [mailer_context_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08dc607943")
+  mailer_addresses   mailer_addresses? @relation(fields: [mailer_addresse_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3324b483bd")
+
+  @@index([mailer_addresse_id], map: "index_mailer_tos_on_mailer_addresse_id")
+  @@index([mailer_context_id], map: "index_mailer_tos_on_mailer_context_id")
+}
+
+model merkmal_options {
+  id         BigInt    @id @default(autoincrement())
+  merkmal_id BigInt?
+  wert       String?   @db.VarChar
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+  merkmals   merkmals? @relation(fields: [merkmal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e746e9188c")
+
+  @@index([merkmal_id], map: "index_merkmal_options_on_merkmal_id")
+}
+
+model merkmals {
+  id                  BigInt                @id @default(autoincrement())
+  name                String?               @db.VarChar
+  beschreibung        String?               @db.VarChar
+  can_edit            Boolean?
+  typ                 String?               @db.VarChar
+  created_at          DateTime              @db.Timestamp(6)
+  updated_at          DateTime              @db.Timestamp(6)
+  merkmal_options     merkmal_options[]
+  mitarbeitermerkmals mitarbeitermerkmals[]
+}
+
+model mitarbeiter_default_eingeteilts {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  po_dienst_id   Int?
+  year           Int
+  eingeteilt     Int           @default(0)
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  po_diensts     po_diensts?   @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_893ef3958e")
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8dc3d88f3b")
+
+  @@index([mitarbeiter_id], map: "index_mitarbeiter_default_eingeteilts_on_mitarbeiter_id")
+  @@index([po_dienst_id], map: "index_mitarbeiter_default_eingeteilts_on_po_dienst_id")
+}
+
+model mitarbeitermerkmals {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  merkmal_id     BigInt?
+  created_at     DateTime      @db.Timestamp(6)
+  updated_at     DateTime      @db.Timestamp(6)
+  wert           String?       @db.VarChar
+  freitext       String?       @db.VarChar
+  merkmals       merkmals?     @relation(fields: [merkmal_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_41412590af")
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c1efcdc64d")
+
+  @@index([merkmal_id], map: "index_mitarbeitermerkmals_on_merkmal_id")
+  @@index([mitarbeiter_id], map: "index_mitarbeitermerkmals_on_mitarbeiter_id")
+}
+
+model mitarbeiters {
+  id                                                           Int                                 @id @default(autoincrement())
+  name                                                         String?                             @default("") @db.VarChar
+  created_at                                                   DateTime?                           @db.Timestamp(6)
+  updated_at                                                   DateTime?                           @db.Timestamp(6)
+  planname                                                     String?                             @default("") @db.VarChar
+  aktiv                                                        Boolean                             @default(true)
+  platzhalter                                                  Boolean?                            @default(false)
+  a_seit                                                       DateTime?                           @db.Date
+  anrechenbare_zeit                                            Int?                                @default(0)
+  zeit_kommentar                                               String?                             @db.VarChar
+  abwesend                                                     Boolean?                            @default(false)
+  pass_count                                                   Int?                                @default(0)
+  funktion_id                                                  BigInt?                             @default(6)
+  personalnummer                                               String?                             @default("") @db.VarChar
+  abwesentheitenueberblick_counters                            abwesentheitenueberblick_counters[]
+  abwesentheitenueberblick_settings                            abwesentheitenueberblick_settings[]
+  abwesentheitenueberblicks                                    abwesentheitenueberblicks[]
+  account_info                                                 account_infos[]
+  antraege_histories                                           antraege_histories[]
+  antraeges                                                    antraeges[]
+  arbeitszeit_absprachens                                      arbeitszeit_absprachens[]
+  automatische_einteilungens                                   automatische_einteilungens[]
+  benachrichtigungs                                            benachrichtigungs[]
+  diensteinteilungs                                            diensteinteilungs[]
+  dienstfreigabes                                              dienstfreigabes[]
+  dienstratings                                                dienstratings[]
+  dienstwunsches                                               dienstwunsches[]
+  einteilung_rotations                                         einteilung_rotations[]
+  freistellungs                                                freistellungs[]
+  geraetepasses                                                geraetepasses[]
+  jahresbilanzs                                                jahresbilanzs[]
+  mitarbeiter_default_eingeteilts                              mitarbeiter_default_eingeteilts[]
+  mitarbeitermerkmals                                          mitarbeitermerkmals[]
+  funktion                                                     funktions?                          @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5006408ec6")
+  nicht_einteilen_absprachens                                  nicht_einteilen_absprachens[]
+  notes                                                        notes[]
+  notes_histories_notes_histories_ersteller_idTomitarbeiters   notes_histories[]                   @relation("notes_histories_ersteller_idTomitarbeiters")
+  notes_histories_notes_histories_mitarbeiter_idTomitarbeiters notes_histories[]                   @relation("notes_histories_mitarbeiter_idTomitarbeiters")
+  notfallmedizin_registers                                     notfallmedizin_registers[]
+  stundennachweis                                              stundennachweis[]
+  urlaubssaldo_abspraches                                      urlaubssaldo_abspraches[]
+  vertrags                                                     vertrags[]
+  vorlages                                                     vorlages[]
+  wochenbilanzs                                                wochenbilanzs[]
+
+  @@index([funktion_id], map: "index_mitarbeiters_on_funktion_id")
+}
+
+model nef_fahrts {
+  id                         BigInt                    @id @default(autoincrement())
+  notfallmedizin_register_id BigInt?
+  fahrtnummer                Int?
+  datum                      DateTime?                 @db.Date
+  einsatznummer              BigInt?
+  diagnose_therapie          String?                   @db.VarChar
+  notarzt                    String?                   @db.VarChar
+  bemerkung                  String?                   @db.VarChar
+  created_at                 DateTime                  @db.Timestamp(6)
+  updated_at                 DateTime                  @db.Timestamp(6)
+  notfallmedizin_registers   notfallmedizin_registers? @relation(fields: [notfallmedizin_register_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_be395c9f8e")
+
+  @@index([notfallmedizin_register_id], map: "index_nef_fahrts_on_notfallmedizin_register_id")
+}
+
+model nicht_einteilen_absprachens {
+  id                               BigInt                            @id @default(autoincrement())
+  mitarbeiter_id                   Int
+  zeitraumkategorie_id             BigInt
+  von                              DateTime?                         @db.Date
+  bis                              DateTime?                         @db.Date
+  mitarbeiter                      mitarbeiters                      @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c13db17963")
+  zeitraumkategorie                zeitraumkategories                @relation(fields: [zeitraumkategorie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f981032257")
+  nicht_einteilen_standort_themens nicht_einteilen_standort_themen[]
+
+  @@index([mitarbeiter_id], map: "index_nicht_einteilen_absprachens_on_mitarbeiter_id")
+  @@index([zeitraumkategorie_id], map: "index_nicht_einteilen_absprachens_on_zeitraumkategorie_id")
+}
+
+model nicht_einteilen_standort_themen {
+  id           BigInt                      @id @default(autoincrement())
+  absprache_id BigInt
+  standort_id  Int
+  thema_id     BigInt
+  absprache    nicht_einteilen_absprachens @relation(fields: [absprache_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_44fd8a9177")
+  standort     standorts                   @relation(fields: [standort_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_77f147e42b")
+  thema        themas                      @relation(fields: [thema_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fd8449d811")
+
+  @@index([absprache_id], map: "index_nicht_einteilen_standort_themen_on_absprache_id")
+  @@index([standort_id], map: "index_nicht_einteilen_standort_themen_on_standort_id")
+  @@index([thema_id], map: "index_nicht_einteilen_standort_themen_on_thema_id")
+}
+
+model note_categories {
+  id         BigInt   @id @default(autoincrement())
+  category   String?  @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  notes      notes[]
+}
+
+model notes {
+  id               BigInt            @id @default(autoincrement())
+  notiz            String?           @db.VarChar
+  created_at       DateTime          @db.Timestamp(6)
+  updated_at       DateTime          @db.Timestamp(6)
+  mitarbeiter_id   Int?
+  ersteller_id     BigInt?
+  private_note     Boolean?          @default(false)
+  title            String?           @db.VarChar
+  note_category_id BigInt?
+  mitarbeiters     mitarbeiters?     @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_660860a381")
+  note_categories  note_categories?  @relation(fields: [note_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e70fa12604")
+  notes_histories  notes_histories[]
+
+  @@index([ersteller_id], map: "index_notes_on_ersteller_id")
+  @@index([mitarbeiter_id], map: "index_notes_on_mitarbeiter_id")
+  @@index([note_category_id], map: "index_notes_on_note_category_id")
+}
+
+model notes_histories {
+  id                                                        BigInt        @id @default(autoincrement())
+  note_id                                                   BigInt?
+  mitarbeiter_id                                            Int?
+  ersteller_id                                              Int?
+  private_note                                              Boolean?
+  notiz                                                     String?       @db.VarChar
+  created_at                                                DateTime      @db.Timestamp(6)
+  updated_at                                                DateTime      @db.Timestamp(6)
+  notes                                                     notes?        @relation(fields: [note_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_22a7972a2b")
+  mitarbeiters_notes_histories_ersteller_idTomitarbeiters   mitarbeiters? @relation("notes_histories_ersteller_idTomitarbeiters", fields: [ersteller_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2de2e64c38")
+  mitarbeiters_notes_histories_mitarbeiter_idTomitarbeiters mitarbeiters? @relation("notes_histories_mitarbeiter_idTomitarbeiters", fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_863d1cabe1")
+
+  @@index([ersteller_id], map: "index_notes_histories_on_ersteller_id")
+  @@index([mitarbeiter_id], map: "index_notes_histories_on_mitarbeiter_id")
+  @@index([note_id], map: "index_notes_histories_on_note_id")
+}
+
+model notfallmedizin_registers {
+  id                       BigInt                   @id @default(autoincrement())
+  mitarbeiter_id           Int?
+  titel                    String?                  @default("") @db.VarChar
+  anrede                   String?                  @default("") @db.VarChar
+  nasim                    Boolean?                 @default(false)
+  fahrten                  Int?                     @default(0)
+  arzt_seit                DateTime?                @db.Date
+  geburtsdatum             DateTime?                @db.Date
+  geburtsort               String?                  @default("") @db.VarChar
+  personalnummer           Int?                     @default(0)
+  gespr_1                  DateTime?                @db.Date
+  gespr_2                  DateTime?                @db.Date
+  gespr_3                  DateTime?                @db.Date
+  created_at               DateTime                 @db.Timestamp(6)
+  updated_at               DateTime                 @db.Timestamp(6)
+  start                    DateTime?                @default(dbgenerated("CURRENT_DATE")) @db.Date
+  complete_144h            DateTime?                @db.Date
+  freigabe_date            DateTime?                @db.Date
+  pruefung                 DateTime?                @db.Date
+  hospitation              DateTime?                @db.Date
+  notfallmedizin_status_id BigInt?                     @default(1)
+  mails_send               Boolean?                 @default(true)
+  aktiv                    Boolean?                 @default(true)
+  nef_fahrts               nef_fahrts[]
+  notfallmedizin_statuses  notfallmedizin_statuses? @relation(fields: [notfallmedizin_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_7e6262d50a")
+  mitarbeiters             mitarbeiters?            @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8497fb4436")
+
+  @@index([mitarbeiter_id], map: "index_notfallmedizin_registers_on_mitarbeiter_id")
+}
+
+model notfallmedizin_statuses {
+  id                        BigInt                     @id @default(autoincrement())
+  name                      String?                    @db.VarChar
+  color                     String?                    @db.VarChar
+  created_at                DateTime                   @db.Timestamp(6)
+  updated_at                DateTime                   @db.Timestamp(6)
+  send_mitarbeiter_email    Boolean?
+  send_verwaltung_email     Boolean?
+  verwaltung_email          String?                    @db.VarChar
+  mitarbeiter_email_text    String?
+  verwaltung_email_text     String?
+  mitarbeiter_email_betreff String?                    @db.VarChar
+  verwaltung_email_betreff  String?                    @db.VarChar
+  mitarbeiter_email_cc      String[]                   @db.VarChar
+  verwaltung_email_cc       String[]                   @db.VarChar
+  notfallmedizin_registers  notfallmedizin_registers[]
+}
+
+model oauth_access_grants {
+  id                Int       @id @default(autoincrement())
+  resource_owner_id Int
+  application_id    Int
+  token             String    @unique(map: "index_oauth_access_grants_on_token") @db.VarChar
+  expires_in        Int
+  redirect_uri      String
+  created_at        DateTime  @db.Timestamp(6)
+  revoked_at        DateTime? @db.Timestamp(6)
+  scopes            String?   @db.VarChar
+}
+
+model oauth_access_tokens {
+  id                Int       @id @default(autoincrement())
+  resource_owner_id Int?
+  application_id    Int?
+  token             String    @unique(map: "index_oauth_access_tokens_on_token") @db.VarChar
+  refresh_token     String?   @unique(map: "index_oauth_access_tokens_on_refresh_token") @db.VarChar
+  expires_in        Int?
+  revoked_at        DateTime? @db.Timestamp(6)
+  created_at        DateTime  @db.Timestamp(6)
+  scopes            String?   @db.VarChar
+
+  @@index([resource_owner_id], map: "index_oauth_access_tokens_on_resource_owner_id")
+}
+
+model oauth_applications {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar
+  uid          String    @unique(map: "index_oauth_applications_on_uid") @db.VarChar
+  secret       String    @db.VarChar
+  redirect_uri String
+  scopes       String    @default("") @db.VarChar
+  created_at   DateTime? @db.Timestamp(6)
+  updated_at   DateTime? @db.Timestamp(6)
+  confidential Boolean   @default(true)
+}
+
+model parametersets {
+  id                     BigInt                 @id @default(autoincrement())
+  name                   String?                @db.VarChar
+  beschreibung           String?                @db.VarChar
+  sys                    Boolean?               @default(false)
+  created_at             DateTime               @db.Timestamp(6)
+  updated_at             DateTime               @db.Timestamp(6)
+  email                  String                 @unique(map: "index_parametersets_on_email") @default("") @db.VarChar
+  encrypted_password     String                 @default("") @db.VarChar
+  reset_password_token   String?                @unique(map: "index_parametersets_on_reset_password_token") @db.VarChar
+  reset_password_sent_at DateTime?              @db.Timestamp(6)
+  remember_created_at    DateTime?              @db.Timestamp(6)
+  dienstplans            dienstplans[]
+  planparameters         planparameters[]
+  verteilungsoverrides   verteilungsoverrides[]
+}
+
+model plan_tabs {
+  id               BigInt             @id @default(autoincrement())
+  name             String?            @default("") @db.VarChar
+  position         Int                @default(0)
+  dienstplan_paths dienstplan_paths[]
+}
+
+model planintervals {
+  id               BigInt             @id @default(autoincrement())
+  typ              String?            @default("") @db.VarChar
+  dienstplan_paths dienstplan_paths[]
+}
+
+model planparameters {
+  id                      BigInt               @id @default(autoincrement())
+  parameterset_id         BigInt?
+  num_threads             Int?
+  relevant_timeframe_size Int?
+  einteilungsstatus_id    BigInt?
+  default_rating          Int?
+  debugging               Boolean?
+  reuse_bedarf            Boolean?
+  pref_weight             Float?
+  rot_weight              Float?
+  dist_weight             Float?
+  use_overrides           Boolean?
+  created_at              DateTime             @db.Timestamp(6)
+  updated_at              DateTime             @db.Timestamp(6)
+  wish_weight             Float?
+  parametersets           parametersets?       @relation(fields: [parameterset_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_024b3ff545")
+  einteilungsstatuses     einteilungsstatuses? @relation(fields: [einteilungsstatus_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ca3ff20b34")
+
+  @@index([einteilungsstatus_id], map: "index_planparameters_on_einteilungsstatus_id")
+  @@index([parameterset_id], map: "index_planparameters_on_parameterset_id")
+}
+
+model po_diensts {
+  id                                                                 Int                                 @id @default(autoincrement())
+  name                                                               String                              @db.VarChar
+  planname                                                           String?                             @db.VarChar
+  beschreibung                                                       String
+  created_at                                                         DateTime                            @db.Timestamp(6)
+  updated_at                                                         DateTime                            @db.Timestamp(6)
+  color                                                              String?                             @db.VarChar
+  freigabetypen_ids                                                  Int[]                               @default([])
+  preset                                                             Boolean?                            @default(false)
+  sys                                                                Boolean?                            @default(false)
+  thema_ids                                                          BigInt[]
+  aufwand                                                            Int?                                @default(0)
+  aneasy_name                                                        String?                             @default("") @db.VarChar
+  order                                                              Int?                                @default(0)
+  priorisiere_wunsch                                                 Boolean?                            @default(false)
+  team_id                                                            BigInt?                             @default(1)
+  kostenstelle_id                                                    BigInt?                             @default(1)
+  stundennachweis_urlaub                                             Boolean?                            @default(false)
+  stundennachweis_krank                                              Boolean?                            @default(false)
+  stundennachweis_sonstig                                            Boolean?                            @default(false)
+  stundennachweis_default_von                                        DateTime?                           @default(dbgenerated("'00:00:00'::time without time zone")) @db.Time(6)
+  stundennachweis_default_bis                                        DateTime?                           @default(dbgenerated("'00:00:00'::time without time zone")) @db.Time(6)
+  stundennachweis_default_std                                        Decimal?                            @default(0) @db.Decimal(6, 2)
+  use_tagessaldo                                                     Boolean?                            @default(false)
+  frei_eintragbar                                                    Boolean?                            @default(false)
+  ignore_before                                                      Boolean?                            @default(false)
+  dpl_all_teams                                                      Boolean?                            @default(false)
+  oberarzt                                                           Boolean?                            @default(false)
+  weak_parallel_conflict                                             Boolean                             @default(false)
+  pep_name                                                           String                              @default("") @db.VarChar
+  pep_color                                                          String                              @default("") @db.VarChar
+  as_abwesenheit                                                     Boolean?                            @default(false)
+  abwesentheitenueberblick_counters                                  abwesentheitenueberblick_counters[]
+  antragstyps_antragstyps_check_alternative_po_dienst_idTopo_diensts antragstyps[]                       @relation("antragstyps_check_alternative_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_we_holiday_po_dienst_idTopo_diensts        antragstyps[]                       @relation("antragstyps_we_holiday_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_po_dienst_idTopo_diensts                   antragstyps[]                       @relation("antragstyps_po_dienst_idTopo_diensts")
+  antragstyps_antragstyps_alternative_po_dienst_idTopo_diensts       antragstyps[]                       @relation("antragstyps_alternative_po_dienst_idTopo_diensts")
+  automatische_einteilungens                                         automatische_einteilungens[]
+  bedarfs_eintrags                                                   bedarfs_eintrags[]
+  bereich_tagesverteilers                                            bereich_tagesverteilers[]
+  bereich_wochenverteilers                                           bereich_wochenverteilers[]
+  dienstbedarves                                                     dienstbedarves[]
+  diensteinteilungs                                                  diensteinteilungs[]
+  dienstratings                                                      dienstratings[]
+  kontingent_po_diensts                                              kontingent_po_diensts[]
+  mitarbeiter_default_eingeteilts                                    mitarbeiter_default_eingeteilts[]
+  kostenstelles                                                      kostenstelles?                      @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4223136f27")
+  teams                                                              teams?                              @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_6ac1abf20e")
+
+  @@index([aneasy_name], map: "index_po_diensts_on_aneasy_name")
+  @@index([kostenstelle_id], map: "index_po_diensts_on_kostenstelle_id")
+  @@index([planname], map: "index_po_diensts_on_planname")
+  @@index([team_id], map: "index_po_diensts_on_team_id")
+}
+
+model schema_migrations {
+  version String @id @db.VarChar
+}
+
+model schichts {
+  id                 BigInt            @id @default(autoincrement())
+  bedarfs_eintrag_id BigInt?
+  anfang             DateTime?         @db.Timestamp(6)
+  ende               DateTime?         @db.Timestamp(6)
+  arbeitszeittyp_id  BigInt?
+  schicht_nummer     Int?              @default(1)
+  arbeitszeit        Int?
+  created_at         DateTime          @db.Timestamp(6)
+  updated_at         DateTime          @db.Timestamp(6)
+  arbeitszeittyps    arbeitszeittyps?  @relation(fields: [arbeitszeittyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b62a6b1ca3")
+  bedarfs_eintrags   bedarfs_eintrags? @relation(fields: [bedarfs_eintrag_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_bd78a44984")
+
+  @@index([arbeitszeittyp_id], map: "index_schichts_on_arbeitszeittyp_id")
+  @@index([bedarfs_eintrag_id], map: "index_schichts_on_bedarfs_eintrag_id")
+}
+
+model standorts {
+  id                              Int                               @id @default(autoincrement())
+  name                            String?                           @db.VarChar
+  planname                        String?                           @db.VarChar
+  name_url                        String?                           @db.VarChar
+  adresse                         String?
+  klinik_id                       Int?
+  long                            String?                           @db.VarChar
+  lat                             String?                           @db.VarChar
+  created_at                      DateTime?                         @db.Timestamp(6)
+  updated_at                      DateTime?                         @db.Timestamp(6)
+  clinic                          Boolean?                          @default(true)
+  sys                             Boolean?                          @default(false)
+  arbeitsplatzs                   arbeitsplatzs[]
+  nicht_einteilen_standort_themen nicht_einteilen_standort_themen[]
+}
+
+model stundennachweis {
+  id                        BigInt                    @id @default(autoincrement())
+  mitarbeiter_id            Int?
+  kostenstelle_id           BigInt?
+  tag                       DateTime?                 @db.Date
+  von                       DateTime?                 @db.Time(6)
+  bis                       DateTime?                 @db.Time(6)
+  std                       Decimal?                  @db.Decimal(6, 2)
+  bereitschaft              Boolean?                  @default(false)
+  rufbereitschaft           Boolean?                  @default(false)
+  inanspruchnahme           Decimal?                  @default(0) @db.Decimal(6, 2)
+  krank                     Boolean?                  @default(false)
+  urlaub                    Boolean?                  @default(false)
+  sonst_fehltag             Boolean?                  @default(false)
+  created_at                DateTime                  @db.Timestamp(6)
+  updated_at                DateTime                  @db.Timestamp(6)
+  von_einteilung            Int?                      @default(-1)
+  stundennachweis_status_id BigInt?                   @default(1)
+  vollarbeit                Boolean?                  @default(true)
+  pause                     DateTime?                 @default(dbgenerated("'00:00:00'::time without time zone")) @db.Time(6)
+  rufbereitschaft_von       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
+  rufbereitschaft_bis       DateTime[]                @default(dbgenerated("'{00:00:00}'::time without time zone[]")) @db.Time
+  kommentar                 String?                   @default("") @db.VarChar
+  stundennachweis_statuses  stundennachweis_statuses? @relation(fields: [stundennachweis_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_05b269d564")
+  kostenstelles             kostenstelles?            @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_745ff2de6c")
+  mitarbeiters              mitarbeiters?             @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f7210f061b")
+
+  @@index([kostenstelle_id], map: "index_stundennachweis_on_kostenstelle_id")
+  @@index([mitarbeiter_id], map: "index_stundennachweis_on_mitarbeiter_id")
+  @@index([stundennachweis_status_id], map: "index_stundennachweis_on_stundennachweis_status_id")
+}
+
+model stundennachweis_statuses {
+  id              BigInt            @id @default(autoincrement())
+  name            String?           @db.VarChar
+  confirmed       Boolean?
+  submitted       Boolean?
+  created_at      DateTime          @db.Timestamp(6)
+  updated_at      DateTime          @db.Timestamp(6)
+  stundennachweis stundennachweis[]
+}
+
+model tagesverteiler_layouts {
+  id                    BigInt               @id @default(autoincrement())
+  device                String?              @db.VarChar
+  rows                  Int?
+  cols                  Int?
+  grid                  String?              @db.VarChar
+  created_at            DateTime             @db.Timestamp(6)
+  updated_at            DateTime             @db.Timestamp(6)
+  verteiler_vorlagen_id BigInt?
+  verteiler_vorlagens   verteiler_vorlagens? @relation(fields: [verteiler_vorlagen_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9293af7154")
+
+  @@index([verteiler_vorlagen_id], map: "index_tagesverteiler_layouts_on_verteiler_vorlagen_id")
+}
+
+model tagesverteiler_user_settings {
+  id           BigInt   @id @default(autoincrement())
+  user_id      BigInt?
+  funktion_ids Int[]    @default([])
+  funktion_box String?  @db.VarChar
+  created_at   DateTime @db.Timestamp(6)
+  updated_at   DateTime @db.Timestamp(6)
+  zoom         Float?   @default(1.0)
+  bereiche     String?  @default("") @db.VarChar
+
+  @@index([user_id], map: "index_tagesverteiler_user_settings_on_user_id")
+}
+
+model tagesverteilers {
+  id                      BigInt                    @id @default(autoincrement())
+  name                    String?                   @db.VarChar
+  color                   String?                   @db.VarChar
+  planname                String?                   @db.VarChar
+  created_at              DateTime                  @db.Timestamp(6)
+  updated_at              DateTime                  @db.Timestamp(6)
+  bereich_tagesverteilers bereich_tagesverteilers[]
+}
+
+model tagkategories {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+}
+
+model team_funktions {
+  id          BigInt     @id @default(autoincrement())
+  team_id     BigInt?
+  funktion_id BigInt?
+  created_at  DateTime   @db.Timestamp(6)
+  updated_at  DateTime   @db.Timestamp(6)
+  team        teams?     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0043aa77c2")
+  funktion    funktions? @relation(fields: [funktion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_bec8e126a9")
+
+  @@index([funktion_id], map: "index_team_funktions_on_funktion_id")
+  @@index([team_id], map: "index_team_funktions_on_team_id")
+}
+
+model team_kw_krankpuffer_versions {
+  id         BigInt    @id @default(autoincrement())
+  item_type  String    @db.VarChar
+  item_id    Int
+  event      String    @db.VarChar
+  whodunnit  String?   @db.VarChar
+  object     String?
+  created_at DateTime? @db.Timestamp(6)
+
+  @@index([item_type, item_id], map: "index_team_kw_krankpuffer_versions_on_item_type_and_item_id")
+}
+
+model team_kw_krankpuffers {
+  id         BigInt   @id @default(autoincrement())
+  kw         Int      @default(0)
+  team_id    BigInt?
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+  puffer     Int      @default(0)
+  team       teams?   @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_5eded83672")
+
+  @@index([team_id], map: "index_team_kw_krankpuffers_on_team_id")
+}
+
+model teams {
+  id                    BigInt                  @id @default(autoincrement())
+  name                  String?                 @db.VarChar
+  created_at            DateTime                @db.Timestamp(6)
+  updated_at            DateTime                @db.Timestamp(6)
+  kostenstelle_id       BigInt?                 @default(1)
+  default               Boolean?                @default(false)
+  krank_puffer          Int                     @default(0)
+  verteiler_default     Boolean?                @default(false)
+  dienstkategorie_teams dienstkategorie_teams[]
+  dienstplaners_teams   dienstplaners_teams[]
+  funktions             funktions[]
+  kontingents           kontingents[]
+  po_diensts            po_diensts[]
+  team_funktions        team_funktions[]
+  team_kw_krankpuffers  team_kw_krankpuffers[]
+  kostenstelle          kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
+  vorlages              vorlages[]
+
+  @@index([kostenstelle_id], map: "index_teams_on_kostenstelle_id")
+}
+
+model telefonlistes {
+  id           Int      @id @default(autoincrement())
+  name         String?  @db.VarChar
+  beschreibung String?
+  mitarbeiter  String?  @db.VarChar
+  order        String?  @db.VarChar
+  created_at   DateTime @db.Timestamp(6)
+  updated_at   DateTime @db.Timestamp(6)
+}
+
+model themas {
+  id                              BigInt                            @id @default(autoincrement())
+  name                            String?                           @db.VarChar
+  beschreibung                    String?                           @db.VarChar
+  color                           String?                           @db.VarChar
+  created_at                      DateTime                          @db.Timestamp(6)
+  updated_at                      DateTime                          @db.Timestamp(6)
+  dienstkategoriethemas           dienstkategoriethemas[]
+  nicht_einteilen_standort_themen nicht_einteilen_standort_themen[]
+}
+
+model urlaubssaldo_abspraches {
+  id             BigInt        @id @default(autoincrement())
+  mitarbeiter_id Int?
+  von            DateTime?     @db.Date
+  bis            DateTime?     @db.Date
+  mitarbeiters   mitarbeiters? @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cdbde270f4")
+
+  @@index([mitarbeiter_id], map: "index_urlaubssaldo_abspraches_on_mitarbeiter_id")
+}
+
+model user_versions {
+  id             Int       @id @default(autoincrement())
+  item_type      String    @db.VarChar
+  item_id        Int
+  event          String    @db.VarChar
+  whodunnit      String?   @db.VarChar
+  object         String?
+  api_version    String?   @db.VarChar
+  api_userinfo   String?   @db.VarChar
+  userinfo       String?   @db.VarChar
+  api_info       String?   @db.VarChar
+  object_changes String?
+  created_at     DateTime? @db.Timestamp(6)
+
+  @@index([item_type, item_id], map: "index_user_versions_on_item_type_and_item_id")
+  @@index([whodunnit], map: "index_user_versions_on_whodunnit")
+}
+
+model users {
+  id                                Int                                 @id @default(autoincrement())
+  name                              String?                             @db.VarChar
+  uid                               Int?
+  login                             String?                             @db.VarChar
+  created_at                        DateTime?                           @db.Timestamp(6)
+  updated_at                        DateTime?                           @db.Timestamp(6)
+  email                             String                              @unique(map: "index_users_on_email") @default("") @db.VarChar
+  encrypted_password                String                              @default("") @db.VarChar
+  reset_password_token              String?                             @unique(map: "index_users_on_reset_password_token") @db.VarChar
+  reset_password_sent_at            DateTime?                           @db.Timestamp(6)
+  remember_created_at               DateTime?                           @db.Timestamp(6)
+  sign_in_count                     Int                                 @default(0)
+  current_sign_in_at                DateTime?                           @db.Timestamp(6)
+  last_sign_in_at                   DateTime?                           @db.Timestamp(6)
+  current_sign_in_ip                String?                             @db.VarChar
+  last_sign_in_ip                   String?                             @db.VarChar
+  confirmation_token                String?                             @db.VarChar
+  confirmed_at                      DateTime?                           @db.Timestamp(6)
+  confirmation_sent_at              DateTime?                           @db.Timestamp(6)
+  unconfirmed_email                 String?                             @db.VarChar
+  failed_attempts                   Int                                 @default(0)
+  unlock_token                      String?                             @db.VarChar
+  locked_at                         DateTime?                           @db.Timestamp(6)
+  admin                             Boolean?                            @default(false)
+  deactivated                       Boolean?
+  account_info_id                   BigInt?
+  otp_secret_key                    String?                             @db.VarChar
+  otp_enabled                       Boolean?                            @default(false)
+  otp_counter                       Int?                                @default(0)
+  account_infos                     account_infos[]
+  channel_room_users                channel_room_users[]
+  dienstfreigabes                   dienstfreigabes[]
+  dienstplaner_user_farbgruppens    dienstplaner_user_farbgruppens[]
+  dienstplaner_user_settings        dienstplaner_user_settings[]
+  dienstplaners_teams               dienstplaners_teams[]
+  dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
+  user_gruppes                      users_gruppes[]                     @ignore
+
+  @@index([account_info_id], map: "index_users_on_account_info_id")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model users_gruppes {
+  user_id   Int?
+  gruppe_id Int?
+  gruppes   gruppes? @relation(fields: [gruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0c3453aa77")
+  users     users?   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cec3e4ee8f")
+
+  @@index([user_id, gruppe_id], map: "index_users_gruppes_on_user_id_and_gruppe_id")
+  @@ignore
+}
+
+model version_associations {
+  id               Int     @id @default(autoincrement())
+  version_id       Int?
+  foreign_key_name String  @db.VarChar
+  foreign_key_id   Int?
+  foreign_type     String? @db.VarChar
+
+  @@index([foreign_key_name, foreign_key_id], map: "index_version_associations_on_foreign_key")
+  @@index([version_id], map: "index_version_associations_on_version_id")
+}
+
+model versions {
+  id             Int       @id @default(autoincrement())
+  item_type      String    @db.VarChar
+  item_id        Int
+  event          String    @db.VarChar
+  whodunnit      String?   @db.VarChar
+  object         String?
+  created_at     DateTime? @db.Timestamp(6)
+  object_changes String?
+  transaction_id Int?
+
+  @@index([item_type, item_id], map: "index_versions_on_item_type_and_item_id")
+  @@index([transaction_id], map: "index_versions_on_transaction_id")
+}
+
+model verteiler_tagesverteilers {
+  id         Int       @id @default(autoincrement())
+  raw_json   String?
+  datum      DateTime? @db.Timestamp(6)
+  version    String?   @db.VarChar
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+}
+
+model verteiler_vorlagens {
+  id                                BigInt                              @id @default(autoincrement())
+  name                              String                              @default("Vorlage") @db.VarChar
+  beschreibung                      String                              @default("") @db.VarChar
+  typ                               String                              @default("wochenverteiler") @db.VarChar
+  dienstplan_path_id                BigInt?
+  order                             Int                                 @default(0)
+  bereiche_ids                      Int[]                               @default([])
+  dienste_ids                       Int[]                               @default([])
+  team_ids                          Int[]                               @default([])
+  created_at                        DateTime                            @db.Timestamp(6)
+  updated_at                        DateTime                            @db.Timestamp(6)
+  kommentar                         String?                             @default("") @db.VarChar
+  dienstplaners_verteiler_vorlagens dienstplaners_verteiler_vorlagens[]
+  tagesverteiler_layouts            tagesverteiler_layouts[]
+  dienstplan_paths                  dienstplan_paths?                   @relation(fields: [dienstplan_path_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_02b7f85cbd")
+
+  @@index([dienstplan_path_id], map: "index_verteiler_vorlagens_on_dienstplan_path_id")
+}
+
+model verteilungsoverrides {
+  id                      BigInt                 @id @default(autoincrement())
+  parameterset_id         BigInt?
+  dienstbedarf_id         Int?
+  dienstverteilungstyp_id BigInt?
+  verteilungscode         String?                @db.VarChar
+  created_at              DateTime               @db.Timestamp(6)
+  updated_at              DateTime               @db.Timestamp(6)
+  dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_171044f6f2")
+  parametersets           parametersets?         @relation(fields: [parameterset_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4383eac96c")
+  dienstbedarves          dienstbedarves?        @relation(fields: [dienstbedarf_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e75f8ddeae")
+
+  @@index([dienstbedarf_id], map: "index_verteilungsoverrides_on_dienstbedarf_id")
+  @@index([dienstverteilungstyp_id], map: "index_verteilungsoverrides_on_dienstverteilungstyp_id")
+  @@index([parameterset_id], map: "index_verteilungsoverrides_on_parameterset_id")
+}
+
+model vertrag_versions {
+  id         BigInt    @id @default(autoincrement())
+  item_type  String    @db.VarChar
+  item_id    Int
+  event      String    @db.VarChar
+  whodunnit  String?   @db.VarChar
+  object     String?
+  created_at DateTime? @db.Timestamp(6)
+
+  @@index([item_type, item_id], map: "index_vertrag_versions_on_item_type_and_item_id")
+}
+
+model vertrags {
+  id                    Int                     @id @default(autoincrement())
+  mitarbeiter_id        Int?
+  created_at            DateTime                @db.Timestamp(6)
+  updated_at            DateTime                @db.Timestamp(6)
+  vertragstyp_id        BigInt?
+  anfang                DateTime?               @db.Date
+  ende                  DateTime?               @db.Date
+  unbefristet           Boolean?                @default(false)
+  kommentar             String?                 @default("") @db.VarChar
+  mitarbeiters          mitarbeiters?           @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_b20fe19842")
+  vertragstyps          vertragstyps?           @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f2cec23b66")
+  vertrags_arbeitszeits vertrags_arbeitszeits[]
+  vertrags_phases       vertrags_phases[]
+
+  @@index([vertragstyp_id], map: "index_vertrags_on_vertragstyp_id")
+}
+
+model vertrags_arbeitszeits {
+  id         BigInt    @id @default(autoincrement())
+  vertrag_id Int?
+  von        DateTime? @db.Date
+  bis        DateTime? @db.Date
+  vk         Decimal?  @db.Decimal(3, 2)
+  tage_woche Float?    @default(5.0)
+  created_at DateTime  @db.Timestamp(6)
+  updated_at DateTime  @db.Timestamp(6)
+  vertrags   vertrags? @relation(fields: [vertrag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_8e47624856")
+
+  @@index([vertrag_id], map: "index_vertrags_arbeitszeits_on_vertrag_id")
+}
+
+model vertrags_phases {
+  id               BigInt          @id @default(autoincrement())
+  vertrag_id       Int?
+  von              DateTime?       @db.Date
+  bis              DateTime?       @db.Date
+  created_at       DateTime        @db.Timestamp(6)
+  updated_at       DateTime        @db.Timestamp(6)
+  vertragsstufe_id BigInt?
+  vertrags         vertrags?       @relation(fields: [vertrag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4db5fece40")
+  vertragsstuves   vertragsstuves? @relation(fields: [vertragsstufe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_f9b8646f70")
+
+  @@index([vertrag_id], map: "index_vertrags_phases_on_vertrag_id")
+  @@index([vertragsstufe_id], map: "index_vertrags_phases_on_vertragsstufe_id")
+}
+
+model vertrags_variantes {
+  id             BigInt           @id @default(autoincrement())
+  von            DateTime?        @db.Date
+  bis            DateTime?        @db.Date
+  vertragstyp_id BigInt?
+  name           String?          @db.VarChar
+  wochenstunden  Int?
+  created_at     DateTime         @db.Timestamp(6)
+  updated_at     DateTime         @db.Timestamp(6)
+  tage_monat     Float?           @default(2.5)
+  vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e70c474827")
+  vertragsstuves vertragsstuves[]
+
+  @@index([vertragstyp_id], map: "index_vertrags_variantes_on_vertragstyp_id")
+}
+
+model vertragsgruppes {
+  id             BigInt           @id @default(autoincrement())
+  name           String?          @db.VarChar
+  vertragstyp_id BigInt?
+  created_at     DateTime         @db.Timestamp(6)
+  updated_at     DateTime         @db.Timestamp(6)
+  vertragstyps   vertragstyps?    @relation(fields: [vertragstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_26cb34c5df")
+  vertragsstuves vertragsstuves[]
+
+  @@index([vertragstyp_id], map: "index_vertragsgruppes_on_vertragstyp_id")
+}
+
+model vertragsstuves {
+  id                   BigInt              @id @default(autoincrement())
+  stufe                Int?
+  nach_jahren          Int?
+  monatsgehalt         Decimal?            @db.Decimal(15, 2)
+  created_at           DateTime            @db.Timestamp(6)
+  updated_at           DateTime            @db.Timestamp(6)
+  vertragsgruppe_id    BigInt?
+  vertrags_variante_id BigInt?
+  vertrags_phases      vertrags_phases[]
+  vertragsgruppes      vertragsgruppes?    @relation(fields: [vertragsgruppe_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_75bdf87379")
+  vertrags_variantes   vertrags_variantes? @relation(fields: [vertrags_variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_91403e2823")
+
+  @@index([vertrags_variante_id], map: "index_vertragsstuves_on_vertrags_variante_id")
+  @@index([vertragsgruppe_id], map: "index_vertragsstuves_on_vertragsgruppe_id")
+}
+
+model vertragstyps {
+  id                 BigInt               @id @default(autoincrement())
+  name               String?              @db.VarChar
+  created_at         DateTime             @db.Timestamp(6)
+  updated_at         DateTime             @db.Timestamp(6)
+  vertrags           vertrags[]
+  vertrags_variantes vertrags_variantes[]
+  vertragsgruppes    vertragsgruppes[]
+}
+
+model vorlages {
+  id                      BigInt                    @id @default(autoincrement())
+  mitarbeiter_id          Int?
+  name                    String?                   @db.VarChar
+  dienste                 Int[]
+  created_at              DateTime                  @db.Timestamp(6)
+  updated_at              DateTime                  @db.Timestamp(6)
+  team_id                 BigInt?
+  funktionen_ids          Int[]                     @default([])
+  ansicht_id              Int?                      @default(0)
+  position                Int                       @default(0)
+  allgemeine_vorlages     allgemeine_vorlages[]
+  dienstplan_custom_felds dienstplan_custom_felds[]
+  mitarbeiters            mitarbeiters?             @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_176adae085")
+  teams                   teams?                    @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_69e32bd9f7")
+
+  @@index([mitarbeiter_id], map: "index_vorlages_on_mitarbeiter_id")
+  @@index([team_id], map: "index_vorlages_on_team_id")
+}
+
+model wochenbilanzs {
+  id                            BigInt          @id @default(autoincrement())
+  kalenderwoche_id              BigInt?
+  mitarbeiter_id                Int?
+  geplante_arbeitszeit          Decimal?        @default(0) @db.Decimal(6, 2)
+  geplante_rufbereitschaftszeit Decimal?        @default(0) @db.Decimal(6, 2)
+  geplante_bereitschaftszeit    Decimal?        @default(0) @db.Decimal(6, 2)
+  wochensoll                    Decimal?        @default(0) @db.Decimal(6, 2)
+  plusstunden                   Decimal?        @default(0) @db.Decimal(6, 2)
+  ueberstunden                  Decimal?        @default(0) @db.Decimal(6, 2)
+  urlaubstage                   Int?            @default(0)
+  krankstunden                  Decimal?        @default(0) @db.Decimal(6, 2)
+  created_at                    DateTime        @db.Timestamp(6)
+  updated_at                    DateTime        @db.Timestamp(6)
+  mitarbeiters                  mitarbeiters?   @relation(fields: [mitarbeiter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_4e802b69e3")
+  kalenderwoches                kalenderwoches? @relation(fields: [kalenderwoche_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_eb52f30dad")
+
+  @@index([kalenderwoche_id], map: "index_wochenbilanzs_on_kalenderwoche_id")
+  @@index([mitarbeiter_id], map: "index_wochenbilanzs_on_mitarbeiter_id")
+}
+
+model zeitraumkategories {
+  id                          BigInt                        @id @default(autoincrement())
+  name                        String?                       @db.VarChar
+  beschreibung                String?                       @db.VarChar
+  zeitraumregel_id            BigInt?
+  prio                        Int?
+  anfang                      DateTime?                     @db.Date
+  ende                        DateTime?                     @db.Date
+  dauer                       Int?
+  regelcode                   String?                       @db.VarChar
+  sys                         Boolean?                      @default(false)
+  created_at                  DateTime                      @db.Timestamp(6)
+  updated_at                  DateTime                      @db.Timestamp(6)
+  arbeitszeit_absprachens     arbeitszeit_absprachens[]
+  automatische_einteilungens  automatische_einteilungens[]
+  dienstbedarves              dienstbedarves[]
+  nicht_einteilen_absprachens nicht_einteilen_absprachens[]
+  zeitraumregels              zeitraumregels?               @relation(fields: [zeitraumregel_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_cf637e5e41")
+
+  @@index([zeitraumregel_id], map: "index_zeitraumkategories_on_zeitraumregel_id")
+}
+
+model zeitraumregels {
+  id                 BigInt               @id @default(autoincrement())
+  name               String?              @db.VarChar
+  created_at         DateTime             @db.Timestamp(6)
+  updated_at         DateTime             @db.Timestamp(6)
+  beschreibung       String?              @db.VarChar
+  sys                Boolean?             @default(false)
+  zeitraumkategories zeitraumkategories[]
+}
