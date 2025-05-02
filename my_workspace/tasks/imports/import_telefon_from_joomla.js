@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 
 run().catch(err => console.log(err));
 async function run() {
-  const filePath = '/app/tasks/files/telefon.csv';
+  const filePath = '/app/tasks/files/Telefon.csv';
   console.log(`Reading file from ${filePath}`);
   const fileContent = fs.readFileSync(filePath, 'utf8');
   const lines = fileContent.split('\n');
