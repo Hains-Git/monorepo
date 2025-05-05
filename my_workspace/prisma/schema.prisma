@@ -361,6 +361,7 @@ model bedarfs_eintrags {
   updated_at              DateTime               @db.Timestamp(6)
   ausgleich_tage          Int?                   @default(0)
   kostenstelle_id         Int?                   @default(2)
+  team_id                 Int?
   dienstplanbedarves      dienstplanbedarves?    @relation(fields: [dienstplanbedarf_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_00545eb639")
   po_diensts              po_diensts?            @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_08c867c460")
   dienstverteilungstyps   dienstverteilungstyps? @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_0f89581c7b")
@@ -370,6 +371,7 @@ model bedarfs_eintrags {
   schichts                schichts[]
   first_bedarf            bedarfs_eintrags?      @relation("BedarfeBlock", fields: [first_entry], references: [id])
   block_bedarfe           bedarfs_eintrags[]     @relation("BedarfeBlock")
+  team                    teams?                 @relation(fields: [team_id], references: [id])
 
   @@index([bereich_id], map: "index_bedarfs_eintrags_on_bereich_id")
   @@index([dienstbedarf_id], map: "index_bedarfs_eintrags_on_dienstbedarf_id")
@@ -556,6 +558,7 @@ model dienstbedarves {
   zeitraumkategories_id    Int?
   kostenstelle_id          Int?                    @default(2)
   ignore_in_urlaubssaldo   Boolean?                @default(false)
+  team_id                  Int?
   bedarfs_eintrags         bedarfs_eintrags[]
   dienstverteilungstyps    dienstverteilungstyps?  @relation(fields: [dienstverteilungstyp_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_05b1cdbc7e")
   arbeitszeitverteilungs   arbeitszeitverteilungs? @relation(fields: [arbeitszeitverteilung_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_2b3b1e6b71")
@@ -563,6 +566,7 @@ model dienstbedarves {
   kostenstelles            kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_495258659a")
   po_diensts               po_diensts?             @relation(fields: [po_dienst_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9ae4035ecf")
   zeitraumkategories       zeitraumkategories?     @relation(fields: [zeitraumkategories_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_a8c5f3913d")
+  team                     teams?                  @relation(fields: [team_id], references: [id])
   verteilungsoverrides     verteilungsoverrides[]
 
   @@index([kostenstelle_id], map: "index_dienstbedarves_on_kostenstelle_id")
@@ -2010,6 +2014,8 @@ model teams {
   team_kopf_soll        team_kopf_soll[]
   kostenstelle          kostenstelles?          @relation(fields: [kostenstelle_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_9d14807ce7")
   vorlages              vorlages[]
+  bedarfs_eintrags      bedarfs_eintrags[]
+  dienstbedarves        dienstbedarves[]
 
   @@index([kostenstelle_id], map: "index_teams_on_kostenstelle_id")
 }
