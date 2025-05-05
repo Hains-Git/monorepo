@@ -1,4 +1,6 @@
 import { prismaDb } from '@my-workspace/prisma_hains';
+import { whereMitarbeiterAktivNoPlatzhalter } from './utils/crud_helper';
+import { newDateYearMonthDay } from '@my-workspace/utils';
 
 export async function getAbwesenheitenSettings(mitarbeiterId: number) {
   return await prismaDb.abwesentheitenueberblick_settings.findFirst({
@@ -26,4 +28,23 @@ export async function getAbwesenheitenByYear(year: number) {
       jahr: year
     }
   });
+}
+
+export async function getAbwesenheitenRelations(year: number) {
+  const sumsAbw = await prismaDb.abwesentheitenueberblicks.aggregate({
+    _sum: { ru: true, ug: true },
+    where: {
+      jahr: year,
+      mitarbeiters: {
+        ...whereMitarbeiterAktivNoPlatzhalter(newDateYearMonthDay(year, 0, 1), newDateYearMonthDay(year, 11, 31))
+      }
+    }
+  });
+
+  if (sumsAbw._sum.ru == null || sumsAbw._sum.ug == null || sumsAbw._sum.ug == 0) {
+    return 0;
+  }
+  const precision = 2;
+  const factor = Math.pow(10, precision);
+  return Math.round((sumsAbw._sum.ru / sumsAbw._sum.ug) * factor) / factor;
 }
