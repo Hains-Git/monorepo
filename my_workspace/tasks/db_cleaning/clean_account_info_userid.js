@@ -3,8 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 
 run().catch(err => console.log(err));
 async function run() {
-  console.log("Starting Cleaning...");
-  const prismaDb = new PrismaClient();
+  const prismaDb = new PrismaClient({ log: ['query', 'info', 'warn', 'error'] });
   const accounts = await prismaDb.account_infos.findMany({
     include: {
       user: true,

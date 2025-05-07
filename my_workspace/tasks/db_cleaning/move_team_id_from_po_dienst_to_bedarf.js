@@ -1,68 +1,60 @@
 console.log("Move Team-Id from Po-Dienst to Bedarf/Bedarfseintrag...");
 const { PrismaClient } = require('@prisma/client');
 
-const updateBedarf = async (diensbedarf) => {
-  const po_dienst = diensbedarf.po_diensts;
-  if(!po_dienst) {
-    console.log(`Dienstbedarf ${diensbedarf.id} has no Po-Dienst`);
-    return;
-  }
-  if(!po_dienst.teams) {
-    console.log(`Po-Dienst ${po_dienst.id} has no Team`);
-    return;
-  }
-  const team = po_dienst.teams;
-  if(!team) {
-    console.log(`Po-Dienst ${po_dienst.id} has no Team`);
-    return;
-  }
-  await prismaDb.dienstbedarves.update({
-    where: {
-      id: diensbedarf.id
-    },
-    data: {
-      team_id: team.id
-    }
-  });
-}
-
 run().catch(err => console.log(err));
 async function run() {
   console.log("Starting Cleaning...");
   const prismaDb = new PrismaClient();
-  const diensbedarfe = await prismaDb.dienstbedarves.findMany({
-    where: {
-      team_id: null
-    },
-    include: {
-      po_diensts: {
-        include: {
-          teams: true
-        }
-      }
+
+  const getData = async (key, cursorId = undefined) => {
+    const include =  {
+      po_diensts: true
+    };
+    if(key === "bedarfs_eintrags") {
+      include.dienstbedarves = true;
     }
-  });
-  const l = diensbedarfe.length;
-  for(let i = 0; i < l; i++) {
-    await updateBedarf(diensbedarfe[i]);
+    return await prismaDb[key].findMany({
+      take: 1000,
+      where: {
+        team_id: null
+      },
+      include: include,
+      orderBy: {
+        id: "asc"
+      },
+      cursor: cursorId ? { id: cursorId } : undefined
+    });
   }
 
-  const bedarfseinraege = await prismaDb.bedarfs_eintrags.findMany({
-    where: {
-      team_id: null
-    },
-    include: {
-      po_diensts: {
-        include: {
-          teams: true
+  const updateBedarf = async (key) => {
+    let data = await getData(key);
+    const teamKey = key === "dienstbedarves" ? "po_diensts" : "dienstbedarves";
+    while(data.length > 0) {
+      const l = data.length;
+      console.log(`Found ${l} ${key} without team_id`);
+      for(let i = 0; i < l; i++) {
+        const item = data[i];
+        if(!item[teamKey]?.team_id) {
+          console.log(`${teamKey} ${item[teamKey].id} has no Team`);
+          return false;
         }
+        if(i % 100 === 0) console.log(`Updating ${key} ${item.id} with Team ${item[teamKey].team_id}`);
+        await prismaDb[key].update({
+          where: {
+            id: item.id
+          },
+          data: {
+            team_id: item[teamKey].team_id
+          }
+        });
       }
+      const lastItem = data[data.length - 1];
+      data = await getData(key, lastItem.id);
     }
-  });
-  const l2 = bedarfseinraege.length;
-  for(let i = 0; i < l2; i++) {
-    await updateBedarf(bedarfseinraege[i]);
   }
+
+  updateBedarf("dienstbedarves");
+  updateBedarf("bedarfs_eintrags");
   
   console.log("Job finished!");
 }
