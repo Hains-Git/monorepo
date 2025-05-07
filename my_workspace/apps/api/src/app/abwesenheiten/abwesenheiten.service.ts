@@ -60,8 +60,13 @@ export class AbwesenheitenService {
     const dateRangeDate = newDate(dateStart);
     const dates = {};
     console.time('while');
+    const years = [];
     while (dateRangeDate <= dateEnd) {
       const currentDate = newDate(dateRangeDate);
+      const _year = currentDate.getFullYear();
+      if (!years.includes(_year)) {
+        years.push(_year);
+      }
       dateRange.push(currentDate);
       await createDates({ day: currentDate, dates });
       dateRangeDate.setDate(currentDate.getDate() + 1);
@@ -74,6 +79,13 @@ export class AbwesenheitenService {
     result['dates'] = dates;
     result['urlaubssaldi'] = {};
     result['kalendermarkierung'] = kalendermarkierungen;
+    result['abw_relations'] = {};
+    const ly = years.length;
+    for (let i = 0; i < ly; i++) {
+      const year = years[i];
+      const rel = await _abwesenheiten.getAbwesenheitenRelations(year);
+      result['abw_relations'][year] = rel;
+    }
 
     return result;
   }
@@ -82,6 +94,11 @@ export class AbwesenheitenService {
     const start = newDate(body.start);
     const ende = newDate(body.ende);
     const result = await Urlaubssaldi.getSaldi(start, ende);
+    return result;
+  }
+
+  async getAbwesenheitenRelation(year: number) {
+    const result = await _abwesenheiten.getAbwesenheitenRelations(year);
     return result;
   }
 }

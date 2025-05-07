@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "uid" SET DATA TYPE VARCHAR(255);

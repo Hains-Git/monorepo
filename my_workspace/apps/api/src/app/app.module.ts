@@ -27,6 +27,8 @@ import { UserController } from './user/user.controller';
 import { UserService } from './user/user.service';
 import { RotationController } from './rotationen/rotation.controller';
 import { RotationService } from './rotationen/rotation.service';
+import { TelefonController } from './telefon/telefon.controller';
+import { TelefonService } from './telefon/telefon.service';
 
 @Module({
   // imports: [AuthModule, PrismaModule],
@@ -39,7 +41,8 @@ import { RotationService } from './rotationen/rotation.service';
     TeamController,
     FraunhoferController,
     ZeitraumkategorienController,
-    RotationController
+    RotationController,
+    TelefonController
   ],
   providers: [
     Logger,
@@ -50,7 +53,8 @@ import { RotationService } from './rotationen/rotation.service';
     TeamService,
     FraunhoferService,
     ZeitraumkategorienService,
-    RotationService
+    RotationService,
+    TelefonService
     // {
     //   provide: APP_GUARD,
     //   useClass: GlobalAuthGuard
